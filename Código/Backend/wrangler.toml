@@ -1,0 +1,9 @@
+name = "retroforge-backend"
+main = "src/index.js"
+compatibility_date = "2024-09-01"
+compatibility_flags = [ "nodejs_compat" ]
+
+# Configuração para desenvolvimento local
+[dev]
+port = 8787
+local_protocol = "http"
