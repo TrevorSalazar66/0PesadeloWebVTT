@@ -1821,6 +1821,16 @@
       } catch (e) {}
     }
 
+    function isBackendOfflineError(err) {
+      if (!err) return false;
+      const msg = (err.message || '').toLowerCase();
+      return msg.includes('failed to fetch') || 
+             msg.includes('networkerror') || 
+             msg.includes('load failed') || 
+             msg.includes('connection refused') ||
+             (!err.status && !err.codigo);
+    }
+
     /**
      * Realiza o login do usuário via API ou verificação estrita
      */
@@ -1876,7 +1886,14 @@
             mostrarToast(err.message || 'Credenciais inválidas. Se ainda não possui conta, clique em "Criar conta".');
             return;
           }
-          console.warn('Erro ao autenticar com a API:', err);
+          if (isBackendOfflineError(err)) {
+            console.info('Backend local offline na porta 8787. Verificando conta em modo de simulação local.');
+            mostrarToast('ℹ️ Backend offline. Operando em simulação local com validação OTP!');
+          } else {
+            console.warn('Erro ao autenticar com a API:', err);
+            mostrarToast(err.message || 'Erro ao efetuar login.');
+            return;
+          }
         }
       }
 
@@ -1958,8 +1975,13 @@
             mostrarToast('Atenção: Dispositivo travado por segurança.');
             return;
           }
-          mostrarToast(err.message || 'Erro ao criar conta.');
-          return;
+          if (isBackendOfflineError(err)) {
+            console.info('Backend local offline na porta 8787. Gerando código OTP em modo simulado local.');
+            mostrarToast('ℹ️ Backend offline. Operando em simulação local com código de 6 dígitos!');
+          } else {
+            mostrarToast(err.message || 'Erro ao criar conta.');
+            return;
+          }
         }
       }
 
@@ -2009,8 +2031,12 @@
           mostrarToast('E-mail confirmado com sucesso! Acesso à taverna liberado.');
           return;
         } catch (err) {
-          mostrarToast(err.message || 'Código de 6 dígitos incorreto ou expirado.');
-          return;
+          if (isBackendOfflineError(err)) {
+            console.info('Backend local offline na porta 8787. Validando código OTP no armazenamento local.');
+          } else {
+            mostrarToast(err.message || 'Código de 6 dígitos incorreto ou expirado.');
+            return;
+          }
         }
       }
 
@@ -2045,8 +2071,12 @@
           }
           return;
         } catch (err) {
-          mostrarToast(err.message || 'Erro ao reenviar código.');
-          return;
+          if (isBackendOfflineError(err)) {
+            console.info('Backend local offline na porta 8787. Reenviando código OTP em modo local.');
+          } else {
+            mostrarToast(err.message || 'Erro ao reenviar código.');
+            return;
+          }
         }
       }
 

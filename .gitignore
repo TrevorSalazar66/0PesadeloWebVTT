@@ -24,3 +24,7 @@ Thumbs.db
 # Diretórios de build
 dist/
 build/
+
+# Bancos de dados locais SQLite
+*.sqlite
+*.sqlite3

@@ -9,6 +9,12 @@ export function getAllowedOrigins(env) {
 
 export function isOriginAllowed(origin, env) {
   if (!origin) return false;
+  // No ambiente de desenvolvimento, aceita conexões locais de qualquer porta (ex: Live Server 5500, 5501, 3000, etc.)
+  if (env?.ENVIRONMENT === 'development' || !env?.ENVIRONMENT) {
+    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return true;
+    }
+  }
   const allowed = getAllowedOrigins(env);
   return allowed.includes(origin);
 }
@@ -26,7 +32,7 @@ export function applySecurityHeaders(headers, requestOrigin, env) {
     headers.set('Access-Control-Allow-Origin', requestOrigin);
     headers.set('Access-Control-Allow-Credentials', 'true');
     headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Device-Fingerprint');
     headers.set('Access-Control-Max-Age', '86400');
     headers.set('Vary', 'Origin');
   }
