@@ -1670,7 +1670,7 @@
       if (window.apiClient) {
         window.apiClient.loginWithGoogle();
       } else {
-        mostrarToast('Autenticação Google simulada: Redirecionando...');
+        mostrarToast('Erro: Cliente de API não inicializado.');
       }
     }
 
@@ -1794,45 +1794,8 @@
       return { valid: true, cleanEmail: clean };
     }
 
-    // Armazenamento local de contas para simulação estrita (LiveServer offline)
-    function buscarContaSimuladaLocal(email) {
-      try {
-        const contas = JSON.parse(localStorage.getItem('arcana_simulated_accounts') || '{}');
-        return contas[email.toLowerCase()] || null;
-      } catch (e) {
-        return null;
-      }
-    }
-
-    function salvarContaSimuladaPendente(conta) {
-      try {
-        const contas = JSON.parse(localStorage.getItem('arcana_simulated_accounts') || '{}');
-        contas[conta.email.toLowerCase()] = conta;
-        localStorage.setItem('arcana_simulated_accounts', JSON.stringify(contas));
-      } catch (e) {}
-    }
-
-    function salvarContaSimuladaAtiva(conta) {
-      try {
-        const contas = JSON.parse(localStorage.getItem('arcana_simulated_accounts') || '{}');
-        conta.emailVerified = true;
-        contas[conta.email.toLowerCase()] = conta;
-        localStorage.setItem('arcana_simulated_accounts', JSON.stringify(contas));
-      } catch (e) {}
-    }
-
-    function isBackendOfflineError(err) {
-      if (!err) return false;
-      const msg = (err.message || '').toLowerCase();
-      return msg.includes('failed to fetch') || 
-             msg.includes('networkerror') || 
-             msg.includes('load failed') || 
-             msg.includes('connection refused') ||
-             (!err.status && !err.codigo);
-    }
-
     /**
-     * Realiza o login do usuário via API ou verificação estrita
+     * Realiza o login do usuário exclusivamente através do Backend Gateway
      */
     async function fazerLogin(event) {
       if (event) event.preventDefault();
@@ -1854,75 +1817,53 @@
         return;
       }
 
-      if (window.apiClient) {
-        try {
-          const res = await window.apiClient.login(email, password);
-          aplicarSessaoUsuario(res.usuario);
-          mostrarToast(`Bem-vindo à taverna, ${res.usuario.displayName || 'aventureiro'}!`);
-          return;
-        } catch (err) {
-          if (err.codigo === 'EMAIL_NOT_VERIFIED' || (err.status === 403 && err.payload && err.payload.requerVerificacao)) {
-            currentOtpEmail = email;
-            alternarAuthView('otp');
-            const sub = document.getElementById('otp-subtitle-text');
-            if (sub) sub.textContent = `Esta conta ainda não foi confirmada. Digite o código de 6 dígitos enviado para ${email}.`;
-            if (err.payload && err.payload._codigoTesteDev) {
-              mostrarToast(`[DEV/TESTE] Código de confirmação: ${err.payload._codigoTesteDev}`);
-            } else {
-              mostrarToast('Acesso bloqueado: confirme seu e-mail com o código de 6 dígitos.');
-            }
-            return;
-          }
-          if (err.codigo === 'DEVICE_BLOCKED') {
-            alternarAuthView('blocked');
-            const hashEl = document.getElementById('blocked-device-fingerprint');
-            if (hashEl && err.payload && err.payload.deviceHash) {
-              hashEl.textContent = err.payload.deviceHash;
-            }
-            mostrarToast('Atenção: Dispositivo travado por segurança anti-Sybil.');
-            return;
-          }
-          if (err.status === 401 || err.status === 400) {
-            mostrarToast(err.message || 'Credenciais inválidas. Se ainda não possui conta, clique em "Criar conta".');
-            return;
-          }
-          if (isBackendOfflineError(err)) {
-            console.info('Backend local offline na porta 8787. Verificando conta em modo de simulação local.');
-            mostrarToast('ℹ️ Backend offline. Operando em simulação local com validação OTP!');
+      if (!window.apiClient) {
+        mostrarToast('Erro: Cliente de API não inicializado.');
+        return;
+      }
+
+      try {
+        const res = await window.apiClient.login(email, password);
+        aplicarSessaoUsuario(res.usuario);
+        mostrarToast(`Bem-vindo à taverna, ${res.usuario.displayName || 'aventureiro'}!`);
+      } catch (err) {
+        if (err.codigo === 'EMAIL_NOT_VERIFIED' || (err.status === 403 && err.payload && err.payload.requerVerificacao)) {
+          currentOtpEmail = email;
+          alternarAuthView('otp');
+          const sub = document.getElementById('otp-subtitle-text');
+          if (sub) sub.textContent = `Esta conta ainda não foi confirmada. Digite o código de 6 dígitos enviado para ${email}.`;
+          if (err.payload && err.payload._codigoTesteDev) {
+            mostrarToast(`[DEV/TESTE] Código de confirmação: ${err.payload._codigoTesteDev}`);
           } else {
-            console.warn('Erro ao autenticar com a API:', err);
-            mostrarToast(err.message || 'Erro ao efetuar login.');
-            return;
+            mostrarToast('Acesso bloqueado: confirme seu e-mail com o código de 6 dígitos.');
           }
+          return;
         }
+        if (err.codigo === 'DEVICE_BLOCKED') {
+          alternarAuthView('blocked');
+          const hashEl = document.getElementById('blocked-device-fingerprint');
+          if (hashEl && err.payload && err.payload.deviceHash) {
+            hashEl.textContent = err.payload.deviceHash;
+          }
+          mostrarToast('Atenção: Dispositivo travado por segurança anti-Sybil.');
+          return;
+        }
+        if (err.status === 401 || err.status === 400) {
+          mostrarToast(err.message || 'Credenciais inválidas. Se ainda não possui conta, clique em "Criar conta".');
+          return;
+        }
+        const msg = (err.message || '').toLowerCase();
+        if (msg.includes('failed to fetch') || msg.includes('networkerror') || !err.status) {
+          mostrarToast('Não foi possível conectar ao servidor backend (porta 8787). Inicie o servidor com "npm start".');
+          return;
+        }
+        console.warn('Erro ao autenticar com a API:', err);
+        mostrarToast(err.message || 'Erro ao efetuar login.');
       }
-
-      // Verificação em modo simulado (LiveServer local sem servidor ativo):
-      // NUNCA liberar acesso sem que a conta exista e tenha o código de 6 dígitos confirmado!
-      const contaSimulada = buscarContaSimuladaLocal(email);
-      if (!contaSimulada) {
-        mostrarToast('Esta conta não existe na taverna. Clique em "Criar conta" para se cadastrar e receber seu código de 6 dígitos.');
-        return;
-      }
-      if (!contaSimulada.emailVerified) {
-        currentOtpEmail = email;
-        alternarAuthView('otp');
-        const sub = document.getElementById('otp-subtitle-text');
-        if (sub) sub.textContent = `Conta pendente de ativação. Digite o código de 6 dígitos enviado para ${email}.`;
-        mostrarToast(`[SIMULAÇÃO] Código de confirmação da sua conta: ${contaSimulada.codigoOtp}`);
-        return;
-      }
-      if (contaSimulada.password !== password) {
-        mostrarToast('Senha incorreta para esta conta.');
-        return;
-      }
-
-      aplicarSessaoUsuario(contaSimulada);
-      mostrarToast('Bem-vindo à taverna, aventureiro!');
     }
 
     /**
-     * Cadastra nova conta com e-mail e senha, exigindo validação de formato e código OTP
+     * Cadastra nova conta com e-mail e senha exclusivamente através do Backend Gateway
      */
     async function fazerRegistro(event) {
       if (event) event.preventDefault();
@@ -1950,63 +1891,45 @@
         return;
       }
 
-      if (window.apiClient) {
-        try {
-          const res = await window.apiClient.register(email, password, name);
-          if (res.requerVerificacao) {
-            currentOtpEmail = email;
-            alternarAuthView('otp');
-            const sub = document.getElementById('otp-subtitle-text');
-            if (sub) sub.textContent = `Código de 6 dígitos enviado para ${email}. Digite-o para ativar sua conta.`;
-            if (res._codigoTesteDev) {
-              mostrarToast(`[DEV/TESTE] Código de confirmação: ${res._codigoTesteDev}`);
-            } else {
-              mostrarToast(res.mensagem || 'Conta criada! Digite o código de 6 dígitos enviado por e-mail.');
-            }
-            return;
-          }
-        } catch (err) {
-          if (err.codigo === 'DEVICE_BLOCKED') {
-            alternarAuthView('blocked');
-            const hashEl = document.getElementById('blocked-device-fingerprint');
-            if (hashEl && err.payload && err.payload.deviceHash) {
-              hashEl.textContent = err.payload.deviceHash;
-            }
-            mostrarToast('Atenção: Dispositivo travado por segurança.');
-            return;
-          }
-          if (isBackendOfflineError(err)) {
-            console.info('Backend local offline na porta 8787. Gerando código OTP em modo simulado local.');
-            mostrarToast('ℹ️ Backend offline. Operando em simulação local com código de 6 dígitos!');
-          } else {
-            mostrarToast(err.message || 'Erro ao criar conta.');
-            return;
-          }
-        }
+      if (!window.apiClient) {
+        mostrarToast('Erro: Cliente de API não inicializado.');
+        return;
       }
 
-      // Modo Simulado Seguro (LiveServer local sem backend ativo):
-      // Gera o código numérico de 6 dígitos e OBRIGA o usuário a inseri-lo na tela de OTP
-      const codigoSimulado = String(Math.floor(100000 + Math.random() * 900000));
-      salvarContaSimuladaPendente({
-        id: `usr_${Math.random().toString(36).substring(2, 10)}`,
-        email,
-        displayName: name,
-        password,
-        role: 'Jogador',
-        emailVerified: false,
-        codigoOtp: codigoSimulado
-      });
-      currentOtpEmail = email;
-      alternarAuthView('otp');
-      const sub = document.getElementById('otp-subtitle-text');
-      if (sub) sub.textContent = `Código de 6 dígitos enviado para ${email}. Digite-o para ativar a conta.`;
-      mostrarToast(`[SIMULAÇÃO] Código de 6 dígitos gerado: ${codigoSimulado}`);
-      console.log(`[SIMULAÇÃO OTP] Código para ${email}: ${codigoSimulado}`);
+      try {
+        const res = await window.apiClient.register(email, password, name);
+        if (res.requerVerificacao) {
+          currentOtpEmail = email;
+          alternarAuthView('otp');
+          const sub = document.getElementById('otp-subtitle-text');
+          if (sub) sub.textContent = `Código de 6 dígitos enviado para ${email}. Digite-o para ativar sua conta.`;
+          if (res._codigoTesteDev) {
+            mostrarToast(`[DEV/TESTE] Código de confirmação: ${res._codigoTesteDev}`);
+          } else {
+            mostrarToast(res.mensagem || 'Conta criada! Digite o código de 6 dígitos enviado por e-mail.');
+          }
+        }
+      } catch (err) {
+        if (err.codigo === 'DEVICE_BLOCKED') {
+          alternarAuthView('blocked');
+          const hashEl = document.getElementById('blocked-device-fingerprint');
+          if (hashEl && err.payload && err.payload.deviceHash) {
+            hashEl.textContent = err.payload.deviceHash;
+          }
+          mostrarToast('Atenção: Dispositivo travado por segurança.');
+          return;
+        }
+        const msg = (err.message || '').toLowerCase();
+        if (msg.includes('failed to fetch') || msg.includes('networkerror') || !err.status) {
+          mostrarToast('Não foi possível conectar ao servidor backend (porta 8787). Inicie o servidor com "npm start".');
+          return;
+        }
+        mostrarToast(err.message || 'Erro ao criar conta.');
+      }
     }
 
     /**
-     * Confirma o código OTP de 6 dígitos (NÃO LIBERA ACESSO SEM CONFIRMAR)
+     * Confirma o código OTP de 6 dígitos exclusivamente através do Backend Gateway
      */
     async function confirmarCodigoOTP(event) {
       if (event) event.preventDefault();
@@ -2024,69 +1947,54 @@
         return;
       }
 
-      if (window.apiClient) {
-        try {
-          const res = await window.apiClient.verifyEmail(currentOtpEmail, code);
-          aplicarSessaoUsuario(res.usuario);
-          mostrarToast('E-mail confirmado com sucesso! Acesso à taverna liberado.');
-          return;
-        } catch (err) {
-          if (isBackendOfflineError(err)) {
-            console.info('Backend local offline na porta 8787. Validando código OTP no armazenamento local.');
-          } else {
-            mostrarToast(err.message || 'Código de 6 dígitos incorreto ou expirado.');
-            return;
-          }
-        }
-      }
-
-      // Validação estrita do código em modo simulado
-      const pendente = buscarContaSimuladaLocal(currentOtpEmail);
-      if (!pendente || pendente.codigoOtp !== code) {
-        mostrarToast('Código de 6 dígitos incorreto! Verifique o código gerado.');
+      if (!window.apiClient) {
+        mostrarToast('Erro: Cliente de API não inicializado.');
         return;
       }
 
-      pendente.emailVerified = true;
-      salvarContaSimuladaAtiva(pendente);
-      aplicarSessaoUsuario(pendente);
-      mostrarToast('E-mail confirmado com sucesso! Acesso liberado à taverna.');
+      try {
+        const res = await window.apiClient.verifyEmail(currentOtpEmail, code);
+        aplicarSessaoUsuario(res.usuario);
+        mostrarToast('E-mail confirmado com sucesso! Acesso à taverna liberado.');
+      } catch (err) {
+        const msg = (err.message || '').toLowerCase();
+        if (msg.includes('failed to fetch') || msg.includes('networkerror') || !err.status) {
+          mostrarToast('Não foi possível conectar ao servidor backend (porta 8787).');
+          return;
+        }
+        mostrarToast(err.message || 'Código de 6 dígitos incorreto ou expirado.');
+      }
     }
 
     /**
-     * Reenvia o código OTP de 6 dígitos
+     * Reenvia o código OTP de 6 dígitos exclusivamente através do Backend Gateway
      */
     async function reenviarCodigoOTP() {
       if (!currentOtpEmail) {
         mostrarToast('Informe seu e-mail no login ou cadastro primeiro.');
         return;
       }
-      if (window.apiClient) {
-        try {
-          const res = await window.apiClient.resendCode(currentOtpEmail);
-          if (res._codigoTesteDev) {
-            mostrarToast(`[DEV/TESTE] Novo código gerado: ${res._codigoTesteDev}`);
-          } else {
-            mostrarToast('Novo código de 6 dígitos enviado para seu e-mail!');
-          }
-          return;
-        } catch (err) {
-          if (isBackendOfflineError(err)) {
-            console.info('Backend local offline na porta 8787. Reenviando código OTP em modo local.');
-          } else {
-            mostrarToast(err.message || 'Erro ao reenviar código.');
-            return;
-          }
-        }
+
+      if (!window.apiClient) {
+        mostrarToast('Erro: Cliente de API não inicializado.');
+        return;
       }
 
-      const novoCodigo = String(Math.floor(100000 + Math.random() * 900000));
-      const pendente = buscarContaSimuladaLocal(currentOtpEmail);
-      if (pendente) {
-        pendente.codigoOtp = novoCodigo;
-        salvarContaSimuladaPendente(pendente);
+      try {
+        const res = await window.apiClient.resendCode(currentOtpEmail);
+        if (res._codigoTesteDev) {
+          mostrarToast(`[DEV/TESTE] Novo código gerado: ${res._codigoTesteDev}`);
+        } else {
+          mostrarToast('Novo código de 6 dígitos enviado para seu e-mail!');
+        }
+      } catch (err) {
+        const msg = (err.message || '').toLowerCase();
+        if (msg.includes('failed to fetch') || msg.includes('networkerror') || !err.status) {
+          mostrarToast('Não foi possível conectar ao servidor backend (porta 8787).');
+          return;
+        }
+        mostrarToast(err.message || 'Erro ao reenviar código.');
       }
-      mostrarToast(`[SIMULAÇÃO] Novo código gerado: ${novoCodigo}`);
     }
 
     /**
