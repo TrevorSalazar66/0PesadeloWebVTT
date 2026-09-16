@@ -7,8 +7,10 @@ import { dbQueries } from '../db/queries.js';
 import { LIMITS } from '../config/limits.js';
 import { checkRateLimit } from '../middleware/rateLimiter.js';
 import { applySecurityHeaders } from '../config/securityHeaders.js';
-import { randomUUID } from './cryptoService.js';
+import { randomUUID, signJWT, createAuthCookie } from './cryptoService.js';
 import { adminService } from './adminService.js';
+import { generateUniqueSimpleId, OFFICIAL_SYSTEMS, OFFICIAL_THEMES, CAMPAIGN_LIMITS, sanitizeText } from './campaignService.js';
+
 
 export async function handleSyncRequest(request, env, clientIp) {
   const origin = request.headers.get('Origin');
@@ -57,15 +59,124 @@ export async function handleSyncRequest(request, env, clientIp) {
     return new Response(JSON.stringify({ sucesso: false, erro: 'Campo "action" é obrigatório no gateway' }), { status: 400, headers });
   }
 
+  // 2.2 Interceptação de Conclusão Obrigatória de Perfil (Onboarding)
+  if (!user.profileCompleted || user.profileCompleted === 0) {
+    if (action !== 'profile.setup' && action !== 'profile.get') {
+      return new Response(JSON.stringify({
+        sucesso: false,
+        codigo: 'PROFILE_INCOMPLETE',
+        requerCriacaoPerfil: true,
+        erro: 'Criação de perfil pendente. Conclua seu perfil de aventureiro para liberar o acesso à Taverna.'
+      }), { status: 403, headers });
+    }
+  }
+
   // ----------------------------------------------------
   // DESPACHO INTERNO POR NAMESPACE
   // ----------------------------------------------------
   try {
     switch (action) {
-      // PERFIL
+      // PERFIL & ONBOARDING
       case 'profile.get': {
-        const profile = await dbQueries.getUserById(db, user.userId);
-        return new Response(JSON.stringify({ sucesso: true, dados: profile }), { status: 200, headers });
+        const userBasic = await dbQueries.getUserById(db, user.userId);
+        const profile = await dbQueries.getUserProfile(db, user.userId);
+        return new Response(JSON.stringify({
+          sucesso: true,
+          dados: {
+            ...userBasic,
+            perfil: profile || null
+          }
+        }), { status: 200, headers });
+      }
+
+      case 'profile.setup': {
+        const { name, nickname, ageGroup, bio, contacts = {}, avatarUrl = '', bannerUrl = '' } = data;
+
+        // 1. Validação de Nome
+        if (!name || typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 60) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'O nome deve ter entre 2 e 60 caracteres' }), { status: 400, headers });
+        }
+
+        // 2. Validação de Nickname
+        if (!nickname || typeof nickname !== 'string') {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'O nickname é obrigatório' }), { status: 400, headers });
+        }
+        const cleanNick = nickname.trim().replace(/^@+/, '');
+        if (!/^[a-zA-Z0-9_]{3,25}$/.test(cleanNick)) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'O nickname deve ter entre 3 e 25 caracteres (apenas letras, números e underlines)' }), { status: 400, headers });
+        }
+
+        // Verifica unicidade do Nickname
+        const existingNick = await dbQueries.getProfileByNickname(db, cleanNick);
+        if (existingNick && existingNick.user_id !== user.userId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: `O nickname @${cleanNick} já está sendo utilizado por outro aventureiro` }), { status: 409, headers });
+        }
+
+        // 3. Validação de Faixa Etária
+        const validAgeGroups = new Set(['-14', '14-17', '18-24', '25-34', '35+', '+18', '18+']);
+        if (!ageGroup || !validAgeGroups.has(String(ageGroup).trim())) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Selecione uma faixa etária válida' }), { status: 400, headers });
+        }
+
+        // 4. Validação e Sanitização da Bio (limite de 500 caracteres e escape HTML)
+        if (!bio || typeof bio !== 'string' || bio.trim().length === 0) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'A biografia de aventureiro é obrigatória' }), { status: 400, headers });
+        }
+        if (bio.trim().length > 500) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'A biografia não pode exceder 500 caracteres' }), { status: 400, headers });
+        }
+        const cleanBio = bio.trim().replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        // 5. Sanitização de Contatos Opcionais
+        const cleanContacts = {
+          whatsapp: typeof contacts?.whatsapp === 'string' ? contacts.whatsapp.trim().substring(0, 30) : '',
+          discord: typeof contacts?.discord === 'string' ? contacts.discord.trim().substring(0, 50) : '',
+          instagram: typeof contacts?.instagram === 'string' ? contacts.instagram.trim().replace(/^@+/, '').substring(0, 50) : ''
+        };
+
+        // 6. Persistência Atômica no Cloudflare D1
+        await dbQueries.saveUserProfile(db, {
+          userId: user.userId,
+          name: name.trim(),
+          nickname: cleanNick,
+          ageGroup: String(ageGroup).trim(),
+          bio: cleanBio,
+          contacts: cleanContacts,
+          avatarUrl: typeof avatarUrl === 'string' ? avatarUrl.trim() : '',
+          bannerUrl: typeof bannerUrl === 'string' ? bannerUrl.trim() : ''
+        });
+
+        // 7. Reemite Token JWT atualizado com profileCompleted: 1
+        const jwtSecret = env?.JWT_SECRET || 'arcana-super-secret-key-development-local-2026-vtt';
+        const exp = Math.floor(Date.now() / 1000) + LIMITS.JWT_EXPIRATION_SECONDS;
+        const updatedToken = await signJWT({
+          sub: user.userId,
+          email: user.email,
+          role: user.role,
+          displayName: name.trim(),
+          avatarUrl: typeof avatarUrl === 'string' ? avatarUrl.trim() : '',
+          emailVerified: 1,
+          profileCompleted: 1,
+          exp
+        }, jwtSecret);
+
+        headers.set('Set-Cookie', createAuthCookie(updatedToken, LIMITS.JWT_EXPIRATION_SECONDS));
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: 'Perfil forjado com sucesso! Bem-vindo à Taverna.',
+          perfil: {
+            userId: user.userId,
+            name: name.trim(),
+            nickname: cleanNick,
+            ageGroup: String(ageGroup).trim(),
+            bio: cleanBio,
+            contacts: cleanContacts,
+            avatarUrl: typeof avatarUrl === 'string' ? avatarUrl.trim() : '',
+            bannerUrl: typeof bannerUrl === 'string' ? bannerUrl.trim() : '',
+            role: user.role,
+            profileCompleted: 1
+          }
+        }), { status: 200, headers });
       }
 
       case 'profile.update': {
@@ -83,28 +194,104 @@ export async function handleSyncRequest(request, env, clientIp) {
         return new Response(JSON.stringify({ sucesso: true, dados: campaigns }), { status: 200, headers });
       }
 
-      case 'campaigns.create': {
-        const { name, systemId = 'retroforge-core', description = '' } = data;
-        if (!name || name.trim().length === 0) {
-          return new Response(JSON.stringify({ sucesso: false, erro: 'O nome da campanha é obrigatório' }), { status: 400, headers });
+      case 'campaigns.options': {
+        return new Response(JSON.stringify({
+          sucesso: true,
+          dados: {
+            systems: OFFICIAL_SYSTEMS,
+            themes: OFFICIAL_THEMES,
+            limits: CAMPAIGN_LIMITS
+          }
+        }), { status: 200, headers });
+      }
+
+      case 'campaigns.get': {
+        const { campaignId, simpleId } = data;
+        let campaign = null;
+        if (campaignId) {
+          campaign = await dbQueries.getCampaignById(db, campaignId);
+        } else if (simpleId) {
+          campaign = await dbQueries.getCampaignBySimpleId(db, simpleId);
         }
-        if (name.length > LIMITS.MAX_CAMPAIGN_NAME_LENGTH) {
-          return new Response(JSON.stringify({ sucesso: false, erro: `Nome da campanha excede o limite de ${LIMITS.MAX_CAMPAIGN_NAME_LENGTH} caracteres` }), { status: 400, headers });
+        if (!campaign) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada' }), { status: 404, headers });
+        }
+        const players = await dbQueries.getCampaignPlayers(db, campaign.id);
+        return new Response(JSON.stringify({
+          sucesso: true,
+          dados: { ...campaign, players }
+        }), { status: 200, headers });
+      }
+
+      case 'campaigns.create': {
+        // 1. Verificação Estrita de Permissão RBAC (Mestre, Admin ou Superadmin)
+        const userRole = String(user.role || '').toLowerCase();
+        const allowedRoles = ['mestre', 'admin', 'superadmin'];
+        if (!allowedRoles.includes(userRole)) {
+          return new Response(JSON.stringify({
+            sucesso: false,
+            erro: 'Apenas Mestres e Administradores possuem autorização para criar campanhas na Taverna.'
+          }), { status: 403, headers });
         }
 
+        const {
+          name,
+          systemId = 'custom',
+          themeId = 'dark-fantasy',
+          loreDescription = '',
+          imageUrl = '',
+          bannerUrl = '',
+          maxPlayers = 5
+        } = data;
+
+        if (!name || name.trim().length < CAMPAIGN_LIMITS.MIN_NAME_LENGTH) {
+          return new Response(JSON.stringify({
+            sucesso: false,
+            erro: `O nome da campanha deve ter pelo menos ${CAMPAIGN_LIMITS.MIN_NAME_LENGTH} caracteres`
+          }), { status: 400, headers });
+        }
+        if (name.trim().length > CAMPAIGN_LIMITS.MAX_NAME_LENGTH) {
+          return new Response(JSON.stringify({
+            sucesso: false,
+            erro: `O nome da campanha deve ter no máximo ${CAMPAIGN_LIMITS.MAX_NAME_LENGTH} caracteres`
+          }), { status: 400, headers });
+        }
+
+        // Validação do teto de jogadores (1 a 12)
+        const numPlayers = parseInt(maxPlayers, 10) || CAMPAIGN_LIMITS.DEFAULT_PLAYERS;
+        if (numPlayers < CAMPAIGN_LIMITS.MIN_PLAYERS || numPlayers > CAMPAIGN_LIMITS.MAX_PLAYERS_GLOBAL) {
+          return new Response(JSON.stringify({
+            sucesso: false,
+            erro: `O limite de jogadores deve ser entre ${CAMPAIGN_LIMITS.MIN_PLAYERS} e ${CAMPAIGN_LIMITS.MAX_PLAYERS_GLOBAL}`
+          }), { status: 400, headers });
+        }
+
+        const cleanLore = sanitizeText(loreDescription).substring(0, CAMPAIGN_LIMITS.MAX_LORE_LENGTH);
+        const cleanName = sanitizeText(name);
+
+        // Geração do ID simples místico único (Opção B: ex: TAVERNA-42)
+        const simpleId = await generateUniqueSimpleId(db);
         const campaignId = `cmp_${randomUUID().replace(/-/g, '').substring(0, 12)}`;
+
         await dbQueries.createCampaign(db, {
           id: campaignId,
-          name,
-          ownerId: user.userId, // RLS: Dono inviolável obtido do JWT
-          systemId,
-          description
+          simpleId,
+          name: cleanName,
+          ownerId: user.userId,
+          systemId: typeof systemId === 'string' ? systemId.trim() : 'custom',
+          themeId: typeof themeId === 'string' ? themeId.trim() : 'dark-fantasy',
+          loreDescription: cleanLore,
+          imageUrl: typeof imageUrl === 'string' ? imageUrl.trim() : '',
+          bannerUrl: typeof bannerUrl === 'string' ? bannerUrl.trim() : '',
+          maxPlayers: numPlayers
         });
+
+        const createdCampaign = await dbQueries.getCampaignById(db, campaignId);
 
         return new Response(JSON.stringify({
           sucesso: true,
-          mensagem: 'Campanha criada com sucesso!',
-          dados: { id: campaignId, name, ownerId: user.userId, systemId }
+          mensagem: 'Campanha forjada com sucesso!',
+          dados: createdCampaign
         }), { status: 201, headers });
       }
 
@@ -148,6 +335,15 @@ export async function handleSyncRequest(request, env, clientIp) {
       case 'admin.devices.unblock': {
         const { deviceHash } = data;
         const result = await adminService.unblockDevice(db, user, deviceHash);
+        if (result.error) {
+          return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
+        }
+        return new Response(JSON.stringify({ sucesso: true, mensagem: result.message }), { status: 200, headers });
+      }
+
+      case 'admin.user.setRole': {
+        const { targetUserId, role } = data;
+        const result = await adminService.changeUserRole(db, user, targetUserId, role);
         if (result.error) {
           return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
         }

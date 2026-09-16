@@ -107,6 +107,10 @@ export const apiClient = {
     return this.sync('profile.get');
   },
 
+  setupProfile({ name, nickname, ageGroup, bio, contacts = {}, avatarUrl = '', bannerUrl = '' }) {
+    return this.sync('profile.setup', { name, nickname, ageGroup, bio, contacts, avatarUrl, bannerUrl });
+  },
+
   updateProfile(displayName) {
     return this.sync('profile.update', { displayName });
   },
@@ -115,8 +119,16 @@ export const apiClient = {
     return this.sync('campaigns.list');
   },
 
-  createCampaign(name, systemId = 'retroforge-core', description = '') {
-    return this.sync('campaigns.create', { name, systemId, description });
+  getCampaignOptions() {
+    return this.sync('campaigns.options');
+  },
+
+  getCampaign(params = {}) {
+    return this.sync('campaigns.get', params);
+  },
+
+  createCampaign(campaignData = {}) {
+    return this.sync('campaigns.create', campaignData);
   },
 
   listCharacters() {
@@ -135,6 +147,10 @@ export const apiClient = {
 
   adminUnblockDevice(deviceHash) {
     return this.sync('admin.devices.unblock', { deviceHash });
+  },
+
+  adminSetUserRole(targetUserId, role) {
+    return this.sync('admin.user.setRole', { targetUserId, role });
   }
 };
 

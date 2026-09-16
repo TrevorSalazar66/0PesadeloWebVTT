@@ -27,19 +27,6 @@ export async function handleAuthRequest(request, env, clientIp) {
     }), { status: 429, headers });
   }
 
-  // 2. Verificação de Trava Permanente no Dispositivo (Anti-Sybil)
-  const deviceHash = await extractDeviceHash(request, clientIp);
-  const deviceCheck = await assertDeviceNotBlocked(db, deviceHash);
-  if (deviceCheck.blocked) {
-    return new Response(JSON.stringify({
-      sucesso: false,
-      bloqueado: true,
-      codigo: 'DEVICE_BLOCKED',
-      deviceHash,
-      erro: deviceCheck.motivo
-    }), { status: 403, headers });
-  }
-
   let body;
   try {
     body = await request.json();
@@ -53,6 +40,19 @@ export async function handleAuthRequest(request, env, clientIp) {
   // AÇÃO: CADASTRO DE NOVO USUÁRIO (COM VALIDAÇÃO DE E-MAIL E CÓDIGO OTP)
   // ----------------------------------------------------
   if (action === 'register') {
+    // Verificação de Trava Permanente no Dispositivo (Anti-Sybil — restrita exclusivamente à criação de novas contas)
+    const deviceHash = await extractDeviceHash(request, clientIp);
+    const deviceCheck = await assertDeviceNotBlocked(db, deviceHash);
+    if (deviceCheck.blocked) {
+      return new Response(JSON.stringify({
+        sucesso: false,
+        bloqueado: true,
+        codigo: 'DEVICE_BLOCKED',
+        deviceHash,
+        erro: deviceCheck.motivo
+      }), { status: 403, headers });
+    }
+
     const { email, password, displayName } = data;
 
     if (!email || !password || !displayName) {
@@ -98,15 +98,16 @@ export async function handleAuthRequest(request, env, clientIp) {
     const passwordHash = await hashPassword(password, salt);
     const userId = `usr_${randomUUID().replace(/-/g, '').substring(0, 12)}`;
 
-    // Cria a conta com e-mail pendente de verificação (email_verified = 0)
+    // Cria a conta com e-mail pendente de verificação (email_verified = 0, profile_completed = 0)
     await dbQueries.createUser(db, {
       id: userId,
       email: cleanEmail,
       passwordHash,
       salt,
       displayName: displayName.trim(),
-      role: 'Jogador',
+      role: 'jogador',
       emailVerified: 0,
+      profileCompleted: 0,
       authProvider: 'email'
     });
 
@@ -119,7 +120,7 @@ export async function handleAuthRequest(request, env, clientIp) {
       requerVerificacao: true,
       mensagem: 'Conta criada! Digite o código de 6 dígitos enviado para seu e-mail para ativar sua conta e liberar o acesso.',
       email: cleanEmail,
-      usuario: { id: userId, email: cleanEmail, displayName: displayName.trim(), role: 'Jogador', emailVerified: 0 },
+      usuario: { id: userId, email: cleanEmail, displayName: displayName.trim(), role: 'jogador', emailVerified: 0, profileCompleted: 0 },
       _codigoTesteDev: env?.ENVIRONMENT === 'test' ? code : undefined
     }), { status: 201, headers });
   }
@@ -159,6 +160,7 @@ export async function handleAuthRequest(request, env, clientIp) {
     await dbQueries.deleteEmailVerification(db, cleanEmail);
 
     const user = await dbQueries.getUserByEmail(db, cleanEmail);
+    const isProfileCompleted = user.profile_completed === 1;
     const exp = Math.floor(Date.now() / 1000) + LIMITS.JWT_EXPIRATION_SECONDS;
     const token = await signJWT({
       sub: user.id,
@@ -167,15 +169,27 @@ export async function handleAuthRequest(request, env, clientIp) {
       displayName: user.display_name,
       avatarUrl: user.avatar_url,
       emailVerified: 1,
+      profileCompleted: isProfileCompleted ? 1 : 0,
       exp
     }, jwtSecret);
 
-    // SOMENTE AGORA EMITIMOS O COOKIE SEGURO DE SESSÃO
+    // EMITIMOS O COOKIE SEGURO DE SESSÃO
     headers.set('Set-Cookie', createAuthCookie(token, LIMITS.JWT_EXPIRATION_SECONDS));
     return new Response(JSON.stringify({
       sucesso: true,
-      mensagem: 'E-mail confirmado com sucesso! Acesso à taverna liberado.',
-      usuario: { id: user.id, email: user.email, displayName: user.display_name, role: user.role, emailVerified: 1 }
+      mensagem: isProfileCompleted 
+        ? 'E-mail confirmado com sucesso! Acesso à taverna liberado.' 
+        : 'E-mail confirmado com sucesso! Conclua a criação do seu perfil de aventureiro.',
+      requerCriacaoPerfil: !isProfileCompleted,
+      usuario: {
+        id: user.id,
+        email: user.email,
+        displayName: user.display_name,
+        role: user.role,
+        avatarUrl: user.avatar_url,
+        emailVerified: 1,
+        profileCompleted: isProfileCompleted ? 1 : 0
+      }
     }), { status: 200, headers });
   }
 
@@ -249,6 +263,7 @@ export async function handleAuthRequest(request, env, clientIp) {
     }
 
     // Emissão do Token JWT para contas validadas
+    const isProfileCompleted = user.profile_completed === 1;
     const exp = Math.floor(Date.now() / 1000) + LIMITS.JWT_EXPIRATION_SECONDS;
     const token = await signJWT({
       sub: user.id,
@@ -257,6 +272,7 @@ export async function handleAuthRequest(request, env, clientIp) {
       displayName: user.display_name,
       avatarUrl: user.avatar_url,
       emailVerified: 1,
+      profileCompleted: isProfileCompleted ? 1 : 0,
       exp
     }, jwtSecret);
 
@@ -264,13 +280,15 @@ export async function handleAuthRequest(request, env, clientIp) {
     return new Response(JSON.stringify({
       sucesso: true,
       mensagem: 'Login realizado com sucesso!',
+      requerCriacaoPerfil: !isProfileCompleted,
       usuario: {
         id: user.id,
         email: user.email,
         displayName: user.display_name,
         role: user.role,
         avatarUrl: user.avatar_url,
-        emailVerified: 1
+        emailVerified: 1,
+        profileCompleted: isProfileCompleted ? 1 : 0
       }
     }), { status: 200, headers });
   }

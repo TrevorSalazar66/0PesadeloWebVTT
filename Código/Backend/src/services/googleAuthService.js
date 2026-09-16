@@ -94,7 +94,7 @@ export async function processGoogleCallback(request, env) {
       await dbQueries.linkGoogleAccount(db, existingByEmail.id, googleUser.sub, googleUser.picture || '');
       user = await dbQueries.getUserById(db, existingByEmail.id);
     } else {
-      // Cria nova conta com e-mail já verificado pelo Google
+      // Cria nova conta com e-mail já verificado pelo Google e perfil pendente
       const newUserId = `usr_${randomUUID().replace(/-/g, '').substring(0, 12)}`;
       await dbQueries.createUser(db, {
         id: newUserId,
@@ -102,8 +102,9 @@ export async function processGoogleCallback(request, env) {
         passwordHash: null,
         salt: null,
         displayName: googleUser.name || 'Aventureiro',
-        role: 'Jogador',
+        role: 'jogador',
         emailVerified: 1, // Pré-verificado pelo Google
+        profileCompleted: 0,
         authProvider: 'google',
         googleId: googleUser.sub,
         avatarUrl: googleUser.picture || ''
@@ -113,6 +114,7 @@ export async function processGoogleCallback(request, env) {
   }
 
   // 3. Emite Cookie Seguro de Sessão
+  const isProfileCompleted = user.profile_completed === 1;
   const exp = Math.floor(Date.now() / 1000) + LIMITS.JWT_EXPIRATION_SECONDS;
   const token = await signJWT({
     sub: user.id,
@@ -121,12 +123,14 @@ export async function processGoogleCallback(request, env) {
     displayName: user.display_name,
     avatarUrl: user.avatar_url,
     emailVerified: 1,
+    profileCompleted: isProfileCompleted ? 1 : 0,
     exp
   }, jwtSecret);
 
   const headers = new Headers();
   headers.set('Set-Cookie', createAuthCookie(token, LIMITS.JWT_EXPIRATION_SECONDS));
-  headers.set('Location', `${frontendBase}?login=google_success`);
+  const loginStatus = isProfileCompleted ? 'google_success' : 'google_profile_setup';
+  headers.set('Location', `${frontendBase}?login=${loginStatus}`);
 
   return new Response(null, { status: 302, headers });
 }

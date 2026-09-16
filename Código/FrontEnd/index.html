@@ -1015,6 +1015,434 @@
         width: calc(100% - 68px);
       }
     }
+    /* ==========================================================================
+       ESTILOS: CAMPANHAS (CARDS HORIZONTAIS, MODAL E DETALHES)
+       ========================================================================== */
+    .campaigns-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .btn-create-campaign {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold-primary));
+      color: var(--text-dark);
+      font-family: var(--font-title);
+      font-weight: 700;
+      font-size: 14px;
+      border: 1px solid var(--gold-hover);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(212, 163, 75, 0.25);
+      transition: var(--transition-normal);
+    }
+    .btn-create-campaign:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(212, 163, 75, 0.4);
+      filter: brightness(1.08);
+    }
+
+    /* Lista e Retângulos Horizontais */
+    .campaigns-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .campaign-horizontal-card {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      min-height: 110px;
+    }
+
+    .campaign-horizontal-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--gold-primary);
+      box-shadow: 0 10px 30px rgba(212, 163, 75, 0.2), 0 4px 15px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Banner de fundo com gradiente escuro protetor */
+    .campaign-card-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.28) saturate(1.2);
+      z-index: 1;
+      transition: transform 0.4s ease;
+    }
+    .campaign-horizontal-card:hover .campaign-card-bg {
+      transform: scale(1.03);
+    }
+
+    .campaign-card-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(16, 16, 29, 0.96) 0%, rgba(16, 16, 29, 0.88) 45%, rgba(16, 16, 29, 0.65) 100%);
+      z-index: 2;
+    }
+
+    /* Conteúdo do Card */
+    .campaign-card-inner {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 20px;
+    }
+
+    .campaign-card-avatar {
+      width: 76px;
+      height: 76px;
+      min-width: 76px;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--gold-primary);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 10px rgba(212, 163, 75, 0.25);
+      object-fit: cover;
+      background: var(--bg-surface);
+    }
+
+    .campaign-card-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .campaign-card-header-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .campaign-card-title {
+      font-family: var(--font-title);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 0;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badge-simple-id {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      background: rgba(212, 163, 75, 0.15);
+      border: 1px solid rgba(212, 163, 75, 0.4);
+      color: var(--gold-light);
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: var(--radius-pill);
+      letter-spacing: 0.5px;
+    }
+
+    .campaign-badges-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge-system {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      background: rgba(85, 60, 154, 0.25);
+      border: 1px solid rgba(159, 122, 234, 0.4);
+      color: #d6bcfa;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+    }
+
+    .badge-theme {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      background: rgba(183, 121, 31, 0.2);
+      border: 1px solid rgba(236, 178, 46, 0.35);
+      color: #fbd38d;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+    }
+
+    .campaign-lore-snippet {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .campaign-card-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      min-width: 140px;
+      padding-left: 12px;
+    }
+
+    .badge-players-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: var(--radius-pill);
+    }
+    .badge-players-count.full {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #f87171;
+    }
+
+    .campaign-action-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gold-light);
+      transition: gap 0.2s ease;
+    }
+    .campaign-horizontal-card:hover .campaign-action-hint {
+      gap: 8px;
+      color: var(--gold-hover);
+    }
+
+    /* Modal de Criação de Campanha Amplo */
+    .modal-card-large {
+      max-width: 780px !important;
+      width: 95%;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 28px !important;
+    }
+
+    .pool-selection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .pool-item-card {
+      position: relative;
+      border: 2px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      overflow: hidden;
+      aspect-ratio: 1;
+      transition: all 0.2s ease;
+      background: var(--bg-surface);
+    }
+    .pool-item-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .pool-item-card:hover {
+      border-color: rgba(212, 163, 75, 0.6);
+      transform: scale(1.04);
+    }
+    .pool-item-card.selected {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 12px rgba(212, 163, 75, 0.5);
+    }
+    .pool-item-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: var(--gold-primary);
+      color: var(--text-dark);
+      font-weight: 900;
+      font-size: 11px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pool-banner-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .pool-banner-card {
+      position: relative;
+      border: 2px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      overflow: hidden;
+      height: 72px;
+      transition: all 0.2s ease;
+      background: var(--bg-surface);
+    }
+    .pool-banner-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .pool-banner-card:hover {
+      border-color: rgba(212, 163, 75, 0.6);
+    }
+    .pool-banner-card.selected {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 12px rgba(212, 163, 75, 0.5);
+    }
+    .pool-banner-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: var(--gold-primary);
+      color: var(--text-dark);
+      font-weight: 900;
+      font-size: 11px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Seletor Numérico de Vagas */
+    .stepper-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 180px;
+    }
+    .stepper-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      color: var(--gold-light);
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .stepper-btn:hover {
+      background: var(--gold-primary);
+      color: var(--text-dark);
+      border-color: var(--gold-primary);
+    }
+    .stepper-input {
+      text-align: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--gold-light);
+    }
+
+    /* Tela Dedicada da Campanha */
+    .campaign-details-hero {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border-card);
+      min-height: 240px;
+      display: flex;
+      align-items: flex-end;
+      padding: 28px;
+      margin-bottom: 24px;
+      background-size: cover;
+      background-position: center;
+    }
+    .campaign-details-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, rgba(8, 8, 17, 0.95) 0%, rgba(8, 8, 17, 0.7) 60%, rgba(8, 8, 17, 0.4) 100%);
+      z-index: 1;
+    }
+    .campaign-details-hero-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    .campaign-details-avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--gold-primary);
+      box-shadow: 0 0 20px rgba(212, 163, 75, 0.35);
+      object-fit: cover;
+    }
+    .campaign-details-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 860px) {
+      .campaign-details-layout {
+        grid-template-columns: 1fr;
+      }
+      .campaign-horizontal-card {
+        padding: 14px;
+      }
+      .campaign-card-avatar {
+        width: 60px;
+        height: 60px;
+        min-width: 60px;
+      }
+      .campaign-card-meta {
+        align-items: flex-start;
+        padding-left: 0;
+      }
+      .campaign-card-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1208,6 +1636,110 @@
           Apenas um Administrador pode liberar este dispositivo através do Painel de Administração.
         </p>
         <button type="button" class="btn-secondary" style="width: 100%;" onclick="alternarAuthView('login')">Tentar Novamente</button>
+      </div>
+
+      <!-- SUBVIEW 5: FORJAR IDENTIDADE DE AVENTUREIRO (CRIAÇÃO DE PERFIL) -->
+      <div id="auth-subview-profile-setup" style="display: none;">
+        <h1 class="login-title">Forje sua Identidade</h1>
+        <p class="login-subtitle">Complete seus dados de aventureiro para adentrar a Taverna.</p>
+
+        <form id="form-profile-setup" onsubmit="concluirCriacaoPerfil(event); return false;">
+          <div class="form-group">
+            <label for="setup-name" class="form-label">Nome Completo ou de Exibição *</label>
+            <input 
+              type="text" 
+              id="setup-name" 
+              class="form-input" 
+              placeholder="Ex: Valerius Lunaprata" 
+              minlength="2" 
+              maxlength="60" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="setup-nickname" class="form-label">Nickname Único *</label>
+            <div style="position: relative; display: flex; align-items: center;">
+              <span style="position: absolute; left: 12px; color: var(--gold-primary); font-weight: 600;">@</span>
+              <input 
+                type="text" 
+                id="setup-nickname" 
+                class="form-input" 
+                style="padding-left: 30px;" 
+                placeholder="valerius_mago" 
+                minlength="3" 
+                maxlength="25" 
+                pattern="^[a-zA-Z0-9_]{3,25}$" 
+                title="De 3 a 25 caracteres: letras, números e underlines" 
+                required
+              >
+            </div>
+            <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">Apelido exclusivo para menções e convites na Taverna.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="setup-age-group" class="form-label">Faixa Etária *</label>
+            <select id="setup-age-group" class="form-input" required style="cursor: pointer;">
+              <option value="" disabled selected>Selecione sua faixa etária...</option>
+              <option value="-14">Menor de 14 anos</option>
+              <option value="14-17">14 a 17 anos</option>
+              <option value="18-24">18 a 24 anos</option>
+              <option value="25-34">25 a 34 anos</option>
+              <option value="35+">35 anos ou mais</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label for="setup-bio" class="form-label">Biografia Livre *</label>
+              <span id="setup-bio-counter" style="font-size: 11px; color: var(--gold-light);">0/500</span>
+            </div>
+            <textarea 
+              id="setup-bio" 
+              class="form-input" 
+              rows="3" 
+              maxlength="500" 
+              placeholder="Conte aos outros aventureiros um pouco sobre você, seu estilo de RPG ou experiência..." 
+              required 
+              style="resize: vertical;" 
+              oninput="atualizarContadorBio(this)"
+            ></textarea>
+          </div>
+
+          <!-- Seção de Contatos Opcionais -->
+          <div style="background: rgba(212, 163, 75, 0.04); border: 1px dashed var(--border-card); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Contatos Opcionais</div>
+            
+            <div class="form-group" style="margin-bottom: 8px;">
+              <label for="setup-contact-whatsapp" class="form-label" style="font-size: 11px;">WhatsApp (opcional)</label>
+              <input type="text" id="setup-contact-whatsapp" class="form-input" placeholder="(11) 99999-9999" maxlength="30" style="font-size: 12.5px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 8px;">
+              <label for="setup-contact-discord" class="form-label" style="font-size: 11px;">Discord (opcional)</label>
+              <input type="text" id="setup-contact-discord" class="form-input" placeholder="usuario#0000 ou @usuario" maxlength="50" style="font-size: 12.5px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="setup-contact-instagram" class="form-label" style="font-size: 11px;">Instagram (opcional)</label>
+              <input type="text" id="setup-contact-instagram" class="form-input" placeholder="@seu_perfil" maxlength="50" style="font-size: 12.5px;">
+            </div>
+          </div>
+
+          <!-- Avatar e Banner Reservados -->
+          <div style="background: var(--bg-input); border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 10px; margin-bottom: 20px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+              <circle cx="9" cy="9" r="2"/>
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+            </svg>
+            <span>Avatar e Banner: Em breve você poderá personalizar estandartes e brasões!</span>
+          </div>
+
+          <button type="submit" id="btn-submit-profile-setup" class="btn-gold">
+            Concluir e Adentrar a Taverna
+          </button>
+        </form>
       </div>
     </div>
   </main>
@@ -1408,22 +1940,43 @@
            TELA: CAMPANHAS
            ========================================== -->
       <section id="view-campanhas" class="view-section">
-        <header class="page-header">
-          <h2 class="page-title">Campanhas</h2>
-          <p class="page-subtitle">Suas mesas, aventuras e sagas em andamento.</p>
-        </header>
-
-        <div class="empty-state-box">
-          <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-            <line x1="9" y1="3" x2="9" y2="18"/>
-            <line x1="15" y1="6" x2="15" y2="21"/>
-          </svg>
-          <h3 class="empty-state-title">Nenhuma campanha ainda</h3>
-          <p class="empty-state-text">Peça ao seu Mestre para te adicionar a uma campanha pelo seu ID de usuário.</p>
-          <button class="btn-secondary" onclick="mostrarToast('Funcionalidade de criação de mesa conectará com o Backend futuramente.')">
-            + Criar Nova Campanha
+        <div class="campaigns-topbar">
+          <div>
+            <h2 class="page-title">Campanhas</h2>
+            <p class="page-subtitle">Suas mesas, aventuras e sagas em andamento.</p>
+          </div>
+          <button class="btn-create-campaign" id="btn-open-create-campaign" onclick="abrirModalCriarCampanha()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            + Forjar Nova Campanha
           </button>
+        </div>
+
+        <!-- Lista de Retângulos Horizontais -->
+        <div class="campaigns-list" id="campaigns-list-container">
+          <!-- Renderizado dinamicamente via JS -->
+          <div class="loading-indicator">
+            <div class="spinner"></div>
+            <span>Consultando as crônicas da Taverna...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           TELA DEDICADA: DETALHES DA CAMPANHA
+           ========================================== -->
+      <section id="view-campanha-detalhes" class="view-section">
+        <div style="margin-bottom: 20px;">
+          <button class="btn-secondary" onclick="navegarPara('campanhas')" style="display: inline-flex; align-items: center; gap: 8px;">
+            &larr; Voltar para Campanhas
+          </button>
+        </div>
+
+        <div id="campaign-details-content">
+          <!-- Renderizado dinamicamente via JS -->
         </div>
       </section>
 
@@ -1630,7 +2183,129 @@
           <em>Status:</em> Frontend desacoplado pronto para conexão futura com Cloudflare Workers e WebSockets.
         </p>
       </div>
-      <button class="btn-gold" style="margin: 0;" onclick="toggleModalAjuda()">Fechar</button>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: CRIAR NOVA CAMPANHA (FORJAR MESA)
+       ========================================================================== -->
+  <div class="modal-overlay" id="modal-criar-campanha" onclick="if(event.target === this) fecharModalCriarCampanha()">
+    <div class="modal-card modal-card-large">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+        <div>
+          <h3 class="modal-title" style="margin: 0; font-size: 1.5rem;">Forjar Nova Campanha</h3>
+          <p class="page-subtitle" style="margin: 4px 0 0 0; font-size: 13px;">
+            Convoque aventureiros, defina as regras e registre as lendas da sua mesa.
+          </p>
+        </div>
+        <button class="stepper-btn" onclick="fecharModalCriarCampanha()" title="Fechar" style="width: 32px; height: 32px; font-size: 14px;">✕</button>
+      </div>
+
+      <form id="form-criar-campanha" onsubmit="submeterCriacaoCampanha(event); return false;">
+        <!-- 1. Nome da Campanha -->
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="camp-input-name" class="form-label">
+            Nome da Campanha <span style="color: var(--gold-primary);">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="camp-input-name" 
+            class="form-input" 
+            placeholder="Ex: O Labirinto da Lua Negra" 
+            required 
+            minlength="3" 
+            maxlength="60"
+            oninput="atualizarPreviewCampanha()"
+          >
+        </div>
+
+        <!-- 2. Grid de Sistema, Tema e Vagas -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
+          <!-- Sistema de RPG -->
+          <div class="form-group">
+            <label for="camp-select-system" class="form-label">Sistema de RPG</label>
+            <select id="camp-select-system" class="form-input" onchange="atualizarPreviewCampanha()">
+              <option value="dnd5e">D&D 5ª Edição</option>
+              <option value="tormenta20">Tormenta 20</option>
+              <option value="cthulhu">Chamado de Cthulhu 7e</option>
+              <option value="ordem">Ordem Paranormal RPG</option>
+              <option value="custom" selected>Sistema Próprio / Livre</option>
+            </select>
+          </div>
+
+          <!-- Tema Narrativo -->
+          <div class="form-group">
+            <label for="camp-select-theme" class="form-label">Tema Narrativo</label>
+            <select id="camp-select-theme" class="form-input" onchange="atualizarPreviewCampanha()">
+              <option value="dark-fantasy" selected>Fantasia Sombria</option>
+              <option value="high-fantasy">Alta Fantasia Épica</option>
+              <option value="cosmic-horror">Terror Cósmico & Mistério</option>
+              <option value="cyberpunk">Cyberpunk & Sci-Fi</option>
+              <option value="investigation">Investigação Sobrenatural</option>
+            </select>
+          </div>
+
+          <!-- Vagas de Jogadores (Stepper 1 a 12) -->
+          <div class="form-group">
+            <label class="form-label">Vagas de Jogadores (Máx. 12)</label>
+            <div class="stepper-control">
+              <button type="button" class="stepper-btn" onclick="alterarVagasCampanha(-1)">−</button>
+              <input type="number" id="camp-input-players" class="form-input stepper-input" value="5" min="1" max="12" readonly>
+              <button type="button" class="stepper-btn" onclick="alterarVagasCampanha(1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Lore / Sinopse da Campanha -->
+        <div class="form-group" style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label for="camp-input-lore" class="form-label" style="margin: 0;">Lore e Prelúdio da Aventura</label>
+            <span id="camp-lore-counter" style="font-size: 11px; color: var(--gold-light);">0/2000</span>
+          </div>
+          <textarea 
+            id="camp-input-lore" 
+            class="form-input" 
+            rows="3" 
+            maxlength="2000" 
+            placeholder="Descreva o prelúdio da aventura, o cenário ou o chamado aos heróis..."
+            oninput="atualizarContadorLore(this); atualizarPreviewCampanha()"
+            style="resize: vertical; font-size: 13px;"
+          ></textarea>
+        </div>
+
+        <!-- 4. Galeria de Brasões / Avatares (Pool Pré-Pronta) -->
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Escolha o Brasão da Mesa</label>
+          <div class="pool-selection-grid" id="pool-avatars-container">
+            <!-- Gerado via JS ou estático -->
+          </div>
+        </div>
+
+        <!-- 5. Galeria de Banners Panorâmicos (Pool Pré-Pronta) -->
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label class="form-label">Escolha o Estandarte / Banner Panorâmico</label>
+          <div class="pool-banner-grid" id="pool-banners-container">
+            <!-- Gerado via JS ou estático -->
+          </div>
+        </div>
+
+        <!-- 6. Preview em Tempo Real do Card Horizontal -->
+        <div style="margin-bottom: 24px;">
+          <label class="form-label" style="display: flex; align-items: center; gap: 6px;">
+            <span>Prévia do Card na Taverna:</span>
+          </label>
+          <div id="camp-card-preview-wrapper" style="pointer-events: none;">
+            <!-- Renderizado dinamicamente -->
+          </div>
+        </div>
+
+        <!-- Rodapé com Botões -->
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+          <button type="button" class="btn-secondary" onclick="fecharModalCriarCampanha()">Cancelar</button>
+          <button type="submit" id="btn-submit-criar-campanha" class="btn-gold" style="padding: 12px 28px;">
+            Forjar Campanha
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1651,12 +2326,436 @@
        ========================================================================== -->
   <script>
     let currentOtpEmail = '';
+    let currentUser = null;
+
+    // Pools pré-definidas de Avatares e Banners em alta resolução (Dark Fantasy)
+    const CAMPAIGN_POOLS = {
+      avatars: [
+        { id: 'av_skull', url: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=250', label: 'Crânio Arcano' },
+        { id: 'av_dragon', url: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=250', label: 'Dragão Sombrio' },
+        { id: 'av_tome', url: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=250', label: 'Grimório Ancestral' },
+        { id: 'av_helmet', url: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=250', label: 'Elmo Guerreiro' },
+        { id: 'av_eye', url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=250', label: 'Olho Cósmico' },
+        { id: 'av_swords', url: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=250', label: 'Lâminas Rúnicas' }
+      ],
+      banners: [
+        { id: 'bn_dungeon', url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=900', label: 'Masmorra Sombria' },
+        { id: 'bn_castle', url: 'https://images.unsplash.com/photo-1519817650390-64a93db51149?w=900', label: 'Castelo em Ruínas' },
+        { id: 'bn_forest', url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=900', label: 'Floresta Amaldiçoada' },
+        { id: 'bn_tavern', url: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=900', label: 'Taverna Noturna' },
+        { id: 'bn_nebula', url: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=900', label: 'Vórtice Místico' },
+        { id: 'bn_mountains', url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900', label: 'Picos Gélidos' }
+      ],
+      systemsMap: {
+        'dnd5e': { label: 'D&D 5ª Edição', badge: 'D&D 5e' },
+        'tormenta20': { label: 'Tormenta 20', badge: 'Tormenta 20' },
+        'cthulhu': { label: 'Chamado de Cthulhu 7e', badge: 'Cthulhu 7e' },
+        'ordem': { label: 'Ordem Paranormal RPG', badge: 'Ordem Paranormal' },
+        'custom': { label: 'Sistema Próprio / Livre', badge: 'Sistema Próprio' }
+      },
+      themesMap: {
+        'dark-fantasy': { label: 'Fantasia Sombria', color: '#9b2c2c' },
+        'high-fantasy': { label: 'Alta Fantasia Épica', color: '#b7791f' },
+        'cosmic-horror': { label: 'Terror Cósmico & Mistério', color: '#553c9a' },
+        'cyberpunk': { label: 'Cyberpunk & Sci-Fi', color: '#0987a0' },
+        'investigation': { label: 'Investigação Sobrenatural', color: '#276749' }
+      }
+    };
+
+    let selectedCampAvatar = CAMPAIGN_POOLS.avatars[0].url;
+    let selectedCampBanner = CAMPAIGN_POOLS.banners[0].url;
+
+    /**
+     * Renderiza as opções visuais de Avatar e Banner dentro do Modal
+     */
+    function renderizarPoolsCampanha() {
+      const avatarContainer = document.getElementById('pool-avatars-container');
+      if (avatarContainer) {
+        avatarContainer.innerHTML = CAMPAIGN_POOLS.avatars.map((av) => `
+          <div class="pool-item-card ${av.url === selectedCampAvatar ? 'selected' : ''}" 
+               onclick="selecionarAvatarPool('${av.url}', this)" 
+               title="${av.label}">
+            <img src="${av.url}" alt="${av.label}" loading="lazy">
+          </div>
+        `).join('');
+      }
+
+      const bannerContainer = document.getElementById('pool-banners-container');
+      if (bannerContainer) {
+        bannerContainer.innerHTML = CAMPAIGN_POOLS.banners.map((bn) => `
+          <div class="pool-banner-card ${bn.url === selectedCampBanner ? 'selected' : ''}" 
+               onclick="selecionarBannerPool('${bn.url}', this)" 
+               title="${bn.label}">
+            <img src="${bn.url}" alt="${bn.label}" loading="lazy">
+          </div>
+        `).join('');
+      }
+    }
+
+    function selecionarAvatarPool(url, el) {
+      selectedCampAvatar = url;
+      document.querySelectorAll('.pool-item-card').forEach(c => c.classList.remove('selected'));
+      if (el) el.classList.add('selected');
+      atualizarPreviewCampanha();
+    }
+
+    function selecionarBannerPool(url, el) {
+      selectedCampBanner = url;
+      document.querySelectorAll('.pool-banner-card').forEach(c => c.classList.remove('selected'));
+      if (el) el.classList.add('selected');
+      atualizarPreviewCampanha();
+    }
+
+    function alterarVagasCampanha(delta) {
+      const input = document.getElementById('camp-input-players');
+      if (!input) return;
+      let val = parseInt(input.value, 10) || 5;
+      val = Math.min(Math.max(val + delta, 1), 12);
+      input.value = val;
+      atualizarPreviewCampanha();
+    }
+
+    function atualizarContadorLore(textarea) {
+      const counter = document.getElementById('camp-lore-counter');
+      if (!counter) return;
+      const len = textarea.value.length;
+      counter.textContent = `${len}/2000`;
+      if (len >= 1950) counter.style.color = '#ef4444';
+      else if (len >= 1700) counter.style.color = '#f59e0b';
+      else counter.style.color = 'var(--gold-light)';
+    }
+
+    function atualizarPreviewCampanha() {
+      const previewWrapper = document.getElementById('camp-card-preview-wrapper');
+      if (!previewWrapper) return;
+
+      const nameInput = document.getElementById('camp-input-name');
+      const systemSelect = document.getElementById('camp-select-system');
+      const themeSelect = document.getElementById('camp-select-theme');
+      const playersInput = document.getElementById('camp-input-players');
+      const loreInput = document.getElementById('camp-input-lore');
+
+      const name = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'O Labirinto da Lua Negra';
+      const systemKey = systemSelect ? systemSelect.value : 'custom';
+      const themeKey = themeSelect ? themeSelect.value : 'dark-fantasy';
+      const maxPlayers = playersInput ? playersInput.value : 5;
+      const lore = (loreInput && loreInput.value.trim()) ? loreInput.value.trim() : 'Uma nova saga se inicia na Taverna...';
+
+      const systemInfo = CAMPAIGN_POOLS.systemsMap[systemKey] || { label: 'Custom', badge: 'Custom' };
+      const themeInfo = CAMPAIGN_POOLS.themesMap[themeKey] || { label: 'Dark Fantasy', color: '#9b2c2c' };
+
+      previewWrapper.innerHTML = `
+        <div class="campaign-horizontal-card">
+          <div class="campaign-card-bg" style="background-image: url('${selectedCampBanner}');"></div>
+          <div class="campaign-card-gradient"></div>
+          <div class="campaign-card-inner">
+            <img src="${selectedCampAvatar}" alt="Brasão" class="campaign-card-avatar">
+            <div class="campaign-card-main">
+              <div class="campaign-card-header-row">
+                <h3 class="campaign-card-title">${name}</h3>
+                <span class="badge-simple-id">#TAVERNA-XX</span>
+              </div>
+              <div class="campaign-badges-row">
+                <span class="badge-system">${systemInfo.badge}</span>
+                <span class="badge-theme" style="border-color: ${themeInfo.color};">${themeInfo.label}</span>
+              </div>
+              <p class="campaign-lore-snippet">${lore}</p>
+            </div>
+            <div class="campaign-card-meta">
+              <span class="badge-players-count">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                </svg>
+                0 / ${maxPlayers} Vagas
+              </span>
+              <span class="campaign-action-hint">Acessar Mesa &rarr;</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function abrirModalCriarCampanha() {
+      // 1. Verificação Estrita de Permissão no Frontend (Mestres, Admins e Superadmins)
+      const role = String(currentUser?.role || '').toLowerCase();
+      if (role !== 'mestre' && role !== 'admin' && role !== 'superadmin') {
+        mostrarToast('Apenas Mestres e Administradores possuem autorização para forjar novas campanhas.');
+        return;
+      }
+
+      const modal = document.getElementById('modal-criar-campanha');
+      if (modal) {
+        modal.classList.add('active');
+        renderizarPoolsCampanha();
+        atualizarPreviewCampanha();
+      }
+    }
+
+    function fecharModalCriarCampanha() {
+      const modal = document.getElementById('modal-criar-campanha');
+      if (modal) modal.classList.remove('active');
+    }
+
+    async function submeterCriacaoCampanha(event) {
+      if (event) event.preventDefault();
+
+      const nameInput = document.getElementById('camp-input-name');
+      const systemSelect = document.getElementById('camp-select-system');
+      const themeSelect = document.getElementById('camp-select-theme');
+      const playersInput = document.getElementById('camp-input-players');
+      const loreInput = document.getElementById('camp-input-lore');
+      const btnSubmit = document.getElementById('btn-submit-criar-campanha');
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      const systemId = systemSelect ? systemSelect.value : 'custom';
+      const themeId = themeSelect ? themeSelect.value : 'dark-fantasy';
+      const maxPlayers = playersInput ? parseInt(playersInput.value, 10) : 5;
+      const loreDescription = loreInput ? loreInput.value.trim() : '';
+
+      if (name.length < 3 || name.length > 60) {
+        mostrarToast('O nome da campanha deve ter entre 3 e 60 caracteres.');
+        return;
+      }
+
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Forjando mesa...';
+      }
+
+      try {
+        if (window.apiClient) {
+          const res = await window.apiClient.createCampaign({
+            name,
+            systemId,
+            themeId,
+            loreDescription,
+            imageUrl: selectedCampAvatar,
+            bannerUrl: selectedCampBanner,
+            maxPlayers
+          });
+
+          if (res && res.sucesso) {
+            mostrarToast(`Campanha "${name}" forjada com sucesso! ID: #${res.dados?.simple_id || ''}`);
+            fecharModalCriarCampanha();
+            if (nameInput) nameInput.value = '';
+            if (loreInput) loreInput.value = '';
+            carregarCampanhas();
+          } else {
+            mostrarToast(res?.erro || 'Falha ao forjar campanha.');
+          }
+        }
+      } catch (err) {
+        mostrarToast(`Erro: ${err.message}`);
+      } finally {
+        if (btnSubmit) {
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = 'Forjar Campanha';
+        }
+      }
+    }
+
+    async function carregarCampanhas() {
+      const container = document.getElementById('campaigns-list-container');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="loading-indicator">
+          <div class="spinner"></div>
+          <span>Consultando as crônicas da Taverna...</span>
+        </div>
+      `;
+
+      try {
+        if (!window.apiClient) return;
+        const res = await window.apiClient.listCampaigns();
+
+        if (res && res.sucesso && Array.isArray(res.dados)) {
+          if (res.dados.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state-box">
+                <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                  <line x1="9" y1="3" x2="9" y2="18"/>
+                  <line x1="15" y1="6" x2="15" y2="21"/>
+                </svg>
+                <h3 class="empty-state-title">Nenhuma campanha encontrada</h3>
+                <p class="empty-state-text">Você ainda não faz parte de nenhuma mesa ou não forjou suas próprias campanhas.</p>
+                <button class="btn-create-campaign" onclick="abrirModalCriarCampanha()">
+                  + Forjar Nova Campanha
+                </button>
+              </div>
+            `;
+            return;
+          }
+
+          container.innerHTML = res.dados.map(camp => {
+            const systemInfo = CAMPAIGN_POOLS.systemsMap[camp.system_id] || { label: camp.system_id || 'Sistema Próprio', badge: camp.system_id || 'Custom' };
+            const themeInfo = CAMPAIGN_POOLS.themesMap[camp.theme_id] || { label: 'Dark Fantasy', color: '#9b2c2c' };
+            const avatar = camp.image_url || CAMPAIGN_POOLS.avatars[0].url;
+            const banner = camp.banner_url || CAMPAIGN_POOLS.banners[0].url;
+            const simpleId = camp.simple_id || 'CAMP-00';
+            const currentPlayers = camp.current_players || 0;
+            const maxPlayers = camp.max_players || 5;
+            const isFull = currentPlayers >= maxPlayers;
+
+            return `
+              <div class="campaign-horizontal-card" onclick="abrirDetalhesCampanha('${camp.id}')">
+                <div class="campaign-card-bg" style="background-image: url('${banner}');"></div>
+                <div class="campaign-card-gradient"></div>
+                <div class="campaign-card-inner">
+                  <img src="${avatar}" alt="Brasão" class="campaign-card-avatar" onerror="this.src='${CAMPAIGN_POOLS.avatars[0].url}'">
+                  <div class="campaign-card-main">
+                    <div class="campaign-card-header-row">
+                      <h3 class="campaign-card-title">${camp.name}</h3>
+                      <span class="badge-simple-id" title="Código de compartilhamento da mesa">#${simpleId}</span>
+                    </div>
+                    <div class="campaign-badges-row">
+                      <span class="badge-system">${systemInfo.badge}</span>
+                      <span class="badge-theme" style="border-color: ${themeInfo.color};">${themeInfo.label}</span>
+                      <span style="font-size: 11px; color: var(--text-dim);">• Cargo: <strong>${camp.user_role || 'Jogador'}</strong></span>
+                    </div>
+                    <p class="campaign-lore-snippet">${camp.lore_description || 'Sem lore ou sinopse informada para esta mesa.'}</p>
+                  </div>
+                  <div class="campaign-card-meta">
+                    <span class="badge-players-count ${isFull ? 'full' : ''}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                      </svg>
+                      ${currentPlayers} / ${maxPlayers} Vagas
+                    </span>
+                    <span class="campaign-action-hint">Acessar Mesa &rarr;</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        container.innerHTML = `
+          <div class="empty-state-box">
+            <p style="color: #ef4444;">Falha ao carregar campanhas: ${err.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    async function abrirDetalhesCampanha(campId) {
+      navegarPara('campanha-detalhes');
+      const detailsBox = document.getElementById('campaign-details-content');
+      if (!detailsBox) return;
+
+      detailsBox.innerHTML = `
+        <div class="loading-indicator">
+          <div class="spinner"></div>
+          <span>Consultando registros da mesa...</span>
+        </div>
+      `;
+
+      try {
+        if (!window.apiClient) return;
+        const res = await window.apiClient.getCampaign({ campaignId: campId });
+
+        if (res && res.sucesso && res.dados) {
+          const camp = res.dados;
+          const systemInfo = CAMPAIGN_POOLS.systemsMap[camp.system_id] || { label: camp.system_id, badge: 'Sistema' };
+          const themeInfo = CAMPAIGN_POOLS.themesMap[camp.theme_id] || { label: camp.theme_id, color: '#9b2c2c' };
+          const avatar = camp.image_url || CAMPAIGN_POOLS.avatars[0].url;
+          const banner = camp.banner_url || CAMPAIGN_POOLS.banners[0].url;
+          const players = Array.isArray(camp.players) ? camp.players : [];
+
+          detailsBox.innerHTML = `
+            <!-- Hero da Campanha -->
+            <div class="campaign-details-hero" style="background-image: url('${banner}');">
+              <div class="campaign-details-overlay"></div>
+              <div class="campaign-details-hero-content">
+                <img src="${avatar}" alt="Brasão" class="campaign-details-avatar" onerror="this.src='${CAMPAIGN_POOLS.avatars[0].url}'">
+                <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <h1 style="font-family: var(--font-title); font-size: 1.8rem; margin: 0; color: var(--gold-light);">
+                      ${camp.name}
+                    </h1>
+                    <button class="badge-simple-id" onclick="copiarCodigoConvite('${camp.simple_id}')" title="Clique para copiar código de convite" style="cursor: pointer; border: 1px solid var(--gold-primary);">
+                      📋 #${camp.simple_id}
+                    </button>
+                  </div>
+                  <div class="campaign-badges-row" style="margin-top: 8px;">
+                    <span class="badge-system">${systemInfo.badge}</span>
+                    <span class="badge-theme" style="border-color: ${themeInfo.color};">${themeInfo.label}</span>
+                    <span style="font-size: 12px; color: var(--text-muted);">Mestre da Mesa: <strong>${camp.owner_name || 'Desconhecido'}</strong></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Grade de Conteúdo da Mesa -->
+            <div class="campaign-details-layout">
+              <!-- Lore e Crônicas -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 24px;">
+                <h3 style="font-family: var(--font-title); color: var(--gold-light); margin-top: 0; margin-bottom: 14px; font-size: 1.2rem;">
+                  📜 Crônicas & Lore da Aventura
+                </h3>
+                <div style="color: var(--text-main); font-size: 14px; line-height: 1.65; white-space: pre-line;">
+                  ${camp.lore_description || 'Nenhum prelúdio narrativo registrado pelo Mestre desta mesa ainda.'}
+                </div>
+              </div>
+
+              <!-- Vagas e Aventureiros Convocados -->
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 20px;">
+                  <h4 style="font-family: var(--font-title); color: var(--gold-light); margin: 0 0 12px 0; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Aventureiros</span>
+                    <span class="badge-players-count" style="font-size: 11px;">
+                      ${players.length} / ${camp.max_players} Vagas
+                    </span>
+                  </h4>
+                  
+                  <div style="display: flex; flex-direction: column; gap: 10px;">
+                    ${players.map(p => `
+                      <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                          <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold-light);">
+                            ${(p.display_name || 'A')[0].toUpperCase()}
+                          </div>
+                          <div>
+                            <div style="font-size: 13px; font-weight: 600; color: var(--text-main);">${p.display_name}</div>
+                            <div style="font-size: 11px; color: var(--text-dim);">${p.nickname ? '@' + p.nickname : ''}</div>
+                          </div>
+                        </div>
+                        <span class="role-badge" style="font-size: 10px; padding: 2px 6px;">${p.role}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Botão de Ação: Adentrar o VTT -->
+                <button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="mostrarToast('Conexão WebSocket da Sala VTT em tempo real conectará na próxima fase!')">
+                  🎲 Adentrar Sessão no VTT
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      } catch (err) {
+        detailsBox.innerHTML = `<p style="color: #ef4444;">Erro ao carregar detalhes da campanha: ${err.message}</p>`;
+      }
+    }
+
+    function copiarCodigoConvite(simpleId) {
+      if (!simpleId) return;
+      navigator.clipboard.writeText(simpleId).then(() => {
+        mostrarToast(`Código #${simpleId} copiado para a área de transferência!`);
+      }).catch(() => {
+        mostrarToast(`Código: #${simpleId}`);
+      });
+    }
 
     /**
      * Alterna subviews dentro do painel de autenticação
      */
     function alternarAuthView(viewName) {
-      const views = ['login', 'register', 'otp', 'blocked'];
+      const views = ['login', 'register', 'otp', 'blocked', 'profile-setup'];
       views.forEach(v => {
         const el = document.getElementById(`auth-subview-${v}`);
         if (el) el.style.display = (v === viewName) ? 'block' : 'none';
@@ -1667,6 +2766,8 @@
         if (currentOtpEmail) {
           sessionStorage.setItem('arcana_auth_otp_email', currentOtpEmail);
         }
+      } else if (viewName === 'profile-setup') {
+        sessionStorage.setItem('arcana_auth_view', 'profile-setup');
       } else {
         sessionStorage.removeItem('arcana_auth_view');
         sessionStorage.removeItem('arcana_auth_otp_email');
@@ -1706,6 +2807,11 @@
         botaoAlvo.classList.add('active');
       }
 
+      // Se for a tela de campanhas, carrega lista dinâmica
+      if (telaId === 'campanhas') {
+        carregarCampanhas();
+      }
+
       // Se for a tela de administração, carrega lista de dispositivos bloqueados
       if (telaId === 'admin') {
         carregarDispositivosAdmin();
@@ -1718,9 +2824,134 @@
     }
 
     /**
+     * Atualiza o contador regressivo da Biografia
+     */
+    function atualizarContadorBio(textarea) {
+      const counter = document.getElementById('setup-bio-counter');
+      if (!counter) return;
+      const len = textarea.value.length;
+      counter.textContent = `${len}/500`;
+      if (len >= 480) {
+        counter.style.color = '#ef4444';
+      } else if (len >= 400) {
+        counter.style.color = '#f59e0b';
+      } else {
+        counter.style.color = 'var(--gold-light)';
+      }
+    }
+
+    /**
+     * Submete a Criação de Perfil para o Gateway /api/sync
+     */
+    async function concluirCriacaoPerfil(event) {
+      if (event) event.preventDefault();
+
+      const nameInput = document.getElementById('setup-name');
+      const nickInput = document.getElementById('setup-nickname');
+      const ageSelect = document.getElementById('setup-age-group');
+      const bioInput = document.getElementById('setup-bio');
+      const wppInput = document.getElementById('setup-contact-whatsapp');
+      const discInput = document.getElementById('setup-contact-discord');
+      const instaInput = document.getElementById('setup-contact-instagram');
+      const btnSubmit = document.getElementById('btn-submit-profile-setup');
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      const nickname = nickInput ? nickInput.value.trim().replace(/^@+/, '') : '';
+      const ageGroup = ageSelect ? ageSelect.value : '';
+      const bio = bioInput ? bioInput.value.trim() : '';
+
+      if (name.length < 2 || name.length > 60) {
+        mostrarToast('O nome deve ter entre 2 e 60 caracteres.');
+        return;
+      }
+      if (!/^[a-zA-Z0-9_]{3,25}$/.test(nickname)) {
+        mostrarToast('O nickname deve ter entre 3 e 25 caracteres (apenas letras, números e underlines).');
+        return;
+      }
+      if (!ageGroup) {
+        mostrarToast('Selecione sua faixa etária.');
+        return;
+      }
+      if (!bio) {
+        mostrarToast('A biografia é obrigatória.');
+        return;
+      }
+      if (bio.length > 500) {
+        mostrarToast('A biografia não pode exceder 500 caracteres.');
+        return;
+      }
+
+      const contacts = {
+        whatsapp: wppInput ? wppInput.value.trim() : '',
+        discord: discInput ? discInput.value.trim() : '',
+        instagram: instaInput ? instaInput.value.trim() : ''
+      };
+
+      if (!window.apiClient) {
+        mostrarToast('Erro: Cliente de API não inicializado.');
+        return;
+      }
+
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Forjando Perfil...';
+      }
+
+      try {
+        const res = await window.apiClient.setupProfile({
+          name,
+          nickname,
+          ageGroup,
+          bio,
+          contacts,
+          avatarUrl: '',
+          bannerUrl: ''
+        });
+
+        // Carrega dados locais do usuário e atualiza sessão
+        const rawUser = localStorage.getItem('arcana_user_data');
+        let usuario = {};
+        if (rawUser) {
+          try { usuario = JSON.parse(rawUser); } catch (_) {}
+        }
+        usuario.displayName = name;
+        usuario.name = name;
+        usuario.nickname = nickname;
+        usuario.profileCompleted = 1;
+        if (res.perfil && res.perfil.role) {
+          usuario.role = res.perfil.role;
+        }
+
+        sessionStorage.removeItem('arcana_auth_view');
+        mostrarToast('Perfil forjado com sucesso! Bem-vindo à Taverna.');
+        aplicarSessaoUsuario(usuario);
+      } catch (err) {
+        mostrarToast(err.message || 'Erro ao salvar perfil.');
+      } finally {
+        if (btnSubmit) {
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = 'Concluir e Adentrar a Taverna';
+        }
+      }
+    }
+
+    /**
      * Aplica sessão e dados do usuário na interface
      */
     function aplicarSessaoUsuario(usuario) {
+      currentUser = usuario;
+      if (!usuario.profileCompleted || usuario.profileCompleted === 0) {
+        document.getElementById('auth-container').style.display = 'flex';
+        document.getElementById('app-container').style.display = 'none';
+        alternarAuthView('profile-setup');
+        const setupName = document.getElementById('setup-name');
+        if (setupName && !setupName.value && (usuario.displayName || usuario.name)) {
+          setupName.value = usuario.displayName || usuario.name;
+        }
+        mostrarToast('Complete a criação do seu perfil de aventureiro para liberar a Taverna.');
+        return;
+      }
+
       document.getElementById('auth-container').style.display = 'none';
       document.getElementById('app-container').style.display = 'flex';
 
@@ -1735,12 +2966,19 @@
 
       const roleBadge = document.getElementById('badge-role-display');
       if (roleBadge) {
-        roleBadge.textContent = usuario.role === 'Admin' ? 'Administrador' : (usuario.role || 'Jogador');
+        const r = String(usuario.role || '').toLowerCase();
+        let label = 'Jogador';
+        if (r === 'superadmin') label = 'Superadmin';
+        else if (r === 'admin') label = 'Administrador';
+        else if (r === 'mestre') label = 'Mestre';
+        else if (r === 'assistente de mestre') label = 'Assistente de Mestre';
+        roleBadge.textContent = label;
       }
 
       const adminNav = document.getElementById('nav-item-admin');
       if (adminNav) {
-        adminNav.style.display = (usuario.role === 'Admin') ? 'block' : 'none';
+        const r = String(usuario.role || '').toLowerCase();
+        adminNav.style.display = (r === 'admin' || r === 'superadmin') ? 'block' : 'none';
       }
 
       try {
@@ -1860,8 +3098,17 @@
 
       try {
         const res = await window.apiClient.login(email, password);
-        aplicarSessaoUsuario(res.usuario);
-        mostrarToast(`Bem-vindo à taverna, ${res.usuario.displayName || 'aventureiro'}!`);
+        if (res.requerCriacaoPerfil || !res.usuario?.profileCompleted) {
+          alternarAuthView('profile-setup');
+          const setupName = document.getElementById('setup-name');
+          if (setupName && res.usuario && res.usuario.displayName) {
+            setupName.value = res.usuario.displayName;
+          }
+          mostrarToast('Conclua seu perfil de aventureiro para entrar na taverna.');
+        } else {
+          aplicarSessaoUsuario(res.usuario);
+          mostrarToast(`Bem-vindo à taverna, ${res.usuario.displayName || 'aventureiro'}!`);
+        }
       } catch (err) {
         if (err.codigo === 'EMAIL_NOT_VERIFIED' || (err.status === 403 && err.payload && err.payload.requerVerificacao)) {
           currentOtpEmail = email;
@@ -1984,8 +3231,17 @@
         const res = await window.apiClient.verifyEmail(currentOtpEmail, code);
         sessionStorage.removeItem('arcana_auth_view');
         sessionStorage.removeItem('arcana_auth_otp_email');
-        aplicarSessaoUsuario(res.usuario);
-        mostrarToast('E-mail confirmado com sucesso! Acesso à taverna liberado.');
+        if (res.requerCriacaoPerfil || !res.usuario?.profileCompleted) {
+          alternarAuthView('profile-setup');
+          const setupName = document.getElementById('setup-name');
+          if (setupName && res.usuario && res.usuario.displayName) {
+            setupName.value = res.usuario.displayName;
+          }
+          mostrarToast('E-mail confirmado! Agora forje sua identidade de aventureiro.');
+        } else {
+          aplicarSessaoUsuario(res.usuario);
+          mostrarToast('E-mail confirmado com sucesso! Acesso à taverna liberado.');
+        }
       } catch (err) {
         const msg = (err.message || '').toLowerCase();
         if (msg.includes('failed to fetch') || msg.includes('networkerror') || !err.status) {
@@ -2180,6 +3436,17 @@
     // Inicialização ao carregar a página
     window.addEventListener('DOMContentLoaded', () => {
       try {
+        // 1. Detecta retorno do Google com perfil pendente
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('login') === 'google_profile_setup') {
+          window.history.replaceState({}, document.title, window.location.pathname);
+          document.getElementById('auth-container').style.display = 'flex';
+          document.getElementById('app-container').style.display = 'none';
+          alternarAuthView('profile-setup');
+          mostrarToast('Conta do Google conectada! Complete seu perfil de aventureiro.');
+          return;
+        }
+
         const estaLogado = localStorage.getItem('arcana_user_logged') === 'true';
         if (estaLogado) {
           const rawUser = localStorage.getItem('arcana_user_data');
@@ -2196,7 +3463,7 @@
           document.getElementById('auth-container').style.display = 'flex';
           document.getElementById('app-container').style.display = 'none';
 
-          // Preserva a tela de confirmação de código OTP caso a página recarregue
+          // Preserva a tela de confirmação de código OTP ou de perfil caso a página recarregue
           const savedAuthView = sessionStorage.getItem('arcana_auth_view');
           const savedOtpEmail = sessionStorage.getItem('arcana_auth_otp_email');
           if (savedAuthView === 'otp' && savedOtpEmail) {
@@ -2204,6 +3471,8 @@
             alternarAuthView('otp');
             const sub = document.getElementById('otp-subtitle-text');
             if (sub) sub.textContent = `Código de 6 dígitos enviado para ${savedOtpEmail}. Digite-o para ativar sua conta.`;
+          } else if (savedAuthView === 'profile-setup') {
+            alternarAuthView('profile-setup');
           } else {
             alternarAuthView('login');
           }

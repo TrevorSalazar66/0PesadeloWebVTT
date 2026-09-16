@@ -129,7 +129,7 @@ async function runAllTests() {
       data: { email: 'jogador1@arcana.vtt', code: otpCodeJogador1 }
     })
   }), env, {});
-  const cookieJogador1 = resVerify1.headers.get('Set-Cookie')?.split(';')[0];
+  let cookieJogador1 = resVerify1.headers.get('Set-Cookie')?.split(';')[0];
   assert(resVerify1.status === 200, 'Confirmação OTP (/api/auth verify_email) ativou conta com sucesso (HTTP 200)');
   assert(cookieJogador1 && cookieJogador1.includes('arcana_session'), 'Cookie seguro emitido na confirmação do código');
 
@@ -146,13 +146,56 @@ async function runAllTests() {
   assert(resLogin.status === 200, 'Login (/api/auth login) aprovado após confirmação do e-mail (HTTP 200 OK)');
   assert(jsonLogin.usuario.displayName === 'Geralt de Rivia', 'Nome de exibição retornado corretamente');
 
-  // 1.4 Criar Campanha pelo Gateway /api/sync
-  const resCreateCamp = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+  // 1.3.1 Concluir Perfil Obrigatório (Onboarding)
+  const resSetupProfile = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieJogador1 },
+    body: JSON.stringify({
+      action: 'profile.setup',
+      data: {
+        name: 'Geralt de Rivia',
+        nickname: 'bruxo_geralt',
+        ageGroup: '35+',
+        bio: 'Caçador de monstros errante de Kaer Morhen.',
+        contacts: { discord: 'geralt#1234' }
+      }
+    })
+  }), env, {});
+  const jsonSetupProfile = await resSetupProfile.json();
+  assert(resSetupProfile.status === 200 && jsonSetupProfile.perfil.profileCompleted === 1, 'Criação obrigatória de perfil (/api/sync profile.setup) retornou HTTP 200');
+  cookieJogador1 = resSetupProfile.headers.get('Set-Cookie') || cookieJogador1;
+
+  // 1.4 Testar Restrição RBAC: Jogador comum não pode criar campanhas
+  const resCriarBloqueado = await worker.fetch(new Request('http://localhost:8787/api/sync', {
     method: 'POST',
     headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieJogador1 },
     body: JSON.stringify({
       action: 'campaigns.create',
       data: { name: 'A Busca pelo Cálice', systemId: 'tormenta20', description: 'Campanha de testes' }
+    })
+  }), env, {});
+  assert(resCriarBloqueado.status === 403, 'Restrição de Permissão: Jogador comum não pode criar campanha (HTTP 403)');
+
+  // Promove para Mestre para autorizar a criação da mesa
+  await db.prepare("UPDATE users SET role = 'mestre' WHERE email = 'jogador1@arcana.vtt'").run();
+  const tokenMestre = await signJWT({
+    sub: jsonLogin.usuario.id,
+    email: 'jogador1@arcana.vtt',
+    role: 'mestre',
+    displayName: 'Geralt de Rivia',
+    emailVerified: 1,
+    profileCompleted: 1,
+    exp: Math.floor(Date.now() / 1000) + 3600
+  }, JWT_SECRET);
+  cookieJogador1 = `arcana_session=${tokenMestre}`;
+
+  // 1.4.1 Criar Campanha pelo Gateway /api/sync autorizado como Mestre
+  const resCreateCamp = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieJogador1 },
+    body: JSON.stringify({
+      action: 'campaigns.create',
+      data: { name: 'A Busca pelo Cálice', systemId: 'tormenta20', loreDescription: 'Campanha de testes', maxPlayers: 5 }
     })
   }), env, {});
   const jsonCreateCamp = await resCreateCamp.json();
@@ -263,7 +306,23 @@ async function runAllTests() {
       data: { email: 'jogador2@arcana.vtt', code: jsonReg2._codigoTesteDev }
     })
   }), env, {});
-  const cookieJogador2 = resVerify2.headers.get('Set-Cookie')?.split(';')[0];
+  let cookieJogador2 = resVerify2.headers.get('Set-Cookie')?.split(';')[0];
+
+  // Jogador 2 conclui perfil antes de sincronizar
+  const resSetup2 = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieJogador2 },
+    body: JSON.stringify({
+      action: 'profile.setup',
+      data: {
+        name: 'Yennefer de Vengerberg',
+        nickname: 'feiticeira_yennefer',
+        ageGroup: '35+',
+        bio: 'Poderosa feiticeira de Vengerberg.'
+      }
+    })
+  }), env, {});
+  cookieJogador2 = resSetup2.headers.get('Set-Cookie')?.split(';')[0] || cookieJogador2;
 
   // Jogador 2 tenta listar campanhas (não deve ver a campanha criada pelo Jogador 1)
   const resListCamp2 = await worker.fetch(new Request('http://localhost:8787/api/sync', {
@@ -471,8 +530,25 @@ async function runAllTests() {
   const jsonQuartaConta = await resQuartaConta.json();
   assert(resQuartaConta.status === 403 && jsonQuartaConta.bloqueado === true, 'Trava Permanente Ativada: 4ª criação de conta no mesmo dispositivo bloqueada com HTTP 403');
 
-  // Tentativa subsequente de acesso/login pelo mesmo dispositivo travado
-  const resDispositivoTravado = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+  // Tentativa subsequente de criação de nova conta pelo mesmo dispositivo travado (deve ser barrada com 403)
+  const resTentativaNovoRegistro = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: {
+      'Origin': VALID_ORIGIN,
+      'Content-Type': 'application/json',
+      'X-Device-Fingerprint': FINGERPRINT_ATACANTE,
+      'CF-Connecting-IP': IP_ATACANTE_SYBIL
+    },
+    body: JSON.stringify({
+      action: 'register',
+      data: { email: 'sybil_bot_5@ataque.vtt', password: 'senhaSybil123!', displayName: 'Bot 5' }
+    })
+  }), env, {});
+  const jsonTentativaNovoRegistro = await resTentativaNovoRegistro.json();
+  assert(resTentativaNovoRegistro.status === 403 && jsonTentativaNovoRegistro.bloqueado === true, 'Acesso Negado: Dispositivo travado impedido de registrar novas contas (HTTP 403)');
+
+  // Login de uma conta já existente com credenciais válidas pelo dispositivo não deve sofrer trava de dispositivo
+  const resLoginContaExistente = await worker.fetch(new Request('http://localhost:8787/api/auth', {
     method: 'POST',
     headers: {
       'Origin': VALID_ORIGIN,
@@ -482,10 +558,10 @@ async function runAllTests() {
     },
     body: JSON.stringify({
       action: 'login',
-      data: { email: 'qualquer@arcana.vtt', password: 'senha' }
+      data: { email: 'jogador1@arcana.vtt', password: 'senhaForte123@' }
     })
   }), env, {});
-  assert(resDispositivoTravado.status === 403, 'Acesso Negado: Dispositivo permanentemente bloqueado rejeitado imediatamente em qualquer ação');
+  assert(resLoginContaExistente.status === 200, 'Permissão de Acesso: Contas já criadas conseguem efetuar login normalmente mesmo se o dispositivo possuir registros');
 
   // 4.8 Painel de Administração e Liberação de Dispositivo Bloqueado
   // Jogador comum tenta listar dispositivos bloqueados (deve receber 403)
@@ -498,7 +574,7 @@ async function runAllTests() {
 
   // Promove jogador1 para Admin no D1 para testar operações de governança
   await db.prepare("UPDATE users SET role = 'Admin' WHERE email = 'jogador1@arcana.vtt'").run();
-  const tokenAdmin = await signJWT({ sub: 'usr_admin_test', email: 'jogador1@arcana.vtt', role: 'Admin', emailVerified: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
+  const tokenAdmin = await signJWT({ sub: 'usr_admin_test', email: 'jogador1@arcana.vtt', role: 'Admin', emailVerified: 1, profileCompleted: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
   const cookieAdmin = `arcana_session=${tokenAdmin}`;
 
   // Admin lista dispositivos bloqueados

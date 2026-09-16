@@ -2,7 +2,7 @@
 -- SCHEMA OFICIAL DO CLOUDFLARE D1 (SQLITE) — RETROFORGE / ARCANA VTT
 -- ==============================================================================
 
--- 1. Tabela de Usuários / Aventureiros (Com suporte a Google OAuth e Status de E-mail)
+-- 1. Tabela de Usuários / Aventureiros (Com suporte a Google OAuth, Status de E-mail e Onboarding de Perfil)
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     email TEXT UNIQUE NOT NULL COLLATE NOCASE,
@@ -11,10 +11,26 @@ CREATE TABLE IF NOT EXISTS users (
     google_id TEXT UNIQUE,
     avatar_url TEXT DEFAULT '',
     display_name TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'Jogador' CHECK (role IN ('Jogador', 'Mestre', 'Admin')),
+    role TEXT NOT NULL DEFAULT 'jogador' CHECK (role IN ('jogador', 'assistente de mestre', 'mestre', 'admin', 'superadmin', 'Jogador', 'Mestre', 'Admin')),
     email_verified INTEGER NOT NULL DEFAULT 0,
+    profile_completed INTEGER NOT NULL DEFAULT 0,
     auth_provider TEXT NOT NULL DEFAULT 'email' CHECK (auth_provider IN ('email', 'google', 'both')),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 1.1 Tabela de Perfis Públicos e Sociais dos Aventureiros (Onboarding Obrigatório)
+CREATE TABLE IF NOT EXISTS user_profiles (
+    user_id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    nickname TEXT UNIQUE NOT NULL COLLATE NOCASE,
+    age_group TEXT NOT NULL,
+    bio TEXT NOT NULL,
+    contacts TEXT NOT NULL DEFAULT '{}',
+    avatar_url TEXT NOT NULL DEFAULT '',
+    banner_url TEXT NOT NULL DEFAULT '',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- 2. Tabela de Verificação de E-mails com Códigos OTP de 6 Dígitos
@@ -54,10 +70,15 @@ CREATE TABLE IF NOT EXISTS sessions (
 -- 5. Tabela de Campanhas / Mesas de RPG
 CREATE TABLE IF NOT EXISTS campaigns (
     id TEXT PRIMARY KEY,
+    simple_id TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     owner_id TEXT NOT NULL,
-    system_id TEXT NOT NULL DEFAULT 'retroforge-core',
-    description TEXT DEFAULT '',
+    system_id TEXT NOT NULL DEFAULT 'custom',
+    theme_id TEXT NOT NULL DEFAULT 'dark-fantasy',
+    lore_description TEXT NOT NULL DEFAULT '',
+    image_url TEXT NOT NULL DEFAULT '',
+    banner_url TEXT NOT NULL DEFAULT '',
+    max_players INTEGER NOT NULL DEFAULT 5 CHECK (max_players >= 1 AND max_players <= 12),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -88,9 +109,12 @@ CREATE TABLE IF NOT EXISTS characters (
 -- Índices de Alta Performance para RLS e Auditoria
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_google ON users(google_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_nickname ON user_profiles(nickname);
 CREATE INDEX IF NOT EXISTS idx_verifications_email ON email_verifications(email);
 CREATE INDEX IF NOT EXISTS idx_device_status ON device_security(status);
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_campaigns_owner ON campaigns(owner_id);
+CREATE INDEX IF NOT EXISTS idx_campaigns_simple_id ON campaigns(simple_id);
 CREATE INDEX IF NOT EXISTS idx_characters_user ON characters(user_id);
 CREATE INDEX IF NOT EXISTS idx_characters_campaign ON characters(campaign_id);
+

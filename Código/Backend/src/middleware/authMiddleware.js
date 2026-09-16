@@ -30,8 +30,9 @@ export async function authenticateRequest(request, env) {
   return {
     userId: decoded.sub,
     email: decoded.email,
-    role: decoded.role || 'Jogador',
+    role: decoded.role || 'jogador',
     displayName: decoded.displayName || 'Aventureiro',
-    emailVerified: decoded.emailVerified !== undefined ? decoded.emailVerified : 0
+    emailVerified: decoded.emailVerified !== undefined ? decoded.emailVerified : 0,
+    profileCompleted: decoded.profileCompleted !== undefined ? decoded.profileCompleted : 0
   };
 }

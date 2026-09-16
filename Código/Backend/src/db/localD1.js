@@ -10,7 +10,78 @@ import { dirname, join } from 'node:path';
 export function createLocalD1(dbPath = ':memory:') {
   const sqlite = new DatabaseSync(dbPath);
   
-  // Carrega e executa o esquema oficial de tabelas
+  // 1. Migrações preventivas para bancos de dados locais já existentes em disco
+  try {
+    const usersTableSql = sqlite.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='users'").get()?.sql || '';
+    if (usersTableSql) {
+      try {
+        sqlite.exec(`ALTER TABLE users ADD COLUMN profile_completed INTEGER NOT NULL DEFAULT 0;`);
+      } catch (_) {}
+
+      if (!usersTableSql.includes('superadmin')) {
+        sqlite.exec(`
+          PRAGMA foreign_keys = OFF;
+          CREATE TABLE users_new (
+              id TEXT PRIMARY KEY,
+              email TEXT UNIQUE NOT NULL COLLATE NOCASE,
+              password_hash TEXT,
+              salt TEXT,
+              google_id TEXT UNIQUE,
+              avatar_url TEXT DEFAULT '',
+              display_name TEXT NOT NULL,
+              role TEXT NOT NULL DEFAULT 'jogador' CHECK (role IN ('jogador', 'assistente de mestre', 'mestre', 'admin', 'superadmin', 'Jogador', 'Mestre', 'Admin')),
+              email_verified INTEGER NOT NULL DEFAULT 0,
+              profile_completed INTEGER NOT NULL DEFAULT 0,
+              auth_provider TEXT NOT NULL DEFAULT 'email' CHECK (auth_provider IN ('email', 'google', 'both')),
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          );
+          INSERT INTO users_new (id, email, password_hash, salt, google_id, avatar_url, display_name, role, email_verified, profile_completed, auth_provider, created_at)
+          SELECT id, email, password_hash, salt, google_id, avatar_url, display_name, role, email_verified, COALESCE(profile_completed, 0), auth_provider, created_at FROM users;
+          DROP TABLE users;
+          ALTER TABLE users_new RENAME TO users;
+          CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+          CREATE INDEX IF NOT EXISTS idx_users_google ON users(google_id);
+          PRAGMA foreign_keys = ON;
+        `);
+      }
+    }
+  } catch (err) {
+    console.warn('[LocalD1] Migração preventiva users:', err.message);
+  }
+
+  try {
+    const campTableSql = sqlite.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='campaigns'").get()?.sql || '';
+    if (campTableSql && !campTableSql.includes('simple_id')) {
+      sqlite.exec(`
+        PRAGMA foreign_keys = OFF;
+        CREATE TABLE campaigns_new (
+            id TEXT PRIMARY KEY,
+            simple_id TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            owner_id TEXT NOT NULL,
+            system_id TEXT NOT NULL DEFAULT 'custom',
+            theme_id TEXT NOT NULL DEFAULT 'dark-fantasy',
+            lore_description TEXT NOT NULL DEFAULT '',
+            image_url TEXT NOT NULL DEFAULT '',
+            banner_url TEXT NOT NULL DEFAULT '',
+            max_players INTEGER NOT NULL DEFAULT 5 CHECK (max_players >= 1 AND max_players <= 12),
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+        INSERT INTO campaigns_new (id, simple_id, name, owner_id, system_id, theme_id, lore_description, created_at)
+        SELECT id, 'ARCANA-' || hex(randomblob(2)), name, owner_id, COALESCE(system_id, 'custom'), 'dark-fantasy', COALESCE(description, ''), created_at FROM campaigns;
+        DROP TABLE campaigns;
+        ALTER TABLE campaigns_new RENAME TO campaigns;
+        CREATE INDEX IF NOT EXISTS idx_campaigns_owner ON campaigns(owner_id);
+        CREATE INDEX IF NOT EXISTS idx_campaigns_simple_id ON campaigns(simple_id);
+        PRAGMA foreign_keys = ON;
+      `);
+    }
+  } catch (err) {
+    console.warn('[LocalD1] Migração preventiva campaigns:', err.message);
+  }
+
+  // 2. Carrega e executa o esquema oficial de tabelas e índices
   try {
     const currentDir = dirname(fileURLToPath(import.meta.url));
     const schemaPath = join(currentDir, '../../../Banco/schema.sql');

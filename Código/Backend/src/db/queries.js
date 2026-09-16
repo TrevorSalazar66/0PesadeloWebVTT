@@ -13,7 +13,7 @@ export const dbQueries = {
   },
 
   async getUserById(db, id) {
-    const stmt = db.prepare('SELECT id, email, display_name, role, avatar_url, email_verified, auth_provider, created_at FROM users WHERE id = ?');
+    const stmt = db.prepare('SELECT id, email, display_name, role, avatar_url, email_verified, profile_completed, auth_provider, created_at FROM users WHERE id = ?');
     return await stmt.bind(id).first();
   },
 
@@ -22,10 +22,10 @@ export const dbQueries = {
     return await stmt.bind(googleId).first();
   },
 
-  async createUser(db, { id, email, passwordHash, salt, displayName, role = 'Jogador', emailVerified = 0, authProvider = 'email', googleId = null, avatarUrl = '' }) {
+  async createUser(db, { id, email, passwordHash, salt, displayName, role = 'jogador', emailVerified = 0, profileCompleted = 0, authProvider = 'email', googleId = null, avatarUrl = '' }) {
     const stmt = db.prepare(`
-      INSERT INTO users (id, email, password_hash, salt, display_name, role, email_verified, auth_provider, google_id, avatar_url)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (id, email, password_hash, salt, display_name, role, email_verified, profile_completed, auth_provider, google_id, avatar_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     return await stmt.bind(
       id,
@@ -35,6 +35,7 @@ export const dbQueries = {
       displayName.trim(),
       role,
       emailVerified,
+      profileCompleted,
       authProvider,
       googleId,
       avatarUrl
@@ -53,6 +54,66 @@ export const dbQueries = {
   async updateUserProfile(db, id, { displayName }) {
     const stmt = db.prepare('UPDATE users SET display_name = ? WHERE id = ?');
     return await stmt.bind(displayName.trim(), id).run();
+  },
+
+  async updateUserRole(db, userId, newRole) {
+    const stmt = db.prepare('UPDATE users SET role = ? WHERE id = ?');
+    return await stmt.bind(newRole, userId).run();
+  },
+
+  // ==========================================
+  // PERFIS DE AVENTUREIROS (ONBOARDING & SOCIAL)
+  // ==========================================
+  async getUserProfile(db, userId) {
+    const stmt = db.prepare('SELECT * FROM user_profiles WHERE user_id = ?');
+    const profile = await stmt.bind(userId).first();
+    if (profile && typeof profile.contacts === 'string') {
+      try {
+        profile.contacts = JSON.parse(profile.contacts);
+      } catch (_) {
+        profile.contacts = {};
+      }
+    }
+    return profile;
+  },
+
+  async getProfileByNickname(db, nickname) {
+    const stmt = db.prepare('SELECT user_id, nickname FROM user_profiles WHERE nickname = ? COLLATE NOCASE');
+    return await stmt.bind(nickname.trim()).first();
+  },
+
+  async saveUserProfile(db, { userId, name, nickname, ageGroup, bio, contacts = {}, avatarUrl = '', bannerUrl = '' }) {
+    const contactsJson = typeof contacts === 'string' ? contacts : JSON.stringify(contacts);
+    const stmtProfile = db.prepare(`
+      INSERT INTO user_profiles (user_id, name, nickname, age_group, bio, contacts, avatar_url, banner_url, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(user_id) DO UPDATE SET
+        name = excluded.name,
+        nickname = excluded.nickname,
+        age_group = excluded.age_group,
+        bio = excluded.bio,
+        contacts = excluded.contacts,
+        avatar_url = excluded.avatar_url,
+        banner_url = excluded.banner_url,
+        updated_at = datetime('now')
+    `);
+    await stmtProfile.bind(
+      userId,
+      name.trim(),
+      nickname.trim(),
+      ageGroup.trim(),
+      bio.trim(),
+      contactsJson,
+      avatarUrl.trim(),
+      bannerUrl.trim()
+    ).run();
+
+    const stmtUser = db.prepare(`
+      UPDATE users 
+      SET display_name = ?, profile_completed = 1, avatar_url = COALESCE(NULLIF(?, ''), avatar_url)
+      WHERE id = ?
+    `);
+    return await stmtUser.bind(name.trim(), avatarUrl.trim(), userId).run();
   },
 
   // ==========================================
@@ -170,27 +231,91 @@ export const dbQueries = {
   },
 
   // ==========================================
-  // CAMPANHAS (COM FILTRAGEM RLS POR USUÁRIO)
+  // CAMPANHAS (COM FILTRAGEM RLS POR USUÁRIO & CONTAGEM DE JOGADORES)
   // ==========================================
   async getCampaignsByUser(db, userId) {
     const stmt = db.prepare(`
       SELECT c.*, 
-        CASE WHEN c.owner_id = ? THEN 'Mestre' ELSE 'Jogador' END AS user_role
+        CASE WHEN c.owner_id = ? THEN 'Mestre' ELSE 'Jogador' END AS user_role,
+        (SELECT COUNT(*) FROM campaign_players cp2 WHERE cp2.campaign_id = c.id) AS current_players
       FROM campaigns c
       LEFT JOIN campaign_players cp ON c.id = cp.campaign_id AND cp.user_id = ?
       WHERE c.owner_id = ? OR cp.user_id = ?
+      GROUP BY c.id
       ORDER BY c.created_at DESC
     `);
     const res = await stmt.bind(userId, userId, userId, userId).all();
     return res.results || res;
   },
 
-  async createCampaign(db, { id, name, ownerId, systemId = 'retroforge-core', description = '' }) {
+  async getCampaignById(db, campaignId) {
     const stmt = db.prepare(`
-      INSERT INTO campaigns (id, name, owner_id, system_id, description)
-      VALUES (?, ?, ?, ?, ?)
+      SELECT c.*, 
+        u.display_name AS owner_name,
+        u.avatar_url AS owner_avatar,
+        (SELECT COUNT(*) FROM campaign_players cp WHERE cp.campaign_id = c.id) AS current_players
+      FROM campaigns c
+      JOIN users u ON c.owner_id = u.id
+      WHERE c.id = ?
     `);
-    return await stmt.bind(id, name.trim(), ownerId, systemId, description).run();
+    return await stmt.bind(campaignId).first();
+  },
+
+  async getCampaignBySimpleId(db, simpleId) {
+    const stmt = db.prepare(`
+      SELECT c.*, 
+        u.display_name AS owner_name,
+        (SELECT COUNT(*) FROM campaign_players cp WHERE cp.campaign_id = c.id) AS current_players
+      FROM campaigns c
+      JOIN users u ON c.owner_id = u.id
+      WHERE c.simple_id = ? COLLATE NOCASE
+    `);
+    return await stmt.bind(simpleId.trim()).first();
+  },
+
+  async getCampaignPlayers(db, campaignId) {
+    const stmt = db.prepare(`
+      SELECT cp.campaign_id, cp.user_id, cp.role, cp.joined_at,
+             u.display_name, u.avatar_url,
+             p.nickname
+      FROM campaign_players cp
+      JOIN users u ON cp.user_id = u.id
+      LEFT JOIN user_profiles p ON cp.user_id = p.user_id
+      WHERE cp.campaign_id = ?
+      ORDER BY cp.joined_at ASC
+    `);
+    const res = await stmt.bind(campaignId).all();
+    return res.results || res;
+  },
+
+  async createCampaign(db, { id, simpleId, name, ownerId, systemId = 'custom', themeId = 'dark-fantasy', loreDescription = '', imageUrl = '', bannerUrl = '', maxPlayers = 5 }) {
+    const stmtCamp = db.prepare(`
+      INSERT INTO campaigns (id, simple_id, name, owner_id, system_id, theme_id, lore_description, image_url, banner_url, max_players)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const info = await stmtCamp.bind(
+      id,
+      simpleId.trim(),
+      name.trim(),
+      ownerId,
+      systemId,
+      themeId,
+      loreDescription.trim(),
+      imageUrl.trim(),
+      bannerUrl.trim(),
+      Math.min(Math.max(Number(maxPlayers) || 5, 1), 12)
+    ).run();
+
+    // Vincula automaticamente o criador como Mestre da campanha
+    try {
+      const stmtPlayer = db.prepare(`
+        INSERT OR IGNORE INTO campaign_players (campaign_id, user_id, role)
+        VALUES (?, ?, 'Mestre')
+      `);
+      await stmtPlayer.bind(id, ownerId).run();
+    } catch (_) {}
+
+    return info;
   },
 
   // ==========================================
