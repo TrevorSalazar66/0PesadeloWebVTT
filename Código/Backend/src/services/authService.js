@@ -8,7 +8,7 @@ import { LIMITS } from '../config/limits.js';
 import { checkRateLimit } from '../middleware/rateLimiter.js';
 import { applySecurityHeaders } from '../config/securityHeaders.js';
 import { extractDeviceHash, assertDeviceNotBlocked, registerDeviceAccount } from './deviceSecurityService.js';
-import { sendEmailVerificationCode, hashVerificationCode, validateEmailFormat } from './emailService.js';
+import { sendEmailVerificationCode, hashVerificationCode, validateEmailFormat, verifyDomainMX } from './emailService.js';
 
 export async function handleAuthRequest(request, env, clientIp) {
   const origin = request.headers.get('Origin');
@@ -65,6 +65,13 @@ export async function handleAuthRequest(request, env, clientIp) {
       return new Response(JSON.stringify({ sucesso: false, erro: emailVal.reason }), { status: 400, headers });
     }
     const cleanEmail = emailVal.cleanEmail;
+    const domain = cleanEmail.split('@')[1];
+
+    // Validação de MX do domínio
+    const mxCheck = await verifyDomainMX(domain);
+    if (!mxCheck.valid) {
+      return new Response(JSON.stringify({ sucesso: false, erro: mxCheck.reason }), { status: 400, headers });
+    }
 
     if (password.length < LIMITS.MIN_PASSWORD_LENGTH || password.length > LIMITS.MAX_PASSWORD_LENGTH) {
       return new Response(JSON.stringify({ sucesso: false, erro: `A senha deve ter entre ${LIMITS.MIN_PASSWORD_LENGTH} e ${LIMITS.MAX_PASSWORD_LENGTH} caracteres` }), { status: 400, headers });
@@ -75,7 +82,7 @@ export async function handleAuthRequest(request, env, clientIp) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Este e-mail já está cadastrado na taverna' }), { status: 409, headers });
     }
 
-    // Registra tentativa no dispositivo e aciona trava permanente se exceder 3 contas
+    // Validação de Trava de Dispositivo
     const devReg = await registerDeviceAccount(db, deviceHash, clientIp);
     if (devReg.status === 'BLOCKED_PERMANENT') {
       return new Response(JSON.stringify({
@@ -104,7 +111,7 @@ export async function handleAuthRequest(request, env, clientIp) {
     });
 
     // Despacha código OTP de 6 dígitos
-    const { code, expiresAt } = await sendEmailVerificationCode(db, cleanEmail, env);
+    const { code } = await sendEmailVerificationCode(db, cleanEmail, env);
 
     // O acesso à plataforma permanece ESTRITAMENTE bloqueado. Não emitimos cookie de sessão aqui.
     return new Response(JSON.stringify({
@@ -113,7 +120,7 @@ export async function handleAuthRequest(request, env, clientIp) {
       mensagem: 'Conta criada! Digite o código de 6 dígitos enviado para seu e-mail para ativar sua conta e liberar o acesso.',
       email: cleanEmail,
       usuario: { id: userId, email: cleanEmail, displayName: displayName.trim(), role: 'Jogador', emailVerified: 0 },
-      _codigoTesteDev: env?.ENVIRONMENT === 'development' ? code : undefined
+      _codigoTesteDev: env?.ENVIRONMENT === 'test' ? code : undefined
     }), { status: 201, headers });
   }
 
@@ -193,11 +200,10 @@ export async function handleAuthRequest(request, env, clientIp) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Este e-mail já foi confirmado anteriormente. Faça login normalmente.' }), { status: 400, headers });
     }
 
-    const { code } = await sendEmailVerificationCode(db, cleanEmail, env);
+    await sendEmailVerificationCode(db, cleanEmail, env);
     return new Response(JSON.stringify({
       sucesso: true,
-      mensagem: 'Novo código de 6 dígitos enviado para seu e-mail!',
-      _codigoTesteDev: env?.ENVIRONMENT === 'development' ? code : undefined
+      mensagem: 'Novo código de 6 dígitos enviado para seu e-mail!'
     }), { status: 200, headers });
   }
 
@@ -230,18 +236,15 @@ export async function handleAuthRequest(request, env, clientIp) {
     // BLOQUEIO RIGOROSO: Contas não ativadas são impedidas de entrar e redirecionadas para validação OTP
     if (!user.email_verified || user.email_verified === 0) {
       const existingVer = await dbQueries.getEmailVerification(db, user.email);
-      let devCode = undefined;
       if (!existingVer || new Date(existingVer.expires_at).getTime() < Date.now()) {
-        const sent = await sendEmailVerificationCode(db, user.email, env);
-        devCode = sent.code;
+        await sendEmailVerificationCode(db, user.email, env);
       }
       return new Response(JSON.stringify({
         sucesso: false,
         codigo: 'EMAIL_NOT_VERIFIED',
         requerVerificacao: true,
         email: user.email,
-        erro: 'Esta conta ainda não foi ativada. Digite o código de 6 dígitos enviado para seu e-mail para liberar o acesso.',
-        _codigoTesteDev: env?.ENVIRONMENT === 'development' ? devCode : undefined
+        erro: 'Esta conta ainda não foi ativada. Digite o código de 6 dígitos enviado para seu e-mail para liberar o acesso.'
       }), { status: 403, headers });
     }
 

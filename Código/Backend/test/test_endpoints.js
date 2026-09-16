@@ -30,7 +30,7 @@ async function runAllTests() {
   const db = createLocalD1(':memory:');
   const JWT_SECRET = 'arcana-super-secret-key-development-local-2026-vtt';
   const env = {
-    ENVIRONMENT: 'development',
+    ENVIRONMENT: 'test',
     ALLOWED_ORIGINS: 'http://localhost:5500,http://127.0.0.1:5500,https://arcana.pages.dev',
     JWT_SECRET,
     DB: db
@@ -52,10 +52,10 @@ async function runAllTests() {
   const jsonHealth = await resHealth.json();
   assert(resHealth.status === 200 && jsonHealth.status === 'online', 'Health check ativo respondendo online');
 
-  // 1.1b Validação de Formato de E-mail Real (RFC 5322)
+  // 1.1b Validação de Formato de E-mail Real (RFC 5322 e Regras Anti-Fake)
   const resBadEmail1 = await worker.fetch(new Request('http://localhost:8787/api/auth', {
     method: 'POST',
-    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.1' },
     body: JSON.stringify({
       action: 'register',
       data: { email: '1222222222222', password: 'senhaValida123!', displayName: 'Nome' }
@@ -65,13 +65,33 @@ async function runAllTests() {
 
   const resBadEmail2 = await worker.fetch(new Request('http://localhost:8787/api/auth', {
     method: 'POST',
-    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.2' },
     body: JSON.stringify({
       action: 'register',
       data: { email: 'fake@tempmail.com', password: 'senhaValida123!', displayName: 'Nome' }
     })
   }), env, {});
   assert(resBadEmail2.status === 400, 'Validação de E-mail: Rejeitou provedor descartável/temporário com HTTP 400');
+
+  const resBadEmail3 = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.3' },
+    body: JSON.stringify({
+      action: 'register',
+      data: { email: '1222222222222@gmail.com', password: 'senhaValida123!', displayName: 'Nome' }
+    })
+  }), env, {});
+  assert(resBadEmail3.status === 400, 'Validação de E-mail: Rejeitou e-mail numérico/repetitivo do Gmail com HTTP 400');
+
+  const resBadEmail4 = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.4' },
+    body: JSON.stringify({
+      action: 'register',
+      data: { email: 'usuario@dominio-absolutamente-falso-9988771122.com', password: 'senhaValida123!', displayName: 'Nome' }
+    })
+  }), env, {});
+  assert(resBadEmail4.status === 400, 'Validação de E-mail: Rejeitou domínio inexistente sem registros MX com HTTP 400');
 
   // 1.2 Cadastro de Usuário (Conta requer ativação por OTP)
   const resReg = await worker.fetch(new Request('http://localhost:8787/api/auth', {

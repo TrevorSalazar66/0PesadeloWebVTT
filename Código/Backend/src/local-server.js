@@ -8,9 +8,15 @@ import { createLocalD1 } from './db/localD1.js';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import fs from 'node:fs';
+
 const PORT = 8787;
 const currentDir = dirname(fileURLToPath(import.meta.url));
-const dbFile = join(currentDir, '../arcana_local.sqlite');
+const dataDir = join(currentDir, '../.data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+const dbFile = join(dataDir, 'arcana_local.sqlite');
 
 // Instancia o Banco D1 SQLite Local
 const localD1 = createLocalD1(dbFile);

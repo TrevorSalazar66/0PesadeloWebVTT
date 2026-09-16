@@ -64,7 +64,77 @@ export function validateEmailFormat(email) {
     return { valid: false, reason: 'Provedores de e-mail descartáveis ou temporários não são aceitos. Use seu e-mail real.' };
   }
 
+  // 1. Detecção de caracteres excessivamente repetidos (ex: 2222, 1111, aaaa)
+  if (/([a-zA-Z0-9])\1{3,}/.test(user)) {
+    return { valid: false, reason: 'O e-mail contém caracteres repetidos em sequência (ex: 2222), indicando um endereço fictício.' };
+  }
+
+  // 2. Detecção de prefixos fictícios ou de teste óbvios
+  if (/^(teste|test|fake|falso|ficticio|asdf|qwerty|temp|lixo|naoexiste|invalido|random|exemplo|example|anonimo)/i.test(user)) {
+    return { valid: false, reason: 'Endereços fictícios ou de teste não são permitidos. Utilize seu e-mail real.' };
+  }
+
+  // 3. Regras para provedores de grande escala
+  if (domain === 'gmail.com' || domain === 'googlemail.com') {
+    if (/^\d+$/.test(user)) {
+      return { valid: false, reason: 'E-mails do Gmail não podem ser compostos apenas por números.' };
+    }
+    if (user.length < 6 || user.length > 30) {
+      return { valid: false, reason: 'O nome de usuário do Gmail deve ter entre 6 e 30 caracteres.' };
+    }
+  }
+
+  if (['outlook.com', 'hotmail.com', 'yahoo.com', 'yahoo.com.br', 'live.com'].includes(domain)) {
+    if (/^\d{6,}$/.test(user)) {
+      return { valid: false, reason: 'Endereços puramente numéricos não são aceitos neste provedor.' };
+    }
+  }
+
   return { valid: true, cleanEmail: clean };
+}
+
+/**
+ * Verifica se o domínio possui servidores MX ativos através de DNS over HTTPS (Cloudflare DoH)
+ * @param {string} domain 
+ * @returns {Promise<{ valid: boolean, reason?: string }>}
+ */
+export async function verifyDomainMX(domain) {
+  if (!domain) return { valid: false, reason: 'Domínio ausente.' };
+  const cleanDomain = domain.trim().toLowerCase();
+
+  // Domínios de teste local/ambiente fechado
+  if (cleanDomain.endsWith('.vtt') || cleanDomain.endsWith('.test') || cleanDomain.endsWith('.local') || cleanDomain === 'localhost') {
+    return { valid: true };
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+    const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(cleanDomain)}&type=MX`, {
+      headers: { 'accept': 'application/dns-json' },
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      return { valid: true };
+    }
+
+    const data = await res.json();
+    if (data.Status === 3) {
+      return { valid: false, reason: `O domínio "@${cleanDomain}" não existe na internet. Verifique se digitou corretamente.` };
+    }
+
+    const hasMx = Array.isArray(data.Answer) && data.Answer.some(a => a.type === 15);
+    if (!hasMx && (!data.Answer || data.Answer.length === 0)) {
+      return { valid: false, reason: `O domínio "@${cleanDomain}" não possui servidores válidos para recebimento de mensagens (registro MX inexistente).` };
+    }
+
+    return { valid: true };
+  } catch (e) {
+    return { valid: true };
+  }
 }
 
 /**

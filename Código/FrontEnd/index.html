@@ -1055,7 +1055,7 @@
           <span>ou continue com e-mail</span>
         </div>
 
-        <form id="form-login" onsubmit="fazerLogin(event)">
+        <form id="form-login" onsubmit="fazerLogin(event); return false;">
           <div class="form-group">
             <label for="login-email" class="form-label">E-mail</label>
             <input 
@@ -1111,7 +1111,7 @@
           <span>ou crie com e-mail</span>
         </div>
 
-        <form id="form-register" onsubmit="fazerRegistro(event)">
+        <form id="form-register" onsubmit="fazerRegistro(event); return false;">
           <div class="form-group">
             <label for="register-name" class="form-label">Nome de Exibição</label>
             <input 
@@ -1162,7 +1162,7 @@
         <h1 class="login-title">Confirmar E-mail</h1>
         <p class="login-subtitle" id="otp-subtitle-text">Digite o código de 6 dígitos enviado para seu e-mail.</p>
 
-        <form id="form-otp" onsubmit="confirmarCodigoOTP(event)">
+        <form id="form-otp" onsubmit="confirmarCodigoOTP(event); return false;">
           <div class="form-group">
             <label for="otp-code-input" class="form-label">Código de Verificação (6 dígitos)</label>
             <input 
@@ -1661,6 +1661,16 @@
         const el = document.getElementById(`auth-subview-${v}`);
         if (el) el.style.display = (v === viewName) ? 'block' : 'none';
       });
+
+      if (viewName === 'otp') {
+        sessionStorage.setItem('arcana_auth_view', 'otp');
+        if (currentOtpEmail) {
+          sessionStorage.setItem('arcana_auth_otp_email', currentOtpEmail);
+        }
+      } else {
+        sessionStorage.removeItem('arcana_auth_view');
+        sessionStorage.removeItem('arcana_auth_otp_email');
+      }
     }
 
     /**
@@ -1786,9 +1796,35 @@
         return { valid: false, reason: 'A extensão final do domínio do e-mail é inválida.' };
       }
 
-      const disposable = ['tempmail.com', 'mailinator.com', '10minutemail.com', 'guerrillamail.com', 'throwawaymail.com', 'fake.com', 'teste.com'];
+      const disposable = ['tempmail.com', 'mailinator.com', '10minutemail.com', 'guerrillamail.com', 'throwawaymail.com', 'fake.com', 'teste.com', 'trashmail.com', 'yopmail.com', 'dispostable.com'];
       if (disposable.includes(domain)) {
         return { valid: false, reason: 'Provedores de e-mail temporários ou descartáveis não são aceitos.' };
+      }
+
+      // 1. Detecção de caracteres excessivamente repetidos (ex: 2222, 1111, aaaa)
+      if (/([a-zA-Z0-9])\1{3,}/.test(user)) {
+        return { valid: false, reason: 'O e-mail contém caracteres repetidos em sequência (ex: 2222), indicando um endereço fictício.' };
+      }
+
+      // 2. Detecção de prefixos fictícios ou de teste óbvios
+      if (/^(teste|test|fake|falso|ficticio|asdf|qwerty|temp|lixo|naoexiste|invalido|random|exemplo|example|anonimo)/i.test(user)) {
+        return { valid: false, reason: 'Endereços fictícios ou de teste não são permitidos. Utilize seu e-mail real.' };
+      }
+
+      // 3. Regras para provedores populares
+      if (domain === 'gmail.com' || domain === 'googlemail.com') {
+        if (/^\d+$/.test(user)) {
+          return { valid: false, reason: 'E-mails do Gmail não podem ser compostos apenas por números.' };
+        }
+        if (user.length < 6 || user.length > 30) {
+          return { valid: false, reason: 'O nome de usuário do Gmail deve ter entre 6 e 30 caracteres.' };
+        }
+      }
+
+      if (['outlook.com', 'hotmail.com', 'yahoo.com', 'yahoo.com.br', 'live.com'].includes(domain)) {
+        if (/^\d{6,}$/.test(user)) {
+          return { valid: false, reason: 'Endereços puramente numéricos não são aceitos neste provedor.' };
+        }
       }
 
       return { valid: true, cleanEmail: clean };
@@ -1832,11 +1868,7 @@
           alternarAuthView('otp');
           const sub = document.getElementById('otp-subtitle-text');
           if (sub) sub.textContent = `Esta conta ainda não foi confirmada. Digite o código de 6 dígitos enviado para ${email}.`;
-          if (err.payload && err.payload._codigoTesteDev) {
-            mostrarToast(`[DEV/TESTE] Código de confirmação: ${err.payload._codigoTesteDev}`);
-          } else {
-            mostrarToast('Acesso bloqueado: confirme seu e-mail com o código de 6 dígitos.');
-          }
+          mostrarToast('Acesso bloqueado: confirme seu e-mail com o código de 6 dígitos.');
           return;
         }
         if (err.codigo === 'DEVICE_BLOCKED') {
@@ -1903,11 +1935,7 @@
           alternarAuthView('otp');
           const sub = document.getElementById('otp-subtitle-text');
           if (sub) sub.textContent = `Código de 6 dígitos enviado para ${email}. Digite-o para ativar sua conta.`;
-          if (res._codigoTesteDev) {
-            mostrarToast(`[DEV/TESTE] Código de confirmação: ${res._codigoTesteDev}`);
-          } else {
-            mostrarToast(res.mensagem || 'Conta criada! Digite o código de 6 dígitos enviado por e-mail.');
-          }
+          mostrarToast(res.mensagem || 'Conta criada! Digite o código de 6 dígitos enviado para seu e-mail.');
         }
       } catch (err) {
         if (err.codigo === 'DEVICE_BLOCKED') {
@@ -1954,6 +1982,8 @@
 
       try {
         const res = await window.apiClient.verifyEmail(currentOtpEmail, code);
+        sessionStorage.removeItem('arcana_auth_view');
+        sessionStorage.removeItem('arcana_auth_otp_email');
         aplicarSessaoUsuario(res.usuario);
         mostrarToast('E-mail confirmado com sucesso! Acesso à taverna liberado.');
       } catch (err) {
@@ -2165,7 +2195,18 @@
         } else {
           document.getElementById('auth-container').style.display = 'flex';
           document.getElementById('app-container').style.display = 'none';
-          alternarAuthView('login');
+
+          // Preserva a tela de confirmação de código OTP caso a página recarregue
+          const savedAuthView = sessionStorage.getItem('arcana_auth_view');
+          const savedOtpEmail = sessionStorage.getItem('arcana_auth_otp_email');
+          if (savedAuthView === 'otp' && savedOtpEmail) {
+            currentOtpEmail = savedOtpEmail;
+            alternarAuthView('otp');
+            const sub = document.getElementById('otp-subtitle-text');
+            if (sub) sub.textContent = `Código de 6 dígitos enviado para ${savedOtpEmail}. Digite-o para ativar sua conta.`;
+          } else {
+            alternarAuthView('login');
+          }
         }
       } catch (e) {
         document.getElementById('auth-container').style.display = 'flex';

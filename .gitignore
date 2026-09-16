@@ -28,3 +28,5 @@ build/
 # Bancos de dados locais SQLite
 *.sqlite
 *.sqlite3
+.data/
+**/.data/
