@@ -273,6 +273,197 @@ async function runAllTests() {
   assert(aceitosSync <= 120, `Teto de vazão respeitado: ${aceitosSync} requisições atendidas com sucesso antes da restrição`);
 
   // ============================================================================
+  // ETAPA 4: GOOGLE OAUTH, VERIFICAÇÃO OTP, TRAVA DE DISPOSITIVO E ADMIN
+  // ============================================================================
+  console.log('\n🔑 ─── ETAPA 4: GOOGLE OAUTH, VERIFICAÇÃO OTP, TRAVA SYBIL E ADMIN ─');
+
+  // 4.1 Cadastro com OTP de 6 dígitos
+  const resOtpReg = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'CF-Connecting-IP': '10.0.0.1' },
+    body: JSON.stringify({
+      action: 'register',
+      data: { email: 'jogador_otp@arcana.vtt', password: 'senhaSegura123!', displayName: 'Aventureiro OTP' }
+    })
+  }), env, {});
+  const jsonOtpReg = await resOtpReg.json();
+  assert(resOtpReg.status === 201 && jsonOtpReg.requerVerificacao === true, 'Cadastro com e-mail gera solicitação de verificação OTP (HTTP 201)');
+  assert(jsonOtpReg.usuario.emailVerified === 0, 'Usuário registrado com status de e-mail pendente (emailVerified === 0)');
+  const devCode = jsonOtpReg._codigoTesteDev;
+  assert(typeof devCode === 'string' && devCode.length === 6, 'Código OTP gerado possui exatamente 6 dígitos numéricos');
+
+  // 4.2 Rejeição de Código OTP Incorreto
+  const resWrongOtp = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'CF-Connecting-IP': '10.0.0.1' },
+    body: JSON.stringify({
+      action: 'verify_email',
+      data: { email: 'jogador_otp@arcana.vtt', code: '000000' }
+    })
+  }), env, {});
+  assert(resWrongOtp.status === 400, 'Rejeição de OTP incorreto com HTTP 400');
+
+  // 4.3 Sucesso na Validação do Código OTP Correto
+  const resCorrectOtp = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'CF-Connecting-IP': '10.0.0.1' },
+    body: JSON.stringify({
+      action: 'verify_email',
+      data: { email: 'jogador_otp@arcana.vtt', code: devCode }
+    })
+  }), env, {});
+  const jsonCorrectOtp = await resCorrectOtp.json();
+  assert(resCorrectOtp.status === 200 && jsonCorrectOtp.sucesso === true, 'Validação de código OTP correto respondendo HTTP 200');
+  assert(jsonCorrectOtp.usuario.emailVerified === 1, 'Conta ativada com sucesso (emailVerified === 1)');
+
+  // 4.4 Google OAuth: Redirecionamento para o Provedor
+  const resGoogleRedirect = await worker.fetch(new Request('http://localhost:8787/api/auth/google/redirect', {
+    method: 'GET',
+    headers: { 'Origin': VALID_ORIGIN }
+  }), env, {});
+  assert(resGoogleRedirect.status === 302, 'Google OAuth: Endpoint de redirect responde HTTP 302');
+  const redirectLocation = resGoogleRedirect.headers.get('Location');
+  assert(redirectLocation && redirectLocation.includes('accounts.google.com'), 'Redirecionamento aponta para os servidores oficiais do Google Accounts');
+
+  // 4.5 Google OAuth: Callback e Criação de Conta Pré-verificada
+  const resGoogleCallback = await worker.fetch(new Request('http://localhost:8787/api/auth/google/callback?code=mock_google_hero_777&mock_email=heroi.google@gmail.com', {
+    method: 'GET',
+    headers: { 'Origin': VALID_ORIGIN }
+  }), env, {});
+  assert(resGoogleCallback.status === 302, 'Google OAuth Callback responde HTTP 302 redirecionando para frontend');
+  const googleCookie = resGoogleCallback.headers.get('Set-Cookie');
+  assert(googleCookie && googleCookie.includes('arcana_session'), 'Google OAuth: Emissão de cookie seguro HttpOnly na sessão');
+  const googleUserInDb = await db.prepare('SELECT * FROM users WHERE email = ?').bind('heroi.google@gmail.com').first();
+  assert(googleUserInDb && googleUserInDb.email_verified === 1 && googleUserInDb.auth_provider === 'google', 'Usuário Google persistido no D1 com email_verified = 1');
+
+  // 4.6 Google OAuth: Unificação Automática de Contas com mesmo E-mail
+  // Cadastra usuário local primeiro
+  await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'CF-Connecting-IP': '10.0.0.2' },
+    body: JSON.stringify({
+      action: 'register',
+      data: { email: 'unificado@arcana.vtt', password: 'senhaUnificada123!', displayName: 'Gimli Anão' }
+    })
+  }), env, {});
+  // Entra com Google usando o mesmo e-mail
+  await worker.fetch(new Request('http://localhost:8787/api/auth/google/callback?code=mock_google_gimli_888&mock_email=unificado@arcana.vtt', {
+    method: 'GET',
+    headers: { 'Origin': VALID_ORIGIN }
+  }), env, {});
+  const userUnificado = await db.prepare('SELECT * FROM users WHERE email = ?').bind('unificado@arcana.vtt').first();
+  const totalContasEmail = await db.prepare('SELECT count(*) as total FROM users WHERE email = ?').bind('unificado@arcana.vtt').first();
+  assert(totalContasEmail.total === 1 && userUnificado.google_id === 'g_mock_google_gimli_888', 'Unificação de Conta: Mesclou Google ID na conta existente sem duplicar registros');
+
+  // 4.7 Trava Permanente de Dispositivo Anti-Sybil (> 3 contas em 24h)
+  console.log('  🛡️ Testando trava anti-Sybil de dispositivo por Device Fingerprint...');
+  const FINGERPRINT_ATACANTE = 'dev_sybil_test_fingerprint_abc123';
+  const IP_ATACANTE_SYBIL = '198.51.100.77';
+
+  // Criação de 3 contas pelo mesmo dispositivo (limite tolerado)
+  for (let c = 1; c <= 3; c++) {
+    await worker.fetch(new Request('http://localhost:8787/api/auth', {
+      method: 'POST',
+      headers: {
+        'Origin': VALID_ORIGIN,
+        'Content-Type': 'application/json',
+        'X-Device-Fingerprint': FINGERPRINT_ATACANTE,
+        'CF-Connecting-IP': IP_ATACANTE_SYBIL
+      },
+      body: JSON.stringify({
+        action: 'register',
+        data: { email: `sybil_bot_${c}@ataque.vtt`, password: 'senhaSybil123!', displayName: `Bot ${c}` }
+      })
+    }), env, {});
+  }
+
+  // 4ª tentativa de criação de conta: Deve disparar a trava permanente e retornar HTTP 403
+  const resQuartaConta = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: {
+      'Origin': VALID_ORIGIN,
+      'Content-Type': 'application/json',
+      'X-Device-Fingerprint': FINGERPRINT_ATACANTE,
+      'CF-Connecting-IP': IP_ATACANTE_SYBIL
+    },
+    body: JSON.stringify({
+      action: 'register',
+      data: { email: 'sybil_bot_4@ataque.vtt', password: 'senhaSybil123!', displayName: 'Bot 4' }
+    })
+  }), env, {});
+  const jsonQuartaConta = await resQuartaConta.json();
+  assert(resQuartaConta.status === 403 && jsonQuartaConta.bloqueado === true, 'Trava Permanente Ativada: 4ª criação de conta no mesmo dispositivo bloqueada com HTTP 403');
+
+  // Tentativa subsequente de acesso/login pelo mesmo dispositivo travado
+  const resDispositivoTravado = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: {
+      'Origin': VALID_ORIGIN,
+      'Content-Type': 'application/json',
+      'X-Device-Fingerprint': FINGERPRINT_ATACANTE,
+      'CF-Connecting-IP': IP_ATACANTE_SYBIL
+    },
+    body: JSON.stringify({
+      action: 'login',
+      data: { email: 'qualquer@arcana.vtt', password: 'senha' }
+    })
+  }), env, {});
+  assert(resDispositivoTravado.status === 403, 'Acesso Negado: Dispositivo permanentemente bloqueado rejeitado imediatamente em qualquer ação');
+
+  // 4.8 Painel de Administração e Liberação de Dispositivo Bloqueado
+  // Jogador comum tenta listar dispositivos bloqueados (deve receber 403)
+  const resListBloqueadosJogador = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieJogador1 },
+    body: JSON.stringify({ action: 'admin.devices.list' })
+  }), env, {});
+  assert(resListBloqueadosJogador.status === 403, 'Proteção RBAC: Usuário comum não pode acessar lista de dispositivos bloqueados (HTTP 403)');
+
+  // Promove jogador1 para Admin no D1 para testar operações de governança
+  await db.prepare("UPDATE users SET role = 'Admin' WHERE email = 'jogador1@arcana.vtt'").run();
+  const tokenAdmin = await signJWT({ sub: 'usr_admin_test', email: 'jogador1@arcana.vtt', role: 'Admin', exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
+  const cookieAdmin = `arcana_session=${tokenAdmin}`;
+
+  // Admin lista dispositivos bloqueados
+  const resListBloqueadosAdmin = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieAdmin },
+    body: JSON.stringify({ action: 'admin.devices.list' })
+  }), env, {});
+  const jsonListBloqueados = await resListBloqueadosAdmin.json();
+  assert(resListBloqueadosAdmin.status === 200, 'Painel Admin: Listagem de dispositivos bloqueados retornou HTTP 200');
+  const dispositivoEncontrado = jsonListBloqueados.dados.find(d => d.device_hash === FINGERPRINT_ATACANTE);
+  assert(dispositivoEncontrado && dispositivoEncontrado.status === 'BLOCKED_PERMANENT', 'Dispositivo atacante consta na lista com status BLOCKED_PERMANENT');
+
+  // Admin libera dispositivo bloqueado (1-clique)
+  const resDesbloqueio = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieAdmin },
+    body: JSON.stringify({
+      action: 'admin.devices.unblock',
+      data: { deviceHash: FINGERPRINT_ATACANTE }
+    })
+  }), env, {});
+  const jsonDesbloqueio = await resDesbloqueio.json();
+  assert(resDesbloqueio.status === 200 && jsonDesbloqueio.sucesso === true, 'Painel Admin: Desbloqueio de dispositivo em 1-clique concluído com sucesso');
+
+  // Dispositivo liberado agora consegue autenticar normalmente
+  const resDispositivoLiberado = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: {
+      'Origin': VALID_ORIGIN,
+      'Content-Type': 'application/json',
+      'X-Device-Fingerprint': FINGERPRINT_ATACANTE,
+      'CF-Connecting-IP': IP_ATACANTE_SYBIL
+    },
+    body: JSON.stringify({
+      action: 'login',
+      data: { email: 'sybil_bot_1@ataque.vtt', password: 'senhaSybil123!' }
+    })
+  }), env, {});
+  assert(resDispositivoLiberado.status === 200, 'Restauração de Acesso: Dispositivo liberado pelo admin volta a operar normalmente');
+
+  // ============================================================================
   // RELATÓRIO E CONCLUSÃO
   // ============================================================================
   console.log('\n================================================================');

@@ -8,6 +8,7 @@ import { LIMITS } from '../config/limits.js';
 import { checkRateLimit } from '../middleware/rateLimiter.js';
 import { applySecurityHeaders } from '../config/securityHeaders.js';
 import { randomUUID } from './cryptoService.js';
+import { adminService } from './adminService.js';
 
 export async function handleSyncRequest(request, env, clientIp) {
   const origin = request.headers.get('Origin');
@@ -124,6 +125,24 @@ export async function handleSyncRequest(request, env, clientIp) {
           mensagem: 'Personagem criado com sucesso!',
           dados: { id: charId, name, userId: user.userId }
         }), { status: 201, headers });
+      }
+
+      // GOVERNANÇA E ADMINISTRAÇÃO (EXCLUSIVO PARA ROLE === 'Admin')
+      case 'admin.devices.list': {
+        const result = await adminService.listBlockedDevices(db, user);
+        if (result.error) {
+          return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
+        }
+        return new Response(JSON.stringify({ sucesso: true, dados: result.data }), { status: 200, headers });
+      }
+
+      case 'admin.devices.unblock': {
+        const { deviceHash } = data;
+        const result = await adminService.unblockDevice(db, user, deviceHash);
+        if (result.error) {
+          return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
+        }
+        return new Response(JSON.stringify({ sucesso: true, mensagem: result.message }), { status: 200, headers });
       }
 
       default:

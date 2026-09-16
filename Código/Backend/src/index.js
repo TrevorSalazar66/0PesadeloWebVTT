@@ -1,6 +1,6 @@
 /**
  * Ponto de Entrada Principal (Gateway Cloudflare Worker) — Arcana VTT
- * Apenas 2 endpoints HTTP (/api/auth e /api/sync) e 1 endpoint WebSocket (/ws/room)
+ * Endpoints HTTP mínimos (/api/auth, /api/sync), rotas OAuth (/api/auth/google/*) e WebSocket (/ws/room)
  */
 
 import { validateRequestSecurity } from './middleware/validator.js';
@@ -8,6 +8,7 @@ import { handleAuthRequest } from './services/authService.js';
 import { handleSyncRequest } from './services/syncService.js';
 import { handleWebSocketUpgrade } from './services/roomService.js';
 import { applySecurityHeaders } from './config/securityHeaders.js';
+import { getGoogleOAuthUrl, processGoogleCallback } from './services/googleAuthService.js';
 
 export default {
   async fetch(request, env, ctx) {
@@ -24,7 +25,17 @@ export default {
     }
 
     try {
-      // 2. Roteamento Estrito dos 2 Endpoints Mínimos e WebSocket
+      // 2. Google OAuth 2.0 (Redirecionamento e Callback)
+      if (url.pathname === '/api/auth/google/redirect') {
+        const { url: googleUrl } = getGoogleOAuthUrl(env, request.url);
+        return Response.redirect(googleUrl, 302);
+      }
+
+      if (url.pathname === '/api/auth/google/callback') {
+        return await processGoogleCallback(request, env);
+      }
+
+      // 3. Autenticação e Credenciais (/api/auth)
       if (url.pathname === '/api/auth') {
         if (request.method !== 'POST') {
           return new Response('Método não permitido', { status: 405 });
@@ -32,6 +43,7 @@ export default {
         return await handleAuthRequest(request, env, clientIp);
       }
 
+      // 4. Gateway Unificado RPC (/api/sync)
       if (url.pathname === '/api/sync') {
         if (request.method !== 'POST') {
           return new Response('Método não permitido', { status: 405 });
@@ -39,6 +51,7 @@ export default {
         return await handleSyncRequest(request, env, clientIp);
       }
 
+      // 5. WebSocket para a Mesa em Tempo Real (/ws/room)
       if (url.pathname === '/ws/room') {
         return await handleWebSocketUpgrade(request, env);
       }
@@ -51,7 +64,7 @@ export default {
           status: 'online',
           servico: 'Arcana VTT Backend Gateway',
           ambiente: env?.ENVIRONMENT || 'production',
-          endpoints: ['/api/auth', '/api/sync', '/ws/room']
+          endpoints: ['/api/auth', '/api/sync', '/ws/room', '/api/auth/google/redirect', '/api/auth/google/callback']
         }), { status: 200, headers });
       }
 

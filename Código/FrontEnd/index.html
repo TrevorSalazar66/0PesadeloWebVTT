@@ -224,6 +224,171 @@
       text-decoration: underline;
     }
 
+    /* Botão Google OAuth & Divisor */
+    .btn-google {
+      width: 100%;
+      background: #181829;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      color: #ffffff;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-google:hover {
+      background: #202035;
+      border-color: var(--border-gold);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 20px;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .auth-divider span {
+      padding: 0 12px;
+    }
+
+    .otp-input-field {
+      text-align: center;
+      font-size: 24px;
+      font-family: monospace;
+      letter-spacing: 8px;
+      padding: 12px;
+    }
+
+    /* Estilos do Painel de Administração */
+    .admin-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .admin-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .admin-card-title {
+      font-family: var(--font-title);
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .badge-total-blocked {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .admin-table th {
+      padding: 12px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      border-bottom: 1px solid var(--border-card);
+    }
+
+    .admin-table td {
+      padding: 14px;
+      font-size: 13.5px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    .admin-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .device-hash-cell {
+      font-family: monospace;
+      color: var(--gold-light);
+      font-size: 12.5px;
+    }
+
+    .badge-blocked-pill {
+      display: inline-block;
+      padding: 3px 8px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: var(--radius-pill);
+    }
+
+    .btn-unblock {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #10b981;
+      padding: 6px 14px;
+      border-radius: var(--radius-md);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-unblock:hover {
+      background: #10b981;
+      color: #052e16;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .table-empty-msg {
+      text-align: center;
+      padding: 32px !important;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
     /* ==========================================================================
        3. ESTRUTURA DO APLICATIVO AUTENTICADO
        ========================================================================== */
@@ -870,43 +1035,180 @@
         </svg>
       </div>
 
-      <h1 class="login-title">Entrar na taverna</h1>
-      <p class="login-subtitle">Acesse sua conta para retomar suas campanhas.</p>
+      <!-- SUBVIEW 1: LOGIN NA TAVERNA -->
+      <div id="auth-subview-login">
+        <h1 class="login-title">Entrar na taverna</h1>
+        <p class="login-subtitle">Acesse sua conta para retomar suas campanhas.</p>
 
-      <form id="form-login" onsubmit="fazerLogin(event)">
-        <div class="form-group">
-          <label for="login-email" class="form-label">E-mail</label>
-          <input 
-            type="email" 
-            id="login-email" 
-            class="form-input" 
-            placeholder="voce@exemplo.com" 
-            value="aventureiro@arcana.vtt" 
-            required
-          >
-        </div>
-
-        <div class="form-group">
-          <label for="login-password" class="form-label">Senha</label>
-          <input 
-            type="password" 
-            id="login-password" 
-            class="form-input" 
-            placeholder="••••••••" 
-            value="taverna123" 
-            required
-          >
-        </div>
-
-        <button type="submit" id="btn-submit-login" class="btn-gold">
-          Entrar
+        <!-- Botão Google OAuth -->
+        <button type="button" class="btn-google" onclick="iniciarLoginGoogle()" id="btn-google-login">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/>
+            <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+            <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15.1c0 2.8.7 5.4 1.9 7.8l3.7-2.9z"/>
+            <path fill="#34A853" d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z"/>
+          </svg>
+          <span>Continuar com o Google</span>
         </button>
 
-        <div class="login-footer-links">
-          <a href="#" class="login-link" onclick="mostrarToast('Recuperação de senha simulada!')">Esqueci a senha</a>
-          <a href="#" class="login-link login-link-gold" onclick="mostrarToast('Criação de nova conta simulada!')">Criar conta</a>
+        <div class="auth-divider">
+          <span>ou continue com e-mail</span>
         </div>
-      </form>
+
+        <form id="form-login" onsubmit="fazerLogin(event)">
+          <div class="form-group">
+            <label for="login-email" class="form-label">E-mail</label>
+            <input 
+              type="email" 
+              id="login-email" 
+              class="form-input" 
+              placeholder="voce@exemplo.com" 
+              value="aventureiro@arcana.vtt" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="login-password" class="form-label">Senha</label>
+            <input 
+              type="password" 
+              id="login-password" 
+              class="form-input" 
+              placeholder="••••••••" 
+              value="taverna123" 
+              required
+            >
+          </div>
+
+          <button type="submit" id="btn-submit-login" class="btn-gold">
+            Entrar
+          </button>
+
+          <div class="login-footer-links">
+            <a href="#" class="login-link" onclick="mostrarToast('Recuperação de senha: entre em contato com o suporte ou use o Google.')">Esqueci a senha</a>
+            <a href="#" class="login-link login-link-gold" onclick="alternarAuthView('register')">Criar conta</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- SUBVIEW 2: CRIAR NOVA CONTA -->
+      <div id="auth-subview-register" style="display: none;">
+        <h1 class="login-title">Criar nova conta</h1>
+        <p class="login-subtitle">Junte-se à taverna do Arcana VTT.</p>
+
+        <!-- Botão Google OAuth -->
+        <button type="button" class="btn-google" onclick="iniciarLoginGoogle()" id="btn-google-register">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/>
+            <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+            <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15.1c0 2.8.7 5.4 1.9 7.8l3.7-2.9z"/>
+            <path fill="#34A853" d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z"/>
+          </svg>
+          <span>Cadastrar com o Google</span>
+        </button>
+
+        <div class="auth-divider">
+          <span>ou crie com e-mail</span>
+        </div>
+
+        <form id="form-register" onsubmit="fazerRegistro(event)">
+          <div class="form-group">
+            <label for="register-name" class="form-label">Nome de Exibição</label>
+            <input 
+              type="text" 
+              id="register-name" 
+              class="form-input" 
+              placeholder="Ex: Gandalf, o Cinzento" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="register-email" class="form-label">E-mail</label>
+            <input 
+              type="email" 
+              id="register-email" 
+              class="form-input" 
+              placeholder="voce@exemplo.com" 
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="register-password" class="form-label">Senha (mínimo 6 caracteres)</label>
+            <input 
+              type="password" 
+              id="register-password" 
+              class="form-input" 
+              placeholder="••••••••" 
+              minlength="6" 
+              required
+            >
+          </div>
+
+          <button type="submit" id="btn-submit-register" class="btn-gold">
+            Criar Conta e Receber Código
+          </button>
+
+          <div class="login-footer-links" style="justify-content: center;">
+            <span style="color: var(--text-muted); margin-right: 6px;">Já possui uma conta?</span>
+            <a href="#" class="login-link login-link-gold" onclick="alternarAuthView('login')">Entrar na Taverna</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- SUBVIEW 3: CONFIRMAÇÃO DE E-MAIL (OTP 6 DÍGITOS) -->
+      <div id="auth-subview-otp" style="display: none;">
+        <h1 class="login-title">Confirmar E-mail</h1>
+        <p class="login-subtitle" id="otp-subtitle-text">Digite o código de 6 dígitos enviado para seu e-mail.</p>
+
+        <form id="form-otp" onsubmit="confirmarCodigoOTP(event)">
+          <div class="form-group">
+            <label for="otp-code-input" class="form-label">Código de Verificação (6 dígitos)</label>
+            <input 
+              type="text" 
+              id="otp-code-input" 
+              class="form-input otp-input-field" 
+              placeholder="123456" 
+              maxlength="6" 
+              pattern="[0-9]{6}" 
+              required 
+              autocomplete="one-time-code"
+            >
+          </div>
+
+          <button type="submit" id="btn-submit-otp" class="btn-gold">
+            Verificar e Entrar
+          </button>
+
+          <div class="login-footer-links" style="justify-content: space-between;">
+            <a href="#" class="login-link" onclick="reenviarCodigoOTP()">Reenviar código</a>
+            <a href="#" class="login-link login-link-gold" onclick="alternarAuthView('login')">Voltar ao Login</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- SUBVIEW 4: DISPOSITIVO BLOQUEADO (TRAVA ANTI-SYBIL) -->
+      <div id="auth-subview-blocked" style="display: none; text-align: center;">
+        <div style="width: 52px; height: 52px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: #ef4444;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <h1 class="login-title" style="color: #f87171;">Dispositivo Bloqueado</h1>
+        <p class="login-subtitle" style="margin-bottom: 20px;">
+          Este dispositivo excedeu o limite seguro de criação de contas e foi travado preventivamente.
+        </p>
+        <div style="background: var(--bg-input); border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 12px; margin-bottom: 24px; text-align: left;">
+          <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Identificador do Dispositivo:</div>
+          <div id="blocked-device-fingerprint" style="font-family: monospace; font-size: 12px; color: var(--gold-light); word-break: break-all;">dev_...</div>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
+          Apenas um Administrador pode liberar este dispositivo através do Painel de Administração.
+        </p>
+        <button type="button" class="btn-secondary" style="width: 100%;" onclick="alternarAuthView('login')">Tentar Novamente</button>
+      </div>
     </div>
   </main>
 
@@ -999,6 +1301,15 @@
               <circle cx="12" cy="7" r="4"/>
             </svg>
             <span>Perfil</span>
+          </button>
+        </li>
+        <li id="nav-item-admin" style="display: none;">
+          <button class="nav-item-btn" id="nav-admin" onclick="navegarPara('admin')">
+            <!-- Ícone Escudo (Administração) -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>Administração</span>
           </button>
         </li>
       </nav>
@@ -1249,6 +1560,55 @@
         </div>
       </section>
 
+      <!-- ==========================================
+           TELA: ADMINISTRAÇÃO (PAINEL DE SEGURANÇA)
+           ========================================== -->
+      <section id="view-admin" class="view-section">
+        <header class="page-header-with-icon">
+          <div class="page-header-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div style="flex: 1;">
+            <h2 class="page-title">Painel de Administração</h2>
+            <p class="page-subtitle">Segurança de Dispositivos e Gestão de Bloqueios Anti-Sybil.</p>
+          </div>
+          <button class="btn-secondary" onclick="carregarDispositivosAdmin()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+            Atualizar Lista
+          </button>
+        </header>
+
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3 class="admin-card-title">Dispositivos com Trava Permanente</h3>
+            <span class="badge-total-blocked" id="badge-total-blocked">0 bloqueados</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Fingerprint / Dispositivo</th>
+                  <th>Motivo do Bloqueio</th>
+                  <th>Contas Criadas</th>
+                  <th>Data do Bloqueio</th>
+                  <th style="text-align: right;">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="admin-devices-tbody">
+                <tr>
+                  <td colspan="5" class="table-empty-msg">Nenhum dispositivo bloqueado no momento. A taverna está segura!</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -1283,13 +1643,39 @@
     <span id="toast-text">Notificação do sistema</span>
   </div>
 
+  <!-- Script do Cliente de Conexão Frontend como Módulo ES -->
+  <script type="module" src="js/api/client.js"></script>
+
   <!-- ==========================================================================
        JAVASCRIPT NATIVO: CICLO DE TELAS E CONTROLE DE ESTADOS
        ========================================================================== -->
   <script>
+    let currentOtpEmail = '';
+
+    /**
+     * Alterna subviews dentro do painel de autenticação
+     */
+    function alternarAuthView(viewName) {
+      const views = ['login', 'register', 'otp', 'blocked'];
+      views.forEach(v => {
+        const el = document.getElementById(`auth-subview-${v}`);
+        if (el) el.style.display = (v === viewName) ? 'block' : 'none';
+      });
+    }
+
+    /**
+     * Dispara redirecionamento do Google OAuth 2.0
+     */
+    function iniciarLoginGoogle() {
+      if (window.apiClient) {
+        window.apiClient.loginWithGoogle();
+      } else {
+        mostrarToast('Autenticação Google simulada: Redirecionando...');
+      }
+    }
+
     /**
      * Alterna a visibilidade das seções da SPA e atualiza o estado visual do menu lateral
-     * @param {string} telaId - Identificador da tela ('inicio', 'campanhas', 'sistemas', 'biblioteca', 'personagens', 'perfil')
      */
     function navegarPara(telaId) {
       // 1. Atualizar visibilidade das seções
@@ -1310,53 +1696,283 @@
         botaoAlvo.classList.add('active');
       }
 
+      // Se for a tela de administração, carrega lista de dispositivos bloqueados
+      if (telaId === 'admin') {
+        carregarDispositivosAdmin();
+      }
+
       // 3. Salvar última tela no localStorage para persistência de navegação
       try {
         localStorage.setItem('arcana_active_view', telaId);
-      } catch (e) {
-        // Ignora caso storage esteja bloqueado
-      }
+      } catch (e) {}
     }
 
     /**
-     * Simula o login do usuário, transicionando da tela de login para a interface principal
+     * Aplica sessão e dados do usuário na interface
      */
-    function fazerLogin(event) {
-      if (event) event.preventDefault();
-
-      const emailInput = document.getElementById('login-email');
-      const email = emailInput ? emailInput.value.trim() : 'aventureiro@arcana.vtt';
-
-      // Atualizar dados de exibição simulados
-      const profileEmail = document.getElementById('profile-email');
-      if (profileEmail) profileEmail.value = email;
-
-      // Ocultar auth e exibir o aplicativo
+    function aplicarSessaoUsuario(usuario) {
       document.getElementById('auth-container').style.display = 'none';
       document.getElementById('app-container').style.display = 'flex';
 
+      const profileEmail = document.getElementById('profile-email');
+      if (profileEmail) profileEmail.value = usuario.email || '';
+      const profileName = document.getElementById('profile-name');
+      if (profileName) profileName.value = usuario.displayName || usuario.name || '';
+      const displayTitle = document.getElementById('profile-display-name');
+      if (displayTitle) displayTitle.textContent = usuario.displayName || usuario.name || 'Aventureiro Arcano';
+      const profileId = document.getElementById('profile-user-id');
+      if (profileId) profileId.value = usuario.id || 'usr_arcana_vtt';
+
+      const roleBadge = document.getElementById('badge-role-display');
+      if (roleBadge) {
+        roleBadge.textContent = usuario.role === 'Admin' ? 'Administrador' : (usuario.role || 'Jogador');
+      }
+
+      const adminNav = document.getElementById('nav-item-admin');
+      if (adminNav) {
+        adminNav.style.display = (usuario.role === 'Admin') ? 'block' : 'none';
+      }
+
       try {
         localStorage.setItem('arcana_user_logged', 'true');
+        localStorage.setItem('arcana_user_data', JSON.stringify(usuario));
         const ultimaTela = localStorage.getItem('arcana_active_view') || 'inicio';
         navegarPara(ultimaTela);
       } catch (e) {
         navegarPara('inicio');
       }
+    }
 
+    /**
+     * Realiza o login do usuário via API ou fallback simulado
+     */
+    async function fazerLogin(event) {
+      if (event) event.preventDefault();
+
+      const emailInput = document.getElementById('login-email');
+      const passInput = document.getElementById('login-password');
+      const email = emailInput ? emailInput.value.trim() : 'aventureiro@arcana.vtt';
+      const password = passInput ? passInput.value : 'taverna123';
+
+      if (window.apiClient) {
+        try {
+          const res = await window.apiClient.login(email, password);
+          aplicarSessaoUsuario(res.usuario);
+          mostrarToast(`Bem-vindo, ${res.usuario.displayName || 'aventureiro'}!`);
+          return;
+        } catch (err) {
+          if (err.codigo === 'EMAIL_NOT_VERIFIED') {
+            currentOtpEmail = email;
+            alternarAuthView('otp');
+            const sub = document.getElementById('otp-subtitle-text');
+            if (sub) sub.textContent = `Código de verificação enviado para ${email}.`;
+            mostrarToast('Seu e-mail requer confirmação. Enviamos um código!');
+            return;
+          }
+          if (err.codigo === 'DEVICE_BLOCKED') {
+            alternarAuthView('blocked');
+            const hashEl = document.getElementById('blocked-device-fingerprint');
+            if (hashEl && err.payload && err.payload.deviceHash) {
+              hashEl.textContent = err.payload.deviceHash;
+            }
+            mostrarToast('Atenção: Dispositivo bloqueado por trava de segurança.');
+            return;
+          }
+          if (err.status === 401 || err.status === 400 || err.status === 403) {
+            mostrarToast(err.message || 'Erro ao entrar. Verifique seus dados.');
+            return;
+          }
+          console.warn('Backend indisponível, simulando login local:', err);
+        }
+      }
+
+      // Fallback simulado para LiveServer local
+      aplicarSessaoUsuario({
+        id: 'usr_local_mock',
+        email,
+        displayName: 'Aventureiro Arcano',
+        role: email.includes('admin') ? 'Admin' : 'Jogador'
+      });
       mostrarToast('Bem-vindo à taverna, aventureiro!');
+    }
+
+    /**
+     * Cadastra nova conta com e-mail e senha, gerando OTP
+     */
+    async function fazerRegistro(event) {
+      if (event) event.preventDefault();
+
+      const nameInput = document.getElementById('register-name');
+      const emailInput = document.getElementById('register-email');
+      const passInput = document.getElementById('register-password');
+      const name = nameInput ? nameInput.value.trim() : '';
+      const email = emailInput ? emailInput.value.trim() : '';
+      const password = passInput ? passInput.value : '';
+
+      if (window.apiClient) {
+        try {
+          const res = await window.apiClient.register(email, password, name);
+          if (res.requerVerificacao) {
+            currentOtpEmail = email;
+            alternarAuthView('otp');
+            const sub = document.getElementById('otp-subtitle-text');
+            if (sub) sub.textContent = `Código de verificação enviado para ${email}.`;
+            mostrarToast(res.mensagem || 'Conta criada! Digite o código de 6 dígitos.');
+            return;
+          }
+        } catch (err) {
+          if (err.codigo === 'DEVICE_BLOCKED') {
+            alternarAuthView('blocked');
+            const hashEl = document.getElementById('blocked-device-fingerprint');
+            if (hashEl && err.payload && err.payload.deviceHash) {
+              hashEl.textContent = err.payload.deviceHash;
+            }
+            mostrarToast('Atenção: Dispositivo travado por segurança.');
+            return;
+          }
+          mostrarToast(err.message || 'Erro ao criar conta.');
+          return;
+        }
+      }
+
+      // Fallback simulado
+      currentOtpEmail = email;
+      alternarAuthView('otp');
+      mostrarToast('Conta simulada! Digite o código 123456 para confirmar.');
+    }
+
+    /**
+     * Confirma o código OTP de 6 dígitos
+     */
+    async function confirmarCodigoOTP(event) {
+      if (event) event.preventDefault();
+      const codeInput = document.getElementById('otp-code-input');
+      const code = codeInput ? codeInput.value.trim() : '';
+
+      if (!currentOtpEmail) {
+        mostrarToast('E-mail não identificado. Volte ao login.');
+        alternarAuthView('login');
+        return;
+      }
+
+      if (window.apiClient) {
+        try {
+          const res = await window.apiClient.verifyEmail(currentOtpEmail, code);
+          aplicarSessaoUsuario(res.usuario);
+          mostrarToast('E-mail confirmado com sucesso! Bem-vindo!');
+          return;
+        } catch (err) {
+          mostrarToast(err.message || 'Código inválido ou expirado.');
+          return;
+        }
+      }
+
+      // Fallback simulado
+      aplicarSessaoUsuario({
+        id: 'usr_otp_simulado',
+        email: currentOtpEmail,
+        displayName: 'Novo Aventureiro',
+        role: 'Jogador'
+      });
+      mostrarToast('E-mail confirmado com sucesso (simulação)!');
+    }
+
+    /**
+     * Reenvia o código OTP
+     */
+    async function reenviarCodigoOTP() {
+      if (!currentOtpEmail) {
+        mostrarToast('Informe seu e-mail no login primeiro.');
+        return;
+      }
+      if (window.apiClient) {
+        try {
+          await window.apiClient.resendCode(currentOtpEmail);
+          mostrarToast('Novo código enviado com sucesso!');
+          return;
+        } catch (err) {
+          mostrarToast(err.message || 'Erro ao reenviar código.');
+          return;
+        }
+      }
+      mostrarToast('Novo código simulado gerado!');
     }
 
     /**
      * Realiza o logout do usuário, retornando para a tela de autenticação
      */
-    function fazerLogout() {
+    async function fazerLogout() {
+      if (window.apiClient) {
+        try {
+          await window.apiClient.logout();
+        } catch (e) {}
+      }
+
       try {
         localStorage.removeItem('arcana_user_logged');
+        localStorage.removeItem('arcana_user_data');
       } catch (e) {}
 
       document.getElementById('app-container').style.display = 'none';
       document.getElementById('auth-container').style.display = 'flex';
+      alternarAuthView('login');
       mostrarToast('Você saiu da taverna.');
+    }
+
+    /**
+     * Carrega a lista de dispositivos bloqueados no Painel de Administração
+     */
+    async function carregarDispositivosAdmin() {
+      const tbody = document.getElementById('admin-devices-tbody');
+      const badgeTotal = document.getElementById('badge-total-blocked');
+      if (!tbody) return;
+
+      if (!window.apiClient) {
+        tbody.innerHTML = '<tr><td colspan="5" class="table-empty-msg">API Client não inicializado.</td></tr>';
+        return;
+      }
+
+      try {
+        const res = await window.apiClient.adminListDevices();
+        const dispositivos = res.dados || res.dispositivos || [];
+        if (badgeTotal) badgeTotal.textContent = `${dispositivos.length} bloqueados`;
+
+        if (dispositivos.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="table-empty-msg">Nenhum dispositivo bloqueado no momento. A taverna está segura!</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = dispositivos.map(d => `
+          <tr>
+            <td class="device-hash-cell" title="${d.device_hash}">${d.device_hash.substring(0, 16)}...</td>
+            <td><span class="badge-blocked-pill">${d.blocked_reason || 'Limite Excedido'}</span></td>
+            <td style="font-weight: 600;">${d.account_count}</td>
+            <td style="color: var(--text-muted); font-size: 12.5px;">${new Date(d.blocked_at || d.updated_at).toLocaleString('pt-BR')}</td>
+            <td style="text-align: right;">
+              <button class="btn-unblock" onclick="liberarDispositivo('${d.device_hash}')">Liberar Dispositivo</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="table-empty-msg" style="color: #f87171;">Erro ao carregar dispositivos: ${err.message}</td></tr>`;
+      }
+    }
+
+    /**
+     * Libera dispositivo com 1 clique direto pelo painel web
+     */
+    async function liberarDispositivo(deviceHash) {
+      if (!confirm(`Deseja realmente liberar a trava do dispositivo ${deviceHash}?`)) return;
+
+      if (window.apiClient) {
+        try {
+          await window.apiClient.adminUnblockDevice(deviceHash);
+          mostrarToast('Dispositivo liberado com sucesso!');
+          carregarDispositivosAdmin();
+        } catch (err) {
+          mostrarToast(`Erro ao liberar: ${err.message}`);
+        }
+      }
     }
 
     /**
@@ -1437,18 +2053,25 @@
       try {
         const estaLogado = localStorage.getItem('arcana_user_logged') === 'true';
         if (estaLogado) {
-          document.getElementById('auth-container').style.display = 'none';
-          document.getElementById('app-container').style.display = 'flex';
-          const ultimaTela = localStorage.getItem('arcana_active_view') || 'inicio';
-          navegarPara(ultimaTela);
+          const rawUser = localStorage.getItem('arcana_user_data');
+          if (rawUser) {
+            const usuario = JSON.parse(rawUser);
+            aplicarSessaoUsuario(usuario);
+          } else {
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
+            const ultimaTela = localStorage.getItem('arcana_active_view') || 'inicio';
+            navegarPara(ultimaTela);
+          }
         } else {
           document.getElementById('auth-container').style.display = 'flex';
           document.getElementById('app-container').style.display = 'none';
+          alternarAuthView('login');
         }
       } catch (e) {
-        // Fallback para login inicial se storage não estiver disponível
         document.getElementById('auth-container').style.display = 'flex';
         document.getElementById('app-container').style.display = 'none';
+        alternarAuthView('login');
       }
     });
   </script>
