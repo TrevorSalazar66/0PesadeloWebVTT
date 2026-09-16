@@ -120,6 +120,7 @@ export async function processGoogleCallback(request, env) {
     role: user.role,
     displayName: user.display_name,
     avatarUrl: user.avatar_url,
+    emailVerified: 1,
     exp
   }, jwtSecret);
 

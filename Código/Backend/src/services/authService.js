@@ -1,6 +1,6 @@
 /**
  * Serviço de Autenticação para o Endpoint /api/auth
- * Suporte a PBKDF2, Verificação de E-mail OTP (6 dígitos), Trava Permanente de Dispositivo (Anti-Sybil)
+ * Suporte a PBKDF2, Validação Real de E-mail (RFC 5322), Verificação OTP (6 dígitos), Trava Permanente de Dispositivo (Anti-Sybil)
  */
 import { generateSalt, hashPassword, verifyPassword, signJWT, createAuthCookie, createClearCookie, randomUUID } from './cryptoService.js';
 import { dbQueries } from '../db/queries.js';
@@ -8,7 +8,7 @@ import { LIMITS } from '../config/limits.js';
 import { checkRateLimit } from '../middleware/rateLimiter.js';
 import { applySecurityHeaders } from '../config/securityHeaders.js';
 import { extractDeviceHash, assertDeviceNotBlocked, registerDeviceAccount } from './deviceSecurityService.js';
-import { sendEmailVerificationCode, hashVerificationCode } from './emailService.js';
+import { sendEmailVerificationCode, hashVerificationCode, validateEmailFormat } from './emailService.js';
 
 export async function handleAuthRequest(request, env, clientIp) {
   const origin = request.headers.get('Origin');
@@ -34,6 +34,8 @@ export async function handleAuthRequest(request, env, clientIp) {
     return new Response(JSON.stringify({
       sucesso: false,
       bloqueado: true,
+      codigo: 'DEVICE_BLOCKED',
+      deviceHash,
       erro: deviceCheck.motivo
     }), { status: 403, headers });
   }
@@ -48,7 +50,7 @@ export async function handleAuthRequest(request, env, clientIp) {
   const { action, data = {} } = body;
 
   // ----------------------------------------------------
-  // AÇÃO: CADASTRO DE NOVO USUÁRIO (COM CÓDIGO OTP)
+  // AÇÃO: CADASTRO DE NOVO USUÁRIO (COM VALIDAÇÃO DE E-MAIL E CÓDIGO OTP)
   // ----------------------------------------------------
   if (action === 'register') {
     const { email, password, displayName } = data;
@@ -57,11 +59,18 @@ export async function handleAuthRequest(request, env, clientIp) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Preencha email, senha e nome de exibição' }), { status: 400, headers });
     }
 
+    // Validação estrita de formato e veracidade de e-mail (RFC 5322)
+    const emailVal = validateEmailFormat(email);
+    if (!emailVal.valid) {
+      return new Response(JSON.stringify({ sucesso: false, erro: emailVal.reason }), { status: 400, headers });
+    }
+    const cleanEmail = emailVal.cleanEmail;
+
     if (password.length < LIMITS.MIN_PASSWORD_LENGTH || password.length > LIMITS.MAX_PASSWORD_LENGTH) {
       return new Response(JSON.stringify({ sucesso: false, erro: `A senha deve ter entre ${LIMITS.MIN_PASSWORD_LENGTH} e ${LIMITS.MAX_PASSWORD_LENGTH} caracteres` }), { status: 400, headers });
     }
 
-    const existing = await dbQueries.getUserByEmail(db, email);
+    const existing = await dbQueries.getUserByEmail(db, cleanEmail);
     if (existing) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Este e-mail já está cadastrado na taverna' }), { status: 409, headers });
     }
@@ -72,6 +81,8 @@ export async function handleAuthRequest(request, env, clientIp) {
       return new Response(JSON.stringify({
         sucesso: false,
         bloqueado: true,
+        codigo: 'DEVICE_BLOCKED',
+        deviceHash,
         erro: 'Limite de criação de contas excedido para este dispositivo. O dispositivo recebeu uma trava permanente de segurança.'
       }), { status: 403, headers });
     }
@@ -83,29 +94,25 @@ export async function handleAuthRequest(request, env, clientIp) {
     // Cria a conta com e-mail pendente de verificação (email_verified = 0)
     await dbQueries.createUser(db, {
       id: userId,
-      email,
+      email: cleanEmail,
       passwordHash,
       salt,
-      displayName,
+      displayName: displayName.trim(),
       role: 'Jogador',
       emailVerified: 0,
       authProvider: 'email'
     });
 
     // Despacha código OTP de 6 dígitos
-    const { code, expiresAt } = await sendEmailVerificationCode(db, email, env);
+    const { code, expiresAt } = await sendEmailVerificationCode(db, cleanEmail, env);
 
-    // Emite cookie temporário ou aguarda confirmação
-    const exp = Math.floor(Date.now() / 1000) + LIMITS.JWT_EXPIRATION_SECONDS;
-    const token = await signJWT({ sub: userId, email, role: 'Jogador', displayName, emailVerified: 0, exp }, jwtSecret);
-    headers.set('Set-Cookie', createAuthCookie(token, LIMITS.JWT_EXPIRATION_SECONDS));
-
+    // O acesso à plataforma permanece ESTRITAMENTE bloqueado. Não emitimos cookie de sessão aqui.
     return new Response(JSON.stringify({
       sucesso: true,
       requerVerificacao: true,
-      mensagem: 'Aventureiro cadastrado! Digite o código de 6 dígitos enviado para ativar sua conta.',
-      usuario: { id: userId, email, displayName, role: 'Jogador', emailVerified: 0 },
-      // Para ambiente local de desenvolvimento/teste facilitado
+      mensagem: 'Conta criada! Digite o código de 6 dígitos enviado para seu e-mail para ativar sua conta e liberar o acesso.',
+      email: cleanEmail,
+      usuario: { id: userId, email: cleanEmail, displayName: displayName.trim(), role: 'Jogador', emailVerified: 0 },
       _codigoTesteDev: env?.ENVIRONMENT === 'development' ? code : undefined
     }), { status: 201, headers });
   }
@@ -116,46 +123,51 @@ export async function handleAuthRequest(request, env, clientIp) {
   if (action === 'verify_email') {
     const { email, code } = data;
     if (!email || !code || String(code).trim().length !== 6) {
-      return new Response(JSON.stringify({ sucesso: false, erro: 'Informe o e-mail e o código de 6 dígitos' }), { status: 400, headers });
+      return new Response(JSON.stringify({ sucesso: false, erro: 'Informe o e-mail e o código numérico de 6 dígitos' }), { status: 400, headers });
     }
 
-    const record = await dbQueries.getEmailVerification(db, email);
+    const emailVal = validateEmailFormat(email);
+    const cleanEmail = emailVal.valid ? emailVal.cleanEmail : String(email).trim().toLowerCase();
+
+    const record = await dbQueries.getEmailVerification(db, cleanEmail);
     if (!record) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Código expirado ou não encontrado. Solicite um novo código.' }), { status: 400, headers });
     }
 
     // Verifica expiração
     if (new Date(record.expires_at).getTime() < Date.now()) {
-      await dbQueries.deleteEmailVerification(db, email);
-      return new Response(JSON.stringify({ sucesso: false, erro: 'O código de 6 dígitos expirou (limite de 10 minutos)' }), { status: 400, headers });
+      await dbQueries.deleteEmailVerification(db, cleanEmail);
+      return new Response(JSON.stringify({ sucesso: false, erro: 'O código de 6 dígitos expirou (limite de 10 minutos). Solicite um novo código.' }), { status: 400, headers });
     }
 
     // Verifica hash do código digitado
     const inputHash = await hashVerificationCode(String(code).trim());
     if (inputHash !== record.code_hash) {
-      await dbQueries.incrementVerificationAttempts(db, email);
+      await dbQueries.incrementVerificationAttempts(db, cleanEmail);
       return new Response(JSON.stringify({ sucesso: false, erro: 'Código de verificação incorreto' }), { status: 400, headers });
     }
 
     // Ativa a conta no D1 e apaga o código usado
-    await dbQueries.markEmailVerified(db, email);
-    await dbQueries.deleteEmailVerification(db, email);
+    await dbQueries.markEmailVerified(db, cleanEmail);
+    await dbQueries.deleteEmailVerification(db, cleanEmail);
 
-    const user = await dbQueries.getUserByEmail(db, email);
+    const user = await dbQueries.getUserByEmail(db, cleanEmail);
     const exp = Math.floor(Date.now() / 1000) + LIMITS.JWT_EXPIRATION_SECONDS;
     const token = await signJWT({
       sub: user.id,
       email: user.email,
       role: user.role,
       displayName: user.display_name,
+      avatarUrl: user.avatar_url,
       emailVerified: 1,
       exp
     }, jwtSecret);
 
+    // SOMENTE AGORA EMITIMOS O COOKIE SEGURO DE SESSÃO
     headers.set('Set-Cookie', createAuthCookie(token, LIMITS.JWT_EXPIRATION_SECONDS));
     return new Response(JSON.stringify({
       sucesso: true,
-      mensagem: 'E-mail confirmado com sucesso! Bem-vindo à taverna.',
+      mensagem: 'E-mail confirmado com sucesso! Acesso à taverna liberado.',
       usuario: { id: user.id, email: user.email, displayName: user.display_name, role: user.role, emailVerified: 1 }
     }), { status: 200, headers });
   }
@@ -169,21 +181,28 @@ export async function handleAuthRequest(request, env, clientIp) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Informe o e-mail' }), { status: 400, headers });
     }
 
-    const user = await dbQueries.getUserByEmail(db, email);
+    const emailVal = validateEmailFormat(email);
+    const cleanEmail = emailVal.valid ? emailVal.cleanEmail : String(email).trim().toLowerCase();
+
+    const user = await dbQueries.getUserByEmail(db, cleanEmail);
     if (!user) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Usuário não encontrado' }), { status: 404, headers });
     }
 
-    const { code } = await sendEmailVerificationCode(db, email, env);
+    if (user.email_verified === 1) {
+      return new Response(JSON.stringify({ sucesso: false, erro: 'Este e-mail já foi confirmado anteriormente. Faça login normalmente.' }), { status: 400, headers });
+    }
+
+    const { code } = await sendEmailVerificationCode(db, cleanEmail, env);
     return new Response(JSON.stringify({
       sucesso: true,
-      mensagem: 'Novo código de 6 dígitos enviado!',
+      mensagem: 'Novo código de 6 dígitos enviado para seu e-mail!',
       _codigoTesteDev: env?.ENVIRONMENT === 'development' ? code : undefined
     }), { status: 200, headers });
   }
 
   // ----------------------------------------------------
-  // AÇÃO: LOGIN NA TAVERNA
+  // AÇÃO: LOGIN NA TAVERNA (COM TRAVA DE E-MAIL NÃO VERIFICADO)
   // ----------------------------------------------------
   if (action === 'login') {
     const { email, password } = data;
@@ -192,7 +211,13 @@ export async function handleAuthRequest(request, env, clientIp) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Informe e-mail e senha' }), { status: 400, headers });
     }
 
-    const user = await dbQueries.getUserByEmail(db, email);
+    const emailVal = validateEmailFormat(email);
+    if (!emailVal.valid) {
+      return new Response(JSON.stringify({ sucesso: false, erro: emailVal.reason }), { status: 400, headers });
+    }
+    const cleanEmail = emailVal.cleanEmail;
+
+    const user = await dbQueries.getUserByEmail(db, cleanEmail);
     if (!user || !user.password_hash) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Credenciais inválidas' }), { status: 401, headers });
     }
@@ -202,7 +227,25 @@ export async function handleAuthRequest(request, env, clientIp) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Credenciais inválidas' }), { status: 401, headers });
     }
 
-    // Emissão do Token JWT
+    // BLOQUEIO RIGOROSO: Contas não ativadas são impedidas de entrar e redirecionadas para validação OTP
+    if (!user.email_verified || user.email_verified === 0) {
+      const existingVer = await dbQueries.getEmailVerification(db, user.email);
+      let devCode = undefined;
+      if (!existingVer || new Date(existingVer.expires_at).getTime() < Date.now()) {
+        const sent = await sendEmailVerificationCode(db, user.email, env);
+        devCode = sent.code;
+      }
+      return new Response(JSON.stringify({
+        sucesso: false,
+        codigo: 'EMAIL_NOT_VERIFIED',
+        requerVerificacao: true,
+        email: user.email,
+        erro: 'Esta conta ainda não foi ativada. Digite o código de 6 dígitos enviado para seu e-mail para liberar o acesso.',
+        _codigoTesteDev: env?.ENVIRONMENT === 'development' ? devCode : undefined
+      }), { status: 403, headers });
+    }
+
+    // Emissão do Token JWT para contas validadas
     const exp = Math.floor(Date.now() / 1000) + LIMITS.JWT_EXPIRATION_SECONDS;
     const token = await signJWT({
       sub: user.id,
@@ -210,7 +253,7 @@ export async function handleAuthRequest(request, env, clientIp) {
       role: user.role,
       displayName: user.display_name,
       avatarUrl: user.avatar_url,
-      emailVerified: user.email_verified,
+      emailVerified: 1,
       exp
     }, jwtSecret);
 
@@ -224,7 +267,7 @@ export async function handleAuthRequest(request, env, clientIp) {
         displayName: user.display_name,
         role: user.role,
         avatarUrl: user.avatar_url,
-        emailVerified: user.email_verified
+        emailVerified: 1
       }
     }), { status: 200, headers });
   }

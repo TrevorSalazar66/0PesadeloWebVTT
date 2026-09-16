@@ -1744,29 +1744,123 @@
     }
 
     /**
-     * Realiza o login do usuário via API ou fallback simulado
+     * Validação no Frontend de Formato de E-mail Real (RFC 5322 e domínios)
+     */
+    function validarFormatoEmailFrontend(email) {
+      if (!email || typeof email !== 'string') {
+        return { valid: false, reason: 'Por favor, informe um endereço de e-mail.' };
+      }
+
+      const clean = email.trim().toLowerCase();
+
+      if (clean.length > 254 || clean.length < 5) {
+        return { valid: false, reason: 'O e-mail deve ter entre 5 e 254 caracteres.' };
+      }
+
+      const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+      if (!emailRegex.test(clean)) {
+        return { valid: false, reason: 'Formato de e-mail inválido. Utilize a estrutura nome@dominio.com' };
+      }
+
+      const parts = clean.split('@');
+      if (parts.length !== 2) {
+        return { valid: false, reason: 'O e-mail deve conter exatamente um "@".' };
+      }
+
+      const [user, domain] = parts;
+      if (!user || !domain) {
+        return { valid: false, reason: 'Nome ou domínio do e-mail não podem estar vazios.' };
+      }
+
+      if (user.startsWith('.') || user.endsWith('.') || user.includes('..')) {
+        return { valid: false, reason: 'O nome do e-mail não pode começar, terminar ou conter pontos consecutivos.' };
+      }
+
+      const domainParts = domain.split('.');
+      if (domainParts.length < 2) {
+        return { valid: false, reason: 'O domínio do e-mail precisa conter uma extensão válida (ex: .com, .com.br).' };
+      }
+
+      const tld = domainParts[domainParts.length - 1];
+      if (tld.length < 2 || !/^[a-zA-Z]+$/.test(tld)) {
+        return { valid: false, reason: 'A extensão final do domínio do e-mail é inválida.' };
+      }
+
+      const disposable = ['tempmail.com', 'mailinator.com', '10minutemail.com', 'guerrillamail.com', 'throwawaymail.com', 'fake.com', 'teste.com'];
+      if (disposable.includes(domain)) {
+        return { valid: false, reason: 'Provedores de e-mail temporários ou descartáveis não são aceitos.' };
+      }
+
+      return { valid: true, cleanEmail: clean };
+    }
+
+    // Armazenamento local de contas para simulação estrita (LiveServer offline)
+    function buscarContaSimuladaLocal(email) {
+      try {
+        const contas = JSON.parse(localStorage.getItem('arcana_simulated_accounts') || '{}');
+        return contas[email.toLowerCase()] || null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function salvarContaSimuladaPendente(conta) {
+      try {
+        const contas = JSON.parse(localStorage.getItem('arcana_simulated_accounts') || '{}');
+        contas[conta.email.toLowerCase()] = conta;
+        localStorage.setItem('arcana_simulated_accounts', JSON.stringify(contas));
+      } catch (e) {}
+    }
+
+    function salvarContaSimuladaAtiva(conta) {
+      try {
+        const contas = JSON.parse(localStorage.getItem('arcana_simulated_accounts') || '{}');
+        conta.emailVerified = true;
+        contas[conta.email.toLowerCase()] = conta;
+        localStorage.setItem('arcana_simulated_accounts', JSON.stringify(contas));
+      } catch (e) {}
+    }
+
+    /**
+     * Realiza o login do usuário via API ou verificação estrita
      */
     async function fazerLogin(event) {
       if (event) event.preventDefault();
 
       const emailInput = document.getElementById('login-email');
       const passInput = document.getElementById('login-password');
-      const email = emailInput ? emailInput.value.trim() : 'aventureiro@arcana.vtt';
-      const password = passInput ? passInput.value : 'taverna123';
+      const rawEmail = emailInput ? emailInput.value : '';
+      const password = passInput ? passInput.value : '';
+
+      const check = validarFormatoEmailFrontend(rawEmail);
+      if (!check.valid) {
+        mostrarToast(check.reason);
+        return;
+      }
+      const email = check.cleanEmail;
+
+      if (!password || password.length < 6) {
+        mostrarToast('Informe sua senha cadastrada (mínimo 6 caracteres).');
+        return;
+      }
 
       if (window.apiClient) {
         try {
           const res = await window.apiClient.login(email, password);
           aplicarSessaoUsuario(res.usuario);
-          mostrarToast(`Bem-vindo, ${res.usuario.displayName || 'aventureiro'}!`);
+          mostrarToast(`Bem-vindo à taverna, ${res.usuario.displayName || 'aventureiro'}!`);
           return;
         } catch (err) {
-          if (err.codigo === 'EMAIL_NOT_VERIFIED') {
+          if (err.codigo === 'EMAIL_NOT_VERIFIED' || (err.status === 403 && err.payload && err.payload.requerVerificacao)) {
             currentOtpEmail = email;
             alternarAuthView('otp');
             const sub = document.getElementById('otp-subtitle-text');
-            if (sub) sub.textContent = `Código de verificação enviado para ${email}.`;
-            mostrarToast('Seu e-mail requer confirmação. Enviamos um código!');
+            if (sub) sub.textContent = `Esta conta ainda não foi confirmada. Digite o código de 6 dígitos enviado para ${email}.`;
+            if (err.payload && err.payload._codigoTesteDev) {
+              mostrarToast(`[DEV/TESTE] Código de confirmação: ${err.payload._codigoTesteDev}`);
+            } else {
+              mostrarToast('Acesso bloqueado: confirme seu e-mail com o código de 6 dígitos.');
+            }
             return;
           }
           if (err.codigo === 'DEVICE_BLOCKED') {
@@ -1775,29 +1869,43 @@
             if (hashEl && err.payload && err.payload.deviceHash) {
               hashEl.textContent = err.payload.deviceHash;
             }
-            mostrarToast('Atenção: Dispositivo bloqueado por trava de segurança.');
+            mostrarToast('Atenção: Dispositivo travado por segurança anti-Sybil.');
             return;
           }
-          if (err.status === 401 || err.status === 400 || err.status === 403) {
-            mostrarToast(err.message || 'Erro ao entrar. Verifique seus dados.');
+          if (err.status === 401 || err.status === 400) {
+            mostrarToast(err.message || 'Credenciais inválidas. Se ainda não possui conta, clique em "Criar conta".');
             return;
           }
-          console.warn('Backend indisponível, simulando login local:', err);
+          console.warn('Erro ao autenticar com a API:', err);
         }
       }
 
-      // Fallback simulado para LiveServer local
-      aplicarSessaoUsuario({
-        id: 'usr_local_mock',
-        email,
-        displayName: 'Aventureiro Arcano',
-        role: email.includes('admin') ? 'Admin' : 'Jogador'
-      });
+      // Verificação em modo simulado (LiveServer local sem servidor ativo):
+      // NUNCA liberar acesso sem que a conta exista e tenha o código de 6 dígitos confirmado!
+      const contaSimulada = buscarContaSimuladaLocal(email);
+      if (!contaSimulada) {
+        mostrarToast('Esta conta não existe na taverna. Clique em "Criar conta" para se cadastrar e receber seu código de 6 dígitos.');
+        return;
+      }
+      if (!contaSimulada.emailVerified) {
+        currentOtpEmail = email;
+        alternarAuthView('otp');
+        const sub = document.getElementById('otp-subtitle-text');
+        if (sub) sub.textContent = `Conta pendente de ativação. Digite o código de 6 dígitos enviado para ${email}.`;
+        mostrarToast(`[SIMULAÇÃO] Código de confirmação da sua conta: ${contaSimulada.codigoOtp}`);
+        return;
+      }
+      if (contaSimulada.password !== password) {
+        mostrarToast('Senha incorreta para esta conta.');
+        return;
+      }
+
+      aplicarSessaoUsuario(contaSimulada);
       mostrarToast('Bem-vindo à taverna, aventureiro!');
     }
 
     /**
-     * Cadastra nova conta com e-mail e senha, gerando OTP
+     * Cadastra nova conta com e-mail e senha, exigindo validação de formato e código OTP
      */
     async function fazerRegistro(event) {
       if (event) event.preventDefault();
@@ -1806,8 +1914,24 @@
       const emailInput = document.getElementById('register-email');
       const passInput = document.getElementById('register-password');
       const name = nameInput ? nameInput.value.trim() : '';
-      const email = emailInput ? emailInput.value.trim() : '';
+      const rawEmail = emailInput ? emailInput.value : '';
       const password = passInput ? passInput.value : '';
+
+      const check = validarFormatoEmailFrontend(rawEmail);
+      if (!check.valid) {
+        mostrarToast(check.reason);
+        return;
+      }
+      const email = check.cleanEmail;
+
+      if (!name) {
+        mostrarToast('Informe seu nome de aventureiro.');
+        return;
+      }
+      if (!password || password.length < 6) {
+        mostrarToast('A senha deve ter no mínimo 6 caracteres.');
+        return;
+      }
 
       if (window.apiClient) {
         try {
@@ -1816,8 +1940,12 @@
             currentOtpEmail = email;
             alternarAuthView('otp');
             const sub = document.getElementById('otp-subtitle-text');
-            if (sub) sub.textContent = `Código de verificação enviado para ${email}.`;
-            mostrarToast(res.mensagem || 'Conta criada! Digite o código de 6 dígitos.');
+            if (sub) sub.textContent = `Código de 6 dígitos enviado para ${email}. Digite-o para ativar sua conta.`;
+            if (res._codigoTesteDev) {
+              mostrarToast(`[DEV/TESTE] Código de confirmação: ${res._codigoTesteDev}`);
+            } else {
+              mostrarToast(res.mensagem || 'Conta criada! Digite o código de 6 dígitos enviado por e-mail.');
+            }
             return;
           }
         } catch (err) {
@@ -1835,14 +1963,28 @@
         }
       }
 
-      // Fallback simulado
+      // Modo Simulado Seguro (LiveServer local sem backend ativo):
+      // Gera o código numérico de 6 dígitos e OBRIGA o usuário a inseri-lo na tela de OTP
+      const codigoSimulado = String(Math.floor(100000 + Math.random() * 900000));
+      salvarContaSimuladaPendente({
+        id: `usr_${Math.random().toString(36).substring(2, 10)}`,
+        email,
+        displayName: name,
+        password,
+        role: 'Jogador',
+        emailVerified: false,
+        codigoOtp: codigoSimulado
+      });
       currentOtpEmail = email;
       alternarAuthView('otp');
-      mostrarToast('Conta simulada! Digite o código 123456 para confirmar.');
+      const sub = document.getElementById('otp-subtitle-text');
+      if (sub) sub.textContent = `Código de 6 dígitos enviado para ${email}. Digite-o para ativar a conta.`;
+      mostrarToast(`[SIMULAÇÃO] Código de 6 dígitos gerado: ${codigoSimulado}`);
+      console.log(`[SIMULAÇÃO OTP] Código para ${email}: ${codigoSimulado}`);
     }
 
     /**
-     * Confirma o código OTP de 6 dígitos
+     * Confirma o código OTP de 6 dígitos (NÃO LIBERA ACESSO SEM CONFIRMAR)
      */
     async function confirmarCodigoOTP(event) {
       if (event) event.preventDefault();
@@ -1850,8 +1992,13 @@
       const code = codeInput ? codeInput.value.trim() : '';
 
       if (!currentOtpEmail) {
-        mostrarToast('E-mail não identificado. Volte ao login.');
+        mostrarToast('E-mail não identificado. Retorne ao login ou registro.');
         alternarAuthView('login');
+        return;
+      }
+
+      if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
+        mostrarToast('Digite o código numérico com exatamente 6 dígitos.');
         return;
       }
 
@@ -1859,43 +2006,57 @@
         try {
           const res = await window.apiClient.verifyEmail(currentOtpEmail, code);
           aplicarSessaoUsuario(res.usuario);
-          mostrarToast('E-mail confirmado com sucesso! Bem-vindo!');
+          mostrarToast('E-mail confirmado com sucesso! Acesso à taverna liberado.');
           return;
         } catch (err) {
-          mostrarToast(err.message || 'Código inválido ou expirado.');
+          mostrarToast(err.message || 'Código de 6 dígitos incorreto ou expirado.');
           return;
         }
       }
 
-      // Fallback simulado
-      aplicarSessaoUsuario({
-        id: 'usr_otp_simulado',
-        email: currentOtpEmail,
-        displayName: 'Novo Aventureiro',
-        role: 'Jogador'
-      });
-      mostrarToast('E-mail confirmado com sucesso (simulação)!');
+      // Validação estrita do código em modo simulado
+      const pendente = buscarContaSimuladaLocal(currentOtpEmail);
+      if (!pendente || pendente.codigoOtp !== code) {
+        mostrarToast('Código de 6 dígitos incorreto! Verifique o código gerado.');
+        return;
+      }
+
+      pendente.emailVerified = true;
+      salvarContaSimuladaAtiva(pendente);
+      aplicarSessaoUsuario(pendente);
+      mostrarToast('E-mail confirmado com sucesso! Acesso liberado à taverna.');
     }
 
     /**
-     * Reenvia o código OTP
+     * Reenvia o código OTP de 6 dígitos
      */
     async function reenviarCodigoOTP() {
       if (!currentOtpEmail) {
-        mostrarToast('Informe seu e-mail no login primeiro.');
+        mostrarToast('Informe seu e-mail no login ou cadastro primeiro.');
         return;
       }
       if (window.apiClient) {
         try {
-          await window.apiClient.resendCode(currentOtpEmail);
-          mostrarToast('Novo código enviado com sucesso!');
+          const res = await window.apiClient.resendCode(currentOtpEmail);
+          if (res._codigoTesteDev) {
+            mostrarToast(`[DEV/TESTE] Novo código gerado: ${res._codigoTesteDev}`);
+          } else {
+            mostrarToast('Novo código de 6 dígitos enviado para seu e-mail!');
+          }
           return;
         } catch (err) {
           mostrarToast(err.message || 'Erro ao reenviar código.');
           return;
         }
       }
-      mostrarToast('Novo código simulado gerado!');
+
+      const novoCodigo = String(Math.floor(100000 + Math.random() * 900000));
+      const pendente = buscarContaSimuladaLocal(currentOtpEmail);
+      if (pendente) {
+        pendente.codigoOtp = novoCodigo;
+        salvarContaSimuladaPendente(pendente);
+      }
+      mostrarToast(`[SIMULAÇÃO] Novo código gerado: ${novoCodigo}`);
     }
 
     /**

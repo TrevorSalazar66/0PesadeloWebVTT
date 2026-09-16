@@ -33,6 +33,15 @@ export async function handleSyncRequest(request, env, clientIp) {
     }), { status: 401, headers });
   }
 
+  // 2.1 Verificação de E-mail Obrigatória para qualquer ação no Gateway
+  if (!user.emailVerified || user.emailVerified === 0) {
+    return new Response(JSON.stringify({
+      sucesso: false,
+      codigo: 'EMAIL_NOT_VERIFIED',
+      erro: 'Acesso bloqueado: confirme seu endereço de e-mail com o código de 6 dígitos para liberar o acesso aos recursos da taverna.'
+    }), { status: 403, headers });
+  }
+
   // 3. Leitura e Sanitização do Payload
   let body;
   try {

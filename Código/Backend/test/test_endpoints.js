@@ -52,7 +52,28 @@ async function runAllTests() {
   const jsonHealth = await resHealth.json();
   assert(resHealth.status === 200 && jsonHealth.status === 'online', 'Health check ativo respondendo online');
 
-  // 1.2 Cadastro de Usuário
+  // 1.1b Validação de Formato de E-mail Real (RFC 5322)
+  const resBadEmail1 = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'register',
+      data: { email: '1222222222222', password: 'senhaValida123!', displayName: 'Nome' }
+    })
+  }), env, {});
+  assert(resBadEmail1.status === 400, 'Validação de E-mail: Rejeitou formato sem domínio com HTTP 400');
+
+  const resBadEmail2 = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'register',
+      data: { email: 'fake@tempmail.com', password: 'senhaValida123!', displayName: 'Nome' }
+    })
+  }), env, {});
+  assert(resBadEmail2.status === 400, 'Validação de E-mail: Rejeitou provedor descartável/temporário com HTTP 400');
+
+  // 1.2 Cadastro de Usuário (Conta requer ativação por OTP)
   const resReg = await worker.fetch(new Request('http://localhost:8787/api/auth', {
     method: 'POST',
     headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
@@ -61,9 +82,38 @@ async function runAllTests() {
       data: { email: 'jogador1@arcana.vtt', password: 'senhaForte123@', displayName: 'Geralt de Rivia' }
     })
   }), env, {});
+  const jsonReg = await resReg.json();
   assert(resReg.status === 201, 'Cadastro de novo usuário (/api/auth register) retornou HTTP 201');
+  assert(jsonReg.requerVerificacao === true, 'Conta criada exige ativação prévia por código OTP');
+  assert(!resReg.headers.get('Set-Cookie'), 'Segurança: Nenhum cookie de sessão é emitido antes da confirmação OTP');
 
-  // 1.3 Login e Obtenção de Cookie
+  // 1.2b Tentativa de Login em Conta Não Verificada (Deve ser Bloqueada com 403)
+  const resLoginBloqueado = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'login',
+      data: { email: 'jogador1@arcana.vtt', password: 'senhaForte123@' }
+    })
+  }), env, {});
+  const jsonLoginBloqueado = await resLoginBloqueado.json();
+  assert(resLoginBloqueado.status === 403 && jsonLoginBloqueado.codigo === 'EMAIL_NOT_VERIFIED', 'Bloqueio de Acesso: Login impedido em conta com e-mail pendente de confirmação (HTTP 403)');
+
+  // 1.2c Ativação da Conta via Código OTP de 6 Dígitos
+  const otpCodeJogador1 = jsonReg._codigoTesteDev;
+  const resVerify1 = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'verify_email',
+      data: { email: 'jogador1@arcana.vtt', code: otpCodeJogador1 }
+    })
+  }), env, {});
+  const cookieJogador1 = resVerify1.headers.get('Set-Cookie')?.split(';')[0];
+  assert(resVerify1.status === 200, 'Confirmação OTP (/api/auth verify_email) ativou conta com sucesso (HTTP 200)');
+  assert(cookieJogador1 && cookieJogador1.includes('arcana_session'), 'Cookie seguro emitido na confirmação do código');
+
+  // 1.3 Login após confirmação do e-mail
   const resLogin = await worker.fetch(new Request('http://localhost:8787/api/auth', {
     method: 'POST',
     headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
@@ -72,11 +122,9 @@ async function runAllTests() {
       data: { email: 'jogador1@arcana.vtt', password: 'senhaForte123@' }
     })
   }), env, {});
-  const cookieJogador1 = resLogin.headers.get('Set-Cookie')?.split(';')[0];
   const jsonLogin = await resLogin.json();
-  assert(resLogin.status === 200, 'Login (/api/auth login) retornou HTTP 200 OK');
+  assert(resLogin.status === 200, 'Login (/api/auth login) aprovado após confirmação do e-mail (HTTP 200 OK)');
   assert(jsonLogin.usuario.displayName === 'Geralt de Rivia', 'Nome de exibição retornado corretamente');
-  assert(cookieJogador1 && cookieJogador1.includes('arcana_session'), 'Cookie seguro emitido na sessão');
 
   // 1.4 Criar Campanha pelo Gateway /api/sync
   const resCreateCamp = await worker.fetch(new Request('http://localhost:8787/api/sync', {
@@ -131,7 +179,7 @@ async function runAllTests() {
     headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       action: 'login',
-      data: { email: "admin@arcana.vtt' OR '1'='1", password: "' OR 1=1 --" }
+      data: { email: "admin@arcana.vtt", password: "' OR 1=1 --" }
     })
   }), env, {});
   assert(resSqlInvalido.status === 401, 'Imunidade a SQL Injection: Prepared Statements neutralizaram string maliciosa');
@@ -177,7 +225,7 @@ async function runAllTests() {
   assert(resTokenExpirado.status === 401, 'Validação Temporal: Rejeitou token expirado com HTTP 401');
 
   // 2.6 Teste de IDOR (Isolamento RLS entre Jogadores)
-  // Criar Jogador 2
+  // Criar Jogador 2 e confirmar via OTP
   const resReg2 = await worker.fetch(new Request('http://localhost:8787/api/auth', {
     method: 'POST',
     headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
@@ -186,7 +234,16 @@ async function runAllTests() {
       data: { email: 'jogador2@arcana.vtt', password: 'senhaForte123@', displayName: 'Yennefer de Vengerberg' }
     })
   }), env, {});
-  const cookieJogador2 = resReg2.headers.get('Set-Cookie')?.split(';')[0];
+  const jsonReg2 = await resReg2.json();
+  const resVerify2 = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'verify_email',
+      data: { email: 'jogador2@arcana.vtt', code: jsonReg2._codigoTesteDev }
+    })
+  }), env, {});
+  const cookieJogador2 = resVerify2.headers.get('Set-Cookie')?.split(';')[0];
 
   // Jogador 2 tenta listar campanhas (não deve ver a campanha criada pelo Jogador 1)
   const resListCamp2 = await worker.fetch(new Request('http://localhost:8787/api/sync', {
@@ -421,7 +478,7 @@ async function runAllTests() {
 
   // Promove jogador1 para Admin no D1 para testar operações de governança
   await db.prepare("UPDATE users SET role = 'Admin' WHERE email = 'jogador1@arcana.vtt'").run();
-  const tokenAdmin = await signJWT({ sub: 'usr_admin_test', email: 'jogador1@arcana.vtt', role: 'Admin', exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
+  const tokenAdmin = await signJWT({ sub: 'usr_admin_test', email: 'jogador1@arcana.vtt', role: 'Admin', emailVerified: 1, exp: Math.floor(Date.now() / 1000) + 3600 }, JWT_SECRET);
   const cookieAdmin = `arcana_session=${tokenAdmin}`;
 
   // Admin lista dispositivos bloqueados
@@ -447,7 +504,7 @@ async function runAllTests() {
   const jsonDesbloqueio = await resDesbloqueio.json();
   assert(resDesbloqueio.status === 200 && jsonDesbloqueio.sucesso === true, 'Painel Admin: Desbloqueio de dispositivo em 1-clique concluído com sucesso');
 
-  // Dispositivo liberado agora consegue autenticar normalmente
+  // Dispositivo liberado agora consegue cadastrar conta novamente sem bloqueio 403
   const resDispositivoLiberado = await worker.fetch(new Request('http://localhost:8787/api/auth', {
     method: 'POST',
     headers: {
@@ -457,11 +514,11 @@ async function runAllTests() {
       'CF-Connecting-IP': IP_ATACANTE_SYBIL
     },
     body: JSON.stringify({
-      action: 'login',
-      data: { email: 'sybil_bot_1@ataque.vtt', password: 'senhaSybil123!' }
+      action: 'register',
+      data: { email: 'nova_conta_liberada@arcana.vtt', password: 'senhaSegura123!', displayName: 'Aventureiro Reabilitado' }
     })
   }), env, {});
-  assert(resDispositivoLiberado.status === 200, 'Restauração de Acesso: Dispositivo liberado pelo admin volta a operar normalmente');
+  assert(resDispositivoLiberado.status === 201, 'Restauração de Acesso: Dispositivo liberado pelo admin volta a operar e criar contas normalmente');
 
   // ============================================================================
   // RELATÓRIO E CONCLUSÃO

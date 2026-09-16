@@ -31,6 +31,7 @@ export async function authenticateRequest(request, env) {
     userId: decoded.sub,
     email: decoded.email,
     role: decoded.role || 'Jogador',
-    displayName: decoded.displayName || 'Aventureiro'
+    displayName: decoded.displayName || 'Aventureiro',
+    emailVerified: decoded.emailVerified !== undefined ? decoded.emailVerified : 0
   };
 }
