@@ -1,0 +1,293 @@
+/**
+ * SUITE COMPLETA DE TESTES: FUNCIONAMENTO, SEGURANÇA AVANÇADA E SOBRECARGA (STRESS TEST)
+ * Executa as 3 etapas solicitadas pelo autor com medições precisas.
+ */
+import worker from '../src/index.js';
+import { createLocalD1 } from '../src/db/localD1.js';
+import { signJWT } from '../src/services/cryptoService.js';
+
+let testesPassados = 0;
+let testesFalhos = 0;
+
+function assert(condition, message) {
+  if (condition) {
+    console.log(`  ✅ [PASSOU] ${message}`);
+    testesPassados++;
+  } else {
+    console.error(`  ❌ [FALHOU] ${message}`);
+    testesFalhos++;
+  }
+}
+
+async function runAllTests() {
+  console.log('\n================================================================');
+  console.log('🛡️  BATERIA COMPLETA DE TESTES DE INTEGRAÇÃO — ARCANA VTT');
+  console.log('    Etapa 1: Funcionamento Básico dos Endpoints');
+  console.log('    Etapa 2: Limites de Segurança (SQLi, IDOR, Forjamento de JWT)');
+  console.log('    Etapa 3: Teste de Sobrecarga e Negação de Serviço (Rate Limiting / DoS)');
+  console.log('================================================================\n');
+
+  const db = createLocalD1(':memory:');
+  const JWT_SECRET = 'arcana-super-secret-key-development-local-2026-vtt';
+  const env = {
+    ENVIRONMENT: 'development',
+    ALLOWED_ORIGINS: 'http://localhost:5500,http://127.0.0.1:5500,https://arcana.pages.dev',
+    JWT_SECRET,
+    DB: db
+  };
+
+  const VALID_ORIGIN = 'http://localhost:5500';
+  const FAKE_ORIGIN = 'http://site-hacker-invasor.com';
+
+  // ============================================================================
+  // ETAPA 1: TESTES DE FUNCIONAMENTO BÁSICO
+  // ============================================================================
+  console.log('📋 ─── ETAPA 1: TESTES DE FUNCIONAMENTO BÁSICO ───────────────────');
+
+  // 1.1 Health Check
+  const resHealth = await worker.fetch(new Request('http://localhost:8787/health', {
+    method: 'GET',
+    headers: { 'Origin': VALID_ORIGIN }
+  }), env, {});
+  const jsonHealth = await resHealth.json();
+  assert(resHealth.status === 200 && jsonHealth.status === 'online', 'Health check ativo respondendo online');
+
+  // 1.2 Cadastro de Usuário
+  const resReg = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'register',
+      data: { email: 'jogador1@arcana.vtt', password: 'senhaForte123@', displayName: 'Geralt de Rivia' }
+    })
+  }), env, {});
+  assert(resReg.status === 201, 'Cadastro de novo usuário (/api/auth register) retornou HTTP 201');
+
+  // 1.3 Login e Obtenção de Cookie
+  const resLogin = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'login',
+      data: { email: 'jogador1@arcana.vtt', password: 'senhaForte123@' }
+    })
+  }), env, {});
+  const cookieJogador1 = resLogin.headers.get('Set-Cookie')?.split(';')[0];
+  const jsonLogin = await resLogin.json();
+  assert(resLogin.status === 200, 'Login (/api/auth login) retornou HTTP 200 OK');
+  assert(jsonLogin.usuario.displayName === 'Geralt de Rivia', 'Nome de exibição retornado corretamente');
+  assert(cookieJogador1 && cookieJogador1.includes('arcana_session'), 'Cookie seguro emitido na sessão');
+
+  // 1.4 Criar Campanha pelo Gateway /api/sync
+  const resCreateCamp = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieJogador1 },
+    body: JSON.stringify({
+      action: 'campaigns.create',
+      data: { name: 'A Busca pelo Cálice', systemId: 'tormenta20', description: 'Campanha de testes' }
+    })
+  }), env, {});
+  const jsonCreateCamp = await resCreateCamp.json();
+  assert(resCreateCamp.status === 201, 'Criação de campanha (/api/sync campaigns.create) retornou HTTP 201');
+  const campId = jsonCreateCamp.dados.id;
+
+  // 1.5 Listar Campanhas
+  const resListCamp = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieJogador1 },
+    body: JSON.stringify({ action: 'campaigns.list' })
+  }), env, {});
+  const jsonListCamp = await resListCamp.json();
+  assert(jsonListCamp.dados.length === 1 && jsonListCamp.dados[0].id === campId, 'Listagem de campanhas (/api/sync campaigns.list) recuperou registro');
+
+  // 1.6 Criar Personagem
+  const resCreateChar = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieJogador1 },
+    body: JSON.stringify({
+      action: 'characters.create',
+      data: { name: 'Jaskier o Bardo', sheetData: { carisma: 18, pv: 24 } }
+    })
+  }), env, {});
+  assert(resCreateChar.status === 201, 'Criação de personagem (/api/sync characters.create) retornou HTTP 201');
+
+
+  // ============================================================================
+  // ETAPA 2: TESTES DOS LIMITES DE SEGURANÇA
+  // ============================================================================
+  console.log('\n🔒 ─── ETAPA 2: TESTES DE LIMITES DE SEGURANÇA ───────────────────');
+
+  // 2.1 Bloqueio de Origem Não Autorizada (CORS Bypass Attempt)
+  const resBadOrigin = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': FAKE_ORIGIN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'login', data: { email: 'a@a.com', password: '123' } })
+  }), env, {});
+  assert(resBadOrigin.status === 403, 'Bloqueio de CORS: Rejeitou origem não autorizada com HTTP 403 Forbidden');
+
+  // 2.2 Tentativa de Injeção de SQL (SQL Injection - Bypass de Login)
+  const resSqlInvalido = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'login',
+      data: { email: "admin@arcana.vtt' OR '1'='1", password: "' OR 1=1 --" }
+    })
+  }), env, {});
+  assert(resSqlInvalido.status === 401, 'Imunidade a SQL Injection: Prepared Statements neutralizaram string maliciosa');
+
+  // 2.3 Tentativa de Injeção de SQL destrutivo em campos de campanha
+  const resSqlDestrutivo = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieJogador1 },
+    body: JSON.stringify({
+      action: 'campaigns.create',
+      data: { name: "Campanha'; DROP TABLE users; --" }
+    })
+  }), env, {});
+  assert(resSqlDestrutivo.status === 201, 'Imunidade a SQL DDL: SQL escapado com bind() — banco não sofreu DROP TABLE');
+  // Verifica se a tabela users ainda existe e está intacta
+  const checkTable = await db.prepare('SELECT count(*) as total FROM users').first();
+  assert(checkTable.total > 0, 'Integridade confirmada: Tabela users continua íntegra e acessível');
+
+  // 2.4 Tentativa de Falsificação de Assinatura JWT (Token Forjado)
+  const tokenFalso = await signJWT({ sub: 'usr_hacker', email: 'hacker@dark.net', role: 'Admin', exp: Math.floor(Date.now() / 1000) + 3600 }, 'chave-totalmente-errada');
+  const resTokenFalso = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: {
+      'Origin': VALID_ORIGIN,
+      'Content-Type': 'application/json',
+      'Cookie': `arcana_session=${tokenFalso}`
+    },
+    body: JSON.stringify({ action: 'campaigns.list' })
+  }), env, {});
+  assert(resTokenFalso.status === 401, 'Validação Criptográfica: Rejeitou token forjado com chave falsa (HTTP 401)');
+
+  // 2.5 Tentativa de Token Expirado
+  const tokenExpirado = await signJWT({ sub: 'usr_expirado', exp: Math.floor(Date.now() / 1000) - 300 }, JWT_SECRET);
+  const resTokenExpirado = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: {
+      'Origin': VALID_ORIGIN,
+      'Content-Type': 'application/json',
+      'Cookie': `arcana_session=${tokenExpirado}`
+    },
+    body: JSON.stringify({ action: 'campaigns.list' })
+  }), env, {});
+  assert(resTokenExpirado.status === 401, 'Validação Temporal: Rejeitou token expirado com HTTP 401');
+
+  // 2.6 Teste de IDOR (Isolamento RLS entre Jogadores)
+  // Criar Jogador 2
+  const resReg2 = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'register',
+      data: { email: 'jogador2@arcana.vtt', password: 'senhaForte123@', displayName: 'Yennefer de Vengerberg' }
+    })
+  }), env, {});
+  const cookieJogador2 = resReg2.headers.get('Set-Cookie')?.split(';')[0];
+
+  // Jogador 2 tenta listar campanhas (não deve ver a campanha criada pelo Jogador 1)
+  const resListCamp2 = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieJogador2 },
+    body: JSON.stringify({ action: 'campaigns.list' })
+  }), env, {});
+  const jsonListCamp2 = await resListCamp2.json();
+  assert(jsonListCamp2.dados.length === 0, 'Isolamento RLS: Jogador 2 não consegue enxergar campanhas privadas do Jogador 1');
+
+
+  // ============================================================================
+  // ETAPA 3: TESTES DE SOBRECARGA E ESTRESSE (RATE LIMITING & DoS)
+  // ============================================================================
+  console.log('\n⚡ ─── ETAPA 3: TESTES DE SOBRECARGA E RATE LIMITING (DoS) ────────');
+
+  // 3.1 Exaustão de Tamanho de Payload (> 64KB)
+  const payloadGigante = JSON.stringify({ action: 'test', data: 'X'.repeat(70000) });
+  const resExaustao = await worker.fetch(new Request('http://localhost:8787/api/auth', {
+    method: 'POST',
+    headers: {
+      'Origin': VALID_ORIGIN,
+      'Content-Type': 'application/json',
+      'Content-Length': String(payloadGigante.length)
+    },
+    body: payloadGigante
+  }), env, {});
+  assert(resExaustao.status === 413, 'Proteção contra Payload Gigante: Bloqueou com HTTP 413 Payload Too Large');
+
+  // 3.2 Rajada de Requisições de Força Bruta em /api/auth (Burst Stress)
+  console.log('  ⚡ Disparando rajada de 20 requisições simultâneas em /api/auth para testar Rate Limiting...');
+  const IP_ATACANTE = '198.51.100.42';
+  let bloqueiosAuth = 0;
+  let aceitosAuth = 0;
+
+  for (let i = 0; i < 20; i++) {
+    const reqBurst = new Request('http://localhost:8787/api/auth', {
+      method: 'POST',
+      headers: {
+        'Origin': VALID_ORIGIN,
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': IP_ATACANTE
+      },
+      body: JSON.stringify({
+        action: 'login',
+        data: { email: 'alvo@arcana.vtt', password: `tentativa_${i}` }
+      })
+    });
+    const res = await worker.fetch(reqBurst, env, {});
+    if (res.status === 429) {
+      bloqueiosAuth++;
+    } else {
+      aceitosAuth++;
+    }
+  }
+  assert(bloqueiosAuth > 0, `Rate Limiting Ativo em /api/auth: ${bloqueiosAuth} requisições barradas com HTTP 429 Too Many Requests`);
+  assert(aceitosAuth <= 10, `Teto de segurança respeitado: Máximo de ${aceitosAuth} tentativas permitidas dentro da janela de 1 minuto`);
+
+  // 3.3 Rajada de Carga em /api/sync
+  console.log('  ⚡ Disparando teste de carga com 140 requisições consecutivas no Gateway /api/sync...');
+  const IP_SYNC_BURST = '198.51.100.99';
+  let bloqueiosSync = 0;
+  let aceitosSync = 0;
+
+  for (let i = 0; i < 140; i++) {
+    const reqSync = new Request('http://localhost:8787/api/sync', {
+      method: 'POST',
+      headers: {
+        'Origin': VALID_ORIGIN,
+        'Content-Type': 'application/json',
+        'Cookie': cookieJogador1,
+        'CF-Connecting-IP': IP_SYNC_BURST
+      },
+      body: JSON.stringify({ action: 'profile.get' })
+    });
+    const res = await worker.fetch(reqSync, env, {});
+    if (res.status === 429) {
+      bloqueiosSync++;
+    } else if (res.status === 200) {
+      aceitosSync++;
+    }
+  }
+  assert(bloqueiosSync > 0, `Throttling Ativo em /api/sync: ${bloqueiosSync} requisições excedentes bloqueadas com HTTP 429`);
+  assert(aceitosSync <= 120, `Teto de vazão respeitado: ${aceitosSync} requisições atendidas com sucesso antes da restrição`);
+
+  // ============================================================================
+  // RELATÓRIO E CONCLUSÃO
+  // ============================================================================
+  console.log('\n================================================================');
+  console.log(`📊 RESUMO DA BATERIA DE TESTES:`);
+  console.log(`   Total de Testes Realizados: ${testesPassados + testesFalhos}`);
+  console.log(`   ✅ Sucessos: ${testesPassados}`);
+  console.log(`   ❌ Falhas:   ${testesFalhos}`);
+  console.log('================================================================\n');
+
+  if (testesFalhos > 0) {
+    process.exit(1);
+  }
+}
+
+runAllTests().catch(err => {
+  console.error('Falha crítica na suíte de testes:', err);
+  process.exit(1);
+});

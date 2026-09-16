@@ -7,6 +7,7 @@ Este documento formaliza o planejamento técnico da integração entre a interfa
 ## 📋 Lista de Tópicos Resumidos
 
 ### Tópico 1: Arquitetura Minimalista de Endpoints (Estratégia Dual-Endpoint + WebSocket)
+
 - **Objetivo**: Reduzir os pontos de entrada do backend ao menor número possível, eliminando dezenas de rotas REST fragmentadas e unificando o tráfego HTTP em apenas **dois endpoints** principais e **um canal de tempo real via WebSocket**.
 - **Método**:
   1. `/api/auth` (HTTP POST): Roteia operações do ciclo de credenciais (`login`, `register`, `refresh`, `logout`).
@@ -19,6 +20,7 @@ Este documento formaliza o planejamento técnico da integração entre a interfa
 ---
 
 ### Tópico 2: Autenticação Criptográfica Forte e Gestão de Sessões (WebCrypto + JWT HttpOnly)
+
 - **Objetivo**: Proteger as credenciais e o acesso aos recursos do sistema com técnicas criptográficas modernas, sem dependência de bibliotecas externas pesadas e imunes a ataques comuns (XSS, CSRF, roubo de token).
 - **Método**:
   - Hashing de senhas via API nativa `crypto.subtle` (PBKDF2 com HMAC-SHA256, 100.000 iterações e salt aleatório criptograficamente seguro de 16 bytes por usuário).
@@ -32,6 +34,7 @@ Este documento formaliza o planejamento técnico da integração entre a interfa
 ---
 
 ### Tópico 3: Camada de Persistência Segura (Cloudflare D1 com Prepared Statements & RLS Lógico)
+
 - **Objetivo**: Assegurar integridade relacional e blindagem absoluta contra ataques de Injeção de SQL (SQLi) e Acesso Não Autorizado a Dados de Terceiros (IDOR).
 - **Método**:
   - Uso obrigatório de *Prepared Statements* parametrizados em 100% das operações no Cloudflare D1 (`db.prepare('... WHERE id = ?').bind(id)`), com proibição estrita de qualquer interpolação ou concatenação de strings em SQL.
@@ -44,6 +47,7 @@ Este documento formaliza o planejamento técnico da integração entre a interfa
 ---
 
 ### Tópico 4: Diretrizes Rígidas de Segurança de Borda (Headers, Rate Limiting e CORS)
+
 - **Objetivo**: Bloquear abusos volumétricos, negação de serviço, clickjacking e tentativas de força bruta antes que consumam recursos do banco de dados.
 - **Método**:
   - **Rate Limiting na Borda**: Limite estrito de 5 requisições por minuto por IP para o endpoint `/api/auth` (bloqueando ataques de dicionário e força bruta) e 60 requisições por minuto para `/api/sync`.
@@ -64,15 +68,19 @@ Este documento formaliza o planejamento técnico da integração entre a interfa
 ## 🔍 Detalhamento dos Tópicos
 
 ### Detalhamento do Tópico 1 — O Padrão de Gateway Unificado (2 Endpoints + WebSocket)
+
 Em vez de expor uma teia de rotas como `/api/v1/users/me`, `/api/v1/campaigns/123/players`, `/api/v1/sheets/456`, a aplicação adotará uma arquitetura inspirada em RPC (Remote Procedure Call) unificado. O endpoint `/api/sync` aceita um objeto JSON padronizado: `{ action: "categoria.metodo", data: { ... } }`. Ao receber a requisição, o Cloudflare Worker passa por um funil único de segurança: (1) verificação do cookie de autenticação, (2) verificação do rate limit, (3) sanitização do payload e (4) roteamento interno para a função controladora correspondente (`campaigns.create`, `characters.list`, `profile.update`). Para o jogo em si, a abertura de mesa conecta o cliente ao `/ws/room?campaignId=XYZ`, estabelecendo o túnel WebSocket persistente onde ocorrem as transmissões bidirecionais efêmeras. Essa estratégia corta em mais de 80% o número de rotas necessárias, facilitando a manutenção e testes.
 
 ### Detalhamento do Tópico 2 — Protocolo Criptográfico Nativo (WebCrypto)
+
 A Cloudflare Workers suporta nativamente a API WebCrypto do W3C (`crypto.subtle`), o que dispensa a importação de bibliotecas externas pesadas como `bcrypt` ou `jsonwebtoken`. O processo de hashing de senhas utiliza `PBKDF2` com derivação de chave SHA-256 e salting individual de alta entropia. O JWT gerado é assinado com uma chave secreta injetada via Cloudflare Secrets (`JWT_SECRET`), garantindo que qualquer tentativa de alteração do payload pelo cliente invalide a assinatura instantaneamente. O envio e leitura via cookie com atributos `HttpOnly; Secure; SameSite=Strict` garante que extensões maliciosas de navegador ou códigos injetados não consigam ler o token nem sequestrar a sessão do usuário.
 
 ### Detalhamento do Tópico 3 — Segurança do Cloudflare D1 e RLS Lógico
+
 O banco de dados Cloudflare D1 será desenhado com chaves estrangeiras (`FOREIGN KEY`) estritas e índices otimizados para consultas por `user_id` e `campaign_id`. A integridade dos dados repousa sobre a premissa de que o ID do usuário operante é uma verdade inviolável extraída do JWT verificado. Portanto, uma requisição do tipo `{ action: "characters.delete", data: { id: "char_123" } }` é convertida no SQL seguro: `DELETE FROM characters WHERE id = ? AND user_id = ?`. Caso o usuário não seja o proprietário daquela ficha, zero linhas são afetadas, eliminando por completo vulnerabilidades de autorização horizontal.
 
 ### Detalhamento do Tópico 4 — Blindagem de Borda e Prevenção de Abusos
+
 Todo pacote HTTP que atinge o Worker é inspecionado antes mesmo de tocar a lógica de negócios. O cabeçalho de Content-Length é avaliado para barrar uploads desproporcionais. Tentativas repetidas de login sem sucesso ativam um temporizador progressivo que bloqueia temporariamente requisições oriundas daquele identificador. Adicionalmente, as respostas do servidor incluem todos os cabeçalhos recomendados pelas diretrizes de segurança da OWASP, impedindo que o site seja incorporado em páginas externas ou que recursos sejam carregados de fontes não autorizadas.
 
 ---
@@ -120,3 +128,64 @@ Código/
 
 1. Submeter este plano técnico ao controle de versão (Git commit e push).
 2. Aguardar a leitura, considerações e o aval explícito do autor sob a etiqueta **`#> Implementação`** para iniciar a codificação da infraestrutura de backend, esquemas do banco e conexões seguras.
+
+---
+
+Essa abordagem garante que, tanto no seu computador durante os testes quanto em produção na Cloudflare, existam **três fronteiras reais e isoladas**, onde cada parte possui responsabilidades e barreiras bem definidas.
+
+---
+
+### 🌐 Como os 3 servidores separados funcionarão localmente
+
+Para que seus testes locais tenham 100% de fidelidade ao ambiente real da nuvem, nós simularemos os três ambientes em portas e processos independentes:
+
+```text
+┌─────────────────────────┐         ┌─────────────────────────┐         ┌─────────────────────────┐
+│  SERVIDOR 1: FRONTEND   │  HTTP   │  SERVIDOR 2: BACKEND    │   IPC   │  SERVIDOR 3: BANCO      │
+│  (Live Server / Pages)  │ ──────> │  (Worker Gateway)       │ ──────> │  (Cloudflare D1 Local)  │
+│  http://localhost:5500  │ <────── │  http://localhost:8787  │ <────── │  Motor SQLite Isolado   │
+└─────────────────────────┘  JSON   └─────────────────────────┘  SQL    └─────────────────────────┘
+```
+
+1. **Servidor 1: Frontend (Cliente Web)**
+   - Roda na porta `http://localhost:5500` (pelo Live Server ou Cloudflare Pages local).
+   - Não possui nenhum acesso direto ao banco de dados e não conhece as regras internas do servidor. Ele se comporta como qualquer navegador ou cliente externo.
+
+2. **Servidor 2: Backend (O "Gateway" / Cloudflare Worker)**
+   - Roda em outra porta separada (por exemplo, `http://localhost:8787` via ferramenta oficial `wrangler dev`).
+   - Atua como a **guarita central**: possui seu endpoint único de entrada, inspeciona tudo o que chega e não deixa passar nada duvidoso.
+
+3. **Servidor 3: Banco de Dados e Armazenamento (Cloudflare D1 Local)**
+   - Roda como uma instância SQLite real e isolada gerenciada localmente pelo motor de emulação da Cloudflare (`Miniflare`).
+   - Fica totalmente inacessível para o mundo externo e para o frontend; **apenas o Servidor 2 (Backend)** possui permissão de conversar com ele através da ponte segura `env.DB`.
+
+---
+
+### 🛡️ O Ciclo Exato da Requisição (Como o Backend valida e processa)
+
+Exatamente como você descreveu, o fluxo segue 5 etapas rigorosas:
+
+1. **Envio pelo Frontend**:
+   - O frontend dispara uma requisição para o endpoint único do backend:
+     `POST http://localhost:8787/api/sync`
+     Enviando a ação desejada no corpo e os cookies de sessão de forma segura (`credentials: 'include'`).
+
+2. **Fase 1 do Backend: Validação de Origem (De onde veio a informação?)**:
+   - O backend inspeciona os cabeçalhos de rede HTTP antes de ler qualquer dado:
+     - **Verificação de `Origin`**: Checa se a requisição partiu estritamente da origem permitida (`http://localhost:5500` nos testes ou `https://arcana.pages.dev` em produção). Se veio de qualquer outro site ou origem desconhecida, a requisição é rejeitada imediatamente com `HTTP 403 Forbidden`.
+     - **Proteção CSRF**: Valida se o cabeçalho `Sec-Fetch-Site` coincide com a política de requisição segura.
+
+3. **Fase 2 do Backend: Validação de Segurança do Conteúdo**:
+   - **Tamanho do Payload**: Verifica se o corpo não ultrapassa o limite permitido (ex: 64KB).
+   - **Autenticação**: Decodifica o cookie `HttpOnly` com o token JWT assinado para descobrir quem é o usuário (`user_id`).
+   - **Sanitização e Schema**: Confirma se os dados enviados possuem os tipos esperados (strings válidas, números dentro do limite, sem scripts ou caracteres perigosos).
+
+4. **Fase 3 do Backend: Roteamento Interno e Processamento**:
+   - Uma vez que o pacote foi considerado 100% legítimo e seguro, o gateway despacha os dados para a função interna necessária (ex: `criarCampanha(dados, user_id)`).
+   - O backend executa a query parametrizada segura no **Servidor 3 (D1/SQLite)**:
+     `INSERT INTO campanhas (id, nome, mestre_id) VALUES (?, ?, ?)`
+
+5. **Retorno para o Frontend**:
+   - O backend formata a resposta padronizada em JSON (ex: `{ sucesso: true, campanhaId: "..." }`) anexando todos os cabeçalhos de segurança (CSP, CORS, HSTS) e devolve para o Frontend.
+
+---
