@@ -1,4 +1,4 @@
-name = "arcana-vtt-backend"
+name = "0PesadeloWebVTT"
 main = "src/index.js"
 compatibility_date = "2024-09-01"
 compatibility_flags = ["nodejs_compat"]
