@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     google_id TEXT UNIQUE,
     avatar_url TEXT DEFAULT '',
     display_name TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'jogador' CHECK (role IN ('jogador', 'assistente de mestre', 'mestre', 'admin', 'superadmin', 'Jogador', 'Mestre', 'Admin')),
+    role TEXT NOT NULL DEFAULT 'jogador' CHECK (role IN ('jogador', 'mestre', 'admin', 'superadmin', 'Jogador', 'Mestre', 'Admin')),
     email_verified INTEGER NOT NULL DEFAULT 0,
     profile_completed INTEGER NOT NULL DEFAULT 0,
     auth_provider TEXT NOT NULL DEFAULT 'email' CHECK (auth_provider IN ('email', 'google', 'both')),
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS campaigns (
 CREATE TABLE IF NOT EXISTS campaign_players (
     campaign_id TEXT NOT NULL,
     user_id TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'Jogador' CHECK (role IN ('Jogador', 'Mestre')),
+    role TEXT NOT NULL DEFAULT 'jogador' CHECK (role IN ('jogador', 'assistente de mestre', 'mestre', 'Jogador', 'Mestre')),
     joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (campaign_id, user_id),
     FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
@@ -118,3 +118,15 @@ CREATE INDEX IF NOT EXISTS idx_campaigns_simple_id ON campaigns(simple_id);
 CREATE INDEX IF NOT EXISTS idx_characters_user ON characters(user_id);
 CREATE INDEX IF NOT EXISTS idx_characters_campaign ON characters(campaign_id);
 
+-- 8. Tabela de Solicitacoes de Entrada em Campanhas
+CREATE TABLE IF NOT EXISTS campaign_requests (
+    id TEXT PRIMARY KEY,
+    campaign_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente', 'aceito', 'recusado')),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_requests_campaign ON campaign_requests(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_requests_user ON campaign_requests(user_id);

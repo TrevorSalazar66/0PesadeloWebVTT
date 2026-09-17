@@ -248,6 +248,25 @@ export const dbQueries = {
     return res.results || res;
   },
 
+  async getPublicCampaigns(db, userId) {
+    const stmt = db.prepare(`
+      SELECT c.*, 
+        u.display_name AS owner_name,
+        u.avatar_url AS owner_avatar,
+        (SELECT COUNT(*) FROM campaign_players cp2 WHERE cp2.campaign_id = c.id) AS current_players,
+        (SELECT status FROM campaign_requests cr WHERE cr.campaign_id = c.id AND cr.user_id = ?) AS request_status
+      FROM campaigns c
+      JOIN users u ON c.owner_id = u.id
+      WHERE c.owner_id != ? 
+        AND NOT EXISTS (
+          SELECT 1 FROM campaign_players cp WHERE cp.campaign_id = c.id AND cp.user_id = ?
+        )
+      ORDER BY c.created_at DESC
+    `);
+    const res = await stmt.bind(userId, userId, userId).all();
+    return res.results || res;
+  },
+
   async getCampaignById(db, campaignId) {
     const stmt = db.prepare(`
       SELECT c.*, 
@@ -316,6 +335,56 @@ export const dbQueries = {
     } catch (_) {}
 
     return info;
+  },
+
+  async addPlayerToCampaign(db, campaignId, userId, role = 'jogador') {
+    const stmt = db.prepare(`
+      INSERT INTO campaign_players (campaign_id, user_id, role)
+      VALUES (?, ?, ?)
+      ON CONFLICT(campaign_id, user_id) DO NOTHING
+    `);
+    return await stmt.bind(campaignId, userId, role).run();
+  },
+
+  async updateCampaignPlayerRole(db, campaignId, userId, newRole) {
+    const stmt = db.prepare(`
+      UPDATE campaign_players SET role = ?
+      WHERE campaign_id = ? AND user_id = ?
+    `);
+    return await stmt.bind(newRole, campaignId, userId).run();
+  },
+
+  async createCampaignRequest(db, { id, campaignId, userId }) {
+    const stmt = db.prepare(`
+      INSERT INTO campaign_requests (id, campaign_id, user_id)
+      VALUES (?, ?, ?)
+    `);
+    return await stmt.bind(id, campaignId, userId).run();
+  },
+
+  async getCampaignRequests(db, campaignId) {
+    const stmt = db.prepare(`
+      SELECT cr.*, u.display_name, u.email
+      FROM campaign_requests cr
+      JOIN users u ON cr.user_id = u.id
+      WHERE cr.campaign_id = ? AND cr.status = 'pendente'
+      ORDER BY cr.created_at ASC
+    `);
+    const res = await stmt.bind(campaignId).all();
+    return res.results || res;
+  },
+
+  async updateCampaignRequestStatus(db, requestId, status) {
+    const stmt = db.prepare(`
+      UPDATE campaign_requests SET status = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+    return await stmt.bind(status, requestId).run();
+  },
+
+  async getCampaignRequestById(db, requestId) {
+    const stmt = db.prepare('SELECT * FROM campaign_requests WHERE id = ?');
+    return await stmt.bind(requestId).first();
   },
 
   // ==========================================

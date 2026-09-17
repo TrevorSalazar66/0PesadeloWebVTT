@@ -164,6 +164,7 @@ export async function handleSyncRequest(request, env, clientIp) {
         return new Response(JSON.stringify({
           sucesso: true,
           mensagem: 'Perfil forjado com sucesso! Bem-vindo à Taverna.',
+          token: updatedToken,
           perfil: {
             userId: user.userId,
             name: name.trim(),
@@ -293,6 +294,92 @@ export async function handleSyncRequest(request, env, clientIp) {
           mensagem: 'Campanha forjada com sucesso!',
           dados: createdCampaign
         }), { status: 201, headers });
+      }
+
+      case 'campaigns.public': {
+        const publicCampaigns = await dbQueries.getPublicCampaigns(db, user.userId);
+        return new Response(JSON.stringify({ sucesso: true, dados: publicCampaigns }), { status: 200, headers });
+      }
+
+      case 'campaigns.request': {
+        if (!data || !data.campaignId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha ausente.' }), { status: 400, headers });
+        }
+        
+        const requestId = `req_${randomUUID().replace(/-/g, '').substring(0, 12)}`;
+        await dbQueries.createCampaignRequest(db, { id: requestId, campaignId: data.campaignId, userId: user.userId });
+        
+        return new Response(JSON.stringify({ sucesso: true, mensagem: 'Solicitação enviada com sucesso!' }), { status: 201, headers });
+      }
+
+      case 'campaigns.requests.list': {
+        const { campaignId } = data;
+        if (!campaignId) return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha ausente.' }), { status: 400, headers });
+        
+        // Ensure user is owner of the campaign or admin/superadmin
+        const campaign = await dbQueries.getCampaignById(db, campaignId);
+        if (!campaign) return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
+        
+        if (campaign.owner_id !== user.userId && !['admin', 'superadmin'].includes(user.role)) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Não autorizado.' }), { status: 403, headers });
+        }
+        
+        const requests = await dbQueries.getCampaignRequests(db, campaignId);
+        return new Response(JSON.stringify({ sucesso: true, dados: requests }), { status: 200, headers });
+      }
+
+      case 'campaigns.requests.update': {
+        const { requestId, status } = data;
+        if (!requestId || !['aceito', 'recusado'].includes(status)) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Dados inválidos.' }), { status: 400, headers });
+        }
+        
+        const req = await dbQueries.getCampaignRequestById(db, requestId);
+        if (!req) return new Response(JSON.stringify({ sucesso: false, erro: 'Solicitação não encontrada.' }), { status: 404, headers });
+        
+        const campaign = await dbQueries.getCampaignById(db, req.campaign_id);
+        if (campaign.owner_id !== user.userId && !['admin', 'superadmin'].includes(user.role)) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Não autorizado.' }), { status: 403, headers });
+        }
+        
+        await dbQueries.updateCampaignRequestStatus(db, requestId, status);
+        
+        // If accepted, add player to campaign_players
+        if (status === 'aceito') {
+          try {
+            const stmtPlayer = db.prepare(`
+              INSERT OR IGNORE INTO campaign_players (campaign_id, user_id, role)
+              VALUES (?, ?, 'jogador')
+            `);
+            await stmtPlayer.bind(req.campaign_id, req.user_id).run();
+          } catch (_) {}
+        }
+        
+        return new Response(JSON.stringify({ sucesso: true, mensagem: `Solicitação ${status}.` }), { status: 200, headers });
+      }
+
+      case 'campaigns.players.updateRole': {
+        const { campaignId, targetUserId, newRole } = data;
+        if (!campaignId || !targetUserId || !['jogador', 'assistente de mestre'].includes(newRole)) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Dados inválidos.' }), { status: 400, headers });
+        }
+
+        const campaign = await dbQueries.getCampaignById(db, campaignId);
+        if (!campaign) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
+        }
+
+        // Only the master (owner) or global admin can promote/demote players in this campaign
+        if (campaign.owner_id !== user.userId && !['admin', 'superadmin'].includes(user.role)) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o mestre da campanha pode alterar papéis.' }), { status: 403, headers });
+        }
+
+        if (targetUserId === campaign.owner_id) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Não é possível alterar o papel do criador.' }), { status: 400, headers });
+        }
+
+        await dbQueries.updateCampaignPlayerRole(db, campaignId, targetUserId, newRole);
+        return new Response(JSON.stringify({ sucesso: true, mensagem: `Papel atualizado para ${newRole}.` }), { status: 200, headers });
       }
 
       // PERSONAGENS (RLS: O usuário só acessa fichas vinculadas ao seu user_id)

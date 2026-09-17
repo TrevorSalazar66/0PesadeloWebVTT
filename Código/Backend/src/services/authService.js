@@ -180,6 +180,7 @@ export async function handleAuthRequest(request, env, clientIp) {
       mensagem: isProfileCompleted 
         ? 'E-mail confirmado com sucesso! Acesso à taverna liberado.' 
         : 'E-mail confirmado com sucesso! Conclua a criação do seu perfil de aventureiro.',
+      token,
       requerCriacaoPerfil: !isProfileCompleted,
       usuario: {
         id: user.id,
@@ -280,6 +281,7 @@ export async function handleAuthRequest(request, env, clientIp) {
     return new Response(JSON.stringify({
       sucesso: true,
       mensagem: 'Login realizado com sucesso!',
+      token,
       requerCriacaoPerfil: !isProfileCompleted,
       usuario: {
         id: user.id,

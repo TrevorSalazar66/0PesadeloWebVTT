@@ -26,6 +26,12 @@ export const apiClient = {
     if (fingerprint) {
       headers['X-Device-Fingerprint'] = fingerprint;
     }
+
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('arcana_token') : null;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     return headers;
   },
 
@@ -42,7 +48,16 @@ export const apiClient = {
     });
 
     const json = await res.json().catch(() => ({}));
+    if (json && json.token) {
+      try {
+        localStorage.setItem('arcana_token', json.token);
+      } catch (e) {}
+    }
+
     if (!res.ok) {
+      if (res.status === 401) {
+        try { localStorage.removeItem('arcana_token'); } catch (e) {}
+      }
       const error = new Error(json.erro || `Erro HTTP ${res.status}`);
       error.status = res.status;
       error.codigo = json.codigo;
@@ -65,7 +80,16 @@ export const apiClient = {
     });
 
     const json = await res.json().catch(() => ({}));
+    if (json && json.token) {
+      try {
+        localStorage.setItem('arcana_token', json.token);
+      } catch (e) {}
+    }
+
     if (!res.ok) {
+      if (res.status === 401) {
+        try { localStorage.removeItem('arcana_token'); } catch (e) {}
+      }
       const error = new Error(json.erro || `Erro HTTP ${res.status}`);
       error.status = res.status;
       error.codigo = json.codigo;
@@ -129,6 +153,26 @@ export const apiClient = {
 
   createCampaign(campaignData = {}) {
     return this.sync('campaigns.create', campaignData);
+  },
+
+  listPublicCampaigns() {
+    return this.sync('campaigns.public');
+  },
+
+  requestJoinCampaign(data) {
+    return this.sync('campaigns.request', data);
+  },
+
+  listCampaignRequests(campaignId) {
+    return this.sync('campaigns.requests.list', { campaignId });
+  },
+
+  updateCampaignRequest(requestId, status) {
+    return this.sync('campaigns.requests.update', { requestId, status });
+  },
+
+  updateCampaignPlayerRole(campaignId, targetUserId, newRole) {
+    return this.sync('campaigns.players.updateRole', { campaignId, targetUserId, newRole });
   },
 
   listCharacters() {

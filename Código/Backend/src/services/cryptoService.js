@@ -184,12 +184,12 @@ export function parseCookies(cookieHeader) {
 }
 
 export function createAuthCookie(token, maxAgeSeconds = 900) {
-  // Atributos: HttpOnly (bloqueia XSS), Secure (apenas HTTPS/Localhost), SameSite=Strict (bloqueia CSRF)
-  return `arcana_session=${encodeURIComponent(token)}; Path=/; Max-Age=${maxAgeSeconds}; HttpOnly; Secure; SameSite=Strict`;
+  // Atributos: HttpOnly (bloqueia XSS), SameSite=Lax (suporta navegação e requisições no mesmo site/porta local)
+  return `arcana_session=${encodeURIComponent(token)}; Path=/; Max-Age=${maxAgeSeconds}; HttpOnly; SameSite=Lax`;
 }
 
 export function createClearCookie() {
-  return `arcana_session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict`;
+  return `arcana_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`;
 }
 
 export { randomUUID };

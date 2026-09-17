@@ -18,7 +18,7 @@ export function createLocalD1(dbPath = ':memory:') {
         sqlite.exec(`ALTER TABLE users ADD COLUMN profile_completed INTEGER NOT NULL DEFAULT 0;`);
       } catch (_) {}
 
-      if (!usersTableSql.includes('superadmin')) {
+      if (!usersTableSql.includes('superadmin') || usersTableSql.includes('assistente de mestre')) {
         sqlite.exec(`
           PRAGMA foreign_keys = OFF;
           CREATE TABLE users_new (
@@ -29,14 +29,16 @@ export function createLocalD1(dbPath = ':memory:') {
               google_id TEXT UNIQUE,
               avatar_url TEXT DEFAULT '',
               display_name TEXT NOT NULL,
-              role TEXT NOT NULL DEFAULT 'jogador' CHECK (role IN ('jogador', 'assistente de mestre', 'mestre', 'admin', 'superadmin', 'Jogador', 'Mestre', 'Admin')),
+              role TEXT NOT NULL DEFAULT 'jogador' CHECK (role IN ('jogador', 'mestre', 'admin', 'superadmin', 'Jogador', 'Mestre', 'Admin')),
               email_verified INTEGER NOT NULL DEFAULT 0,
               profile_completed INTEGER NOT NULL DEFAULT 0,
               auth_provider TEXT NOT NULL DEFAULT 'email' CHECK (auth_provider IN ('email', 'google', 'both')),
               created_at DATETIME DEFAULT CURRENT_TIMESTAMP
           );
           INSERT INTO users_new (id, email, password_hash, salt, google_id, avatar_url, display_name, role, email_verified, profile_completed, auth_provider, created_at)
-          SELECT id, email, password_hash, salt, google_id, avatar_url, display_name, role, email_verified, COALESCE(profile_completed, 0), auth_provider, created_at FROM users;
+          SELECT id, email, password_hash, salt, google_id, avatar_url, display_name, 
+                 CASE WHEN role = 'assistente de mestre' THEN 'jogador' ELSE role END, 
+                 email_verified, COALESCE(profile_completed, 0), auth_provider, created_at FROM users;
           DROP TABLE users;
           ALTER TABLE users_new RENAME TO users;
           CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -79,6 +81,31 @@ export function createLocalD1(dbPath = ':memory:') {
     }
   } catch (err) {
     console.warn('[LocalD1] Migração preventiva campaigns:', err.message);
+  }
+
+  try {
+    const cpTableSql = sqlite.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='campaign_players'").get()?.sql || '';
+    if (cpTableSql && !cpTableSql.includes('assistente de mestre')) {
+      sqlite.exec(`
+        PRAGMA foreign_keys = OFF;
+        CREATE TABLE campaign_players_new (
+            campaign_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'jogador' CHECK (role IN ('jogador', 'assistente de mestre', 'mestre', 'Jogador', 'Mestre')),
+            joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (campaign_id, user_id),
+            FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+        INSERT INTO campaign_players_new (campaign_id, user_id, role, joined_at)
+        SELECT campaign_id, user_id, role, joined_at FROM campaign_players;
+        DROP TABLE campaign_players;
+        ALTER TABLE campaign_players_new RENAME TO campaign_players;
+        PRAGMA foreign_keys = ON;
+      `);
+    }
+  } catch (err) {
+    console.warn('[LocalD1] Migração preventiva campaign_players:', err.message);
   }
 
   // 2. Carrega e executa o esquema oficial de tabelas e índices

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,9 @@
   <!-- Tipografia do Google Fonts: Cinzel para títulos nobres e Inter para textos e controles -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
 
   <style>
     /* ==========================================================================
@@ -21,7 +24,7 @@
       --bg-card: #141424;
       --bg-card-hover: #19192e;
       --bg-input: #0b0b14;
-      
+
       --border-subtle: #1e1e32;
       --border-card: #25253e;
       --border-gold: rgba(212, 163, 75, 0.4);
@@ -56,7 +59,9 @@
     }
 
     /* Reset e Base */
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -65,7 +70,7 @@
     body {
       font-family: var(--font-body);
       background-color: var(--bg-deep);
-      background-image: 
+      background-image:
         radial-gradient(circle at 50% 0%, rgba(35, 25, 55, 0.35) 0%, transparent 60%),
         radial-gradient(circle at 100% 100%, rgba(20, 15, 30, 0.4) 0%, transparent 50%);
       color: var(--text-main);
@@ -78,8 +83,13 @@
     }
 
     /* Utilitários de Tipografia */
-    .font-cinzel { font-family: var(--font-title); }
-    .font-inter { font-family: var(--font-body); }
+    .font-cinzel {
+      font-family: var(--font-title);
+    }
+
+    .font-inter {
+      font-family: var(--font-body);
+    }
 
     /* ==========================================================================
        2. TELA DE AUTENTICAÇÃO (LOGIN / ENTRAR NA TAVERNA)
@@ -511,10 +521,32 @@
       border-top: 1px solid var(--border-subtle);
       padding-top: 16px;
       margin-top: auto;
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-sidebar-help {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      border-radius: var(--radius-md);
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-sidebar-help:hover {
+      border-color: var(--gold-primary);
+      color: var(--gold-light);
+      background: rgba(212, 163, 75, 0.1);
     }
 
     .btn-logout {
-      width: 100%;
+      flex: 1;
       display: flex;
       align-items: center;
       gap: 12px;
@@ -543,52 +575,32 @@
       position: relative;
     }
 
-    /* Botão de Ajuda no Topo Direito */
-    .help-header-btn {
-      position: absolute;
-      top: 24px;
-      right: 32px;
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-pill);
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all var(--transition-fast);
-      z-index: 20;
-    }
-
-    .help-header-btn:hover {
-      border-color: var(--gold-primary);
-      color: var(--gold-light);
-      background: rgba(212, 163, 75, 0.1);
-    }
-
     /* Container de Cada View (Tela) */
     .view-section {
-      display: none;
+      display: none !important;
       animation: fadeIn 0.25s ease-out;
     }
 
     .view-section.active {
-      display: block;
+      display: block !important;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* ==========================================================================
        4. ESTILOS ESPECÍFICOS DAS TELAS
        ========================================================================== */
-    
+
     /* Cabeçalho da Página */
     .page-header {
       margin-bottom: 28px;
@@ -860,7 +872,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     /* Formulário e Cartões do Perfil */
@@ -997,6 +1011,7 @@
       .action-grid {
         grid-template-columns: 1fr;
       }
+
       .main-content {
         padding: 24px 20px 100px 20px;
       }
@@ -1007,14 +1022,19 @@
         width: 68px;
         padding: 16px 8px;
       }
-      .brand-text-wrapper, .nav-item-btn span, .btn-logout span {
+
+      .brand-text-wrapper,
+      .nav-item-btn span,
+      .btn-logout span {
         display: none;
       }
+
       .main-content {
         margin-left: 68px;
         width: calc(100% - 68px);
       }
     }
+
     /* ==========================================================================
        ESTILOS: CAMPANHAS (CARDS HORIZONTAIS, MODAL E DETALHES)
        ========================================================================== */
@@ -1043,6 +1063,7 @@
       box-shadow: 0 4px 18px rgba(212, 163, 75, 0.25);
       transition: var(--transition-normal);
     }
+
     .btn-create-campaign:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 24px rgba(212, 163, 75, 0.4);
@@ -1088,6 +1109,7 @@
       z-index: 1;
       transition: transform 0.4s ease;
     }
+
     .campaign-horizontal-card:hover .campaign-card-bg {
       transform: scale(1.03);
     }
@@ -1225,6 +1247,7 @@
       font-weight: 700;
       border-radius: var(--radius-pill);
     }
+
     .badge-players-count.full {
       background: rgba(239, 68, 68, 0.12);
       border-color: rgba(239, 68, 68, 0.35);
@@ -1240,6 +1263,7 @@
       color: var(--gold-light);
       transition: gap 0.2s ease;
     }
+
     .campaign-horizontal-card:hover .campaign-action-hint {
       gap: 8px;
       color: var(--gold-hover);
@@ -1271,19 +1295,23 @@
       transition: all 0.2s ease;
       background: var(--bg-surface);
     }
+
     .pool-item-card img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
+
     .pool-item-card:hover {
       border-color: rgba(212, 163, 75, 0.6);
       transform: scale(1.04);
     }
+
     .pool-item-card.selected {
       border-color: var(--gold-primary);
       box-shadow: 0 0 12px rgba(212, 163, 75, 0.5);
     }
+
     .pool-item-card.selected::after {
       content: '✓';
       position: absolute;
@@ -1307,6 +1335,7 @@
       gap: 10px;
       margin-top: 8px;
     }
+
     .pool-banner-card {
       position: relative;
       border: 2px solid var(--border-subtle);
@@ -1317,18 +1346,22 @@
       transition: all 0.2s ease;
       background: var(--bg-surface);
     }
+
     .pool-banner-card img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
+
     .pool-banner-card:hover {
       border-color: rgba(212, 163, 75, 0.6);
     }
+
     .pool-banner-card.selected {
       border-color: var(--gold-primary);
       box-shadow: 0 0 12px rgba(212, 163, 75, 0.5);
     }
+
     .pool-banner-card.selected::after {
       content: '✓';
       position: absolute;
@@ -1353,6 +1386,7 @@
       gap: 8px;
       max-width: 180px;
     }
+
     .stepper-btn {
       width: 38px;
       height: 38px;
@@ -1368,11 +1402,13 @@
       justify-content: center;
       transition: all 0.2s ease;
     }
+
     .stepper-btn:hover {
       background: var(--gold-primary);
       color: var(--text-dark);
       border-color: var(--gold-primary);
     }
+
     .stepper-input {
       text-align: center;
       font-weight: 700;
@@ -1394,12 +1430,14 @@
       background-size: cover;
       background-position: center;
     }
+
     .campaign-details-overlay {
       position: absolute;
       inset: 0;
       background: linear-gradient(0deg, rgba(8, 8, 17, 0.95) 0%, rgba(8, 8, 17, 0.7) 60%, rgba(8, 8, 17, 0.4) 100%);
       z-index: 1;
     }
+
     .campaign-details-hero-content {
       position: relative;
       z-index: 2;
@@ -1409,6 +1447,7 @@
       width: 100%;
       flex-wrap: wrap;
     }
+
     .campaign-details-avatar {
       width: 96px;
       height: 96px;
@@ -1417,27 +1456,33 @@
       box-shadow: 0 0 20px rgba(212, 163, 75, 0.35);
       object-fit: cover;
     }
+
     .campaign-details-layout {
       display: grid;
       grid-template-columns: 2fr 1fr;
       gap: 24px;
     }
+
     @media (max-width: 860px) {
       .campaign-details-layout {
         grid-template-columns: 1fr;
       }
+
       .campaign-horizontal-card {
         padding: 14px;
       }
+
       .campaign-card-avatar {
         width: 60px;
         height: 60px;
         min-width: 60px;
       }
+
       .campaign-card-meta {
         align-items: flex-start;
         padding-left: 0;
       }
+
       .campaign-card-inner {
         flex-direction: column;
         align-items: flex-start;
@@ -1445,6 +1490,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- ==========================================================================
@@ -1454,7 +1500,8 @@
     <div class="login-card">
       <div class="login-badge-icon" aria-hidden="true">
         <!-- Ícone D6 Dados em Dourado -->
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
           <rect width="12" height="12" x="2" y="10" rx="2" />
           <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3.16l-4.76-4.76a2.24 2.24 0 0 0-3.16 0L10 6.08" />
           <path d="M6 14h.01" />
@@ -1471,10 +1518,14 @@
         <!-- Botão Google OAuth -->
         <button type="button" class="btn-google" onclick="iniciarLoginGoogle()" id="btn-google-login">
           <svg width="18" height="18" viewBox="0 0 24 24">
-            <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/>
-            <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
-            <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15.1c0 2.8.7 5.4 1.9 7.8l3.7-2.9z"/>
-            <path fill="#34A853" d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z"/>
+            <path fill="#EA4335"
+              d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z" />
+            <path fill="#4285F4"
+              d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z" />
+            <path fill="#FBBC05"
+              d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15.1c0 2.8.7 5.4 1.9 7.8l3.7-2.9z" />
+            <path fill="#34A853"
+              d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z" />
           </svg>
           <span>Continuar com o Google</span>
         </button>
@@ -1486,26 +1537,14 @@
         <form id="form-login" onsubmit="fazerLogin(event); return false;">
           <div class="form-group">
             <label for="login-email" class="form-label">E-mail</label>
-            <input 
-              type="email" 
-              id="login-email" 
-              class="form-input" 
-              placeholder="voce@exemplo.com" 
-              value="aventureiro@arcana.vtt" 
-              required
-            >
+            <input type="email" id="login-email" class="form-input" placeholder="voce@exemplo.com"
+              value="aventureiro@arcana.vtt" required>
           </div>
 
           <div class="form-group">
             <label for="login-password" class="form-label">Senha</label>
-            <input 
-              type="password" 
-              id="login-password" 
-              class="form-input" 
-              placeholder="••••••••" 
-              value="taverna123" 
-              required
-            >
+            <input type="password" id="login-password" class="form-input" placeholder="••••••••" value="taverna123"
+              required>
           </div>
 
           <button type="submit" id="btn-submit-login" class="btn-gold">
@@ -1513,7 +1552,9 @@
           </button>
 
           <div class="login-footer-links">
-            <a href="#" class="login-link" onclick="mostrarToast('Recuperação de senha: entre em contato com o suporte ou use o Google.')">Esqueci a senha</a>
+            <a href="#" class="login-link"
+              onclick="mostrarToast('Recuperação de senha: entre em contato com o suporte ou use o Google.')">Esqueci a
+              senha</a>
             <a href="#" class="login-link login-link-gold" onclick="alternarAuthView('register')">Criar conta</a>
           </div>
         </form>
@@ -1527,10 +1568,14 @@
         <!-- Botão Google OAuth -->
         <button type="button" class="btn-google" onclick="iniciarLoginGoogle()" id="btn-google-register">
           <svg width="18" height="18" viewBox="0 0 24 24">
-            <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/>
-            <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
-            <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15.1c0 2.8.7 5.4 1.9 7.8l3.7-2.9z"/>
-            <path fill="#34A853" d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z"/>
+            <path fill="#EA4335"
+              d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z" />
+            <path fill="#4285F4"
+              d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z" />
+            <path fill="#FBBC05"
+              d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15.1c0 2.8.7 5.4 1.9 7.8l3.7-2.9z" />
+            <path fill="#34A853"
+              d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z" />
           </svg>
           <span>Cadastrar com o Google</span>
         </button>
@@ -1542,36 +1587,18 @@
         <form id="form-register" onsubmit="fazerRegistro(event); return false;">
           <div class="form-group">
             <label for="register-name" class="form-label">Nome de Exibição</label>
-            <input 
-              type="text" 
-              id="register-name" 
-              class="form-input" 
-              placeholder="Ex: Gandalf, o Cinzento" 
-              required
-            >
+            <input type="text" id="register-name" class="form-input" placeholder="Ex: Gandalf, o Cinzento" required>
           </div>
 
           <div class="form-group">
             <label for="register-email" class="form-label">E-mail</label>
-            <input 
-              type="email" 
-              id="register-email" 
-              class="form-input" 
-              placeholder="voce@exemplo.com" 
-              required
-            >
+            <input type="email" id="register-email" class="form-input" placeholder="voce@exemplo.com" required>
           </div>
 
           <div class="form-group">
             <label for="register-password" class="form-label">Senha (mínimo 6 caracteres)</label>
-            <input 
-              type="password" 
-              id="register-password" 
-              class="form-input" 
-              placeholder="••••••••" 
-              minlength="6" 
-              required
-            >
+            <input type="password" id="register-password" class="form-input" placeholder="••••••••" minlength="6"
+              required>
           </div>
 
           <button type="submit" id="btn-submit-register" class="btn-gold">
@@ -1593,16 +1620,8 @@
         <form id="form-otp" onsubmit="confirmarCodigoOTP(event); return false;">
           <div class="form-group">
             <label for="otp-code-input" class="form-label">Código de Verificação (6 dígitos)</label>
-            <input 
-              type="text" 
-              id="otp-code-input" 
-              class="form-input otp-input-field" 
-              placeholder="123456" 
-              maxlength="6" 
-              pattern="[0-9]{6}" 
-              required 
-              autocomplete="one-time-code"
-            >
+            <input type="text" id="otp-code-input" class="form-input otp-input-field" placeholder="123456" maxlength="6"
+              pattern="[0-9]{6}" required autocomplete="one-time-code">
           </div>
 
           <button type="submit" id="btn-submit-otp" class="btn-gold">
@@ -1618,24 +1637,32 @@
 
       <!-- SUBVIEW 4: DISPOSITIVO BLOQUEADO (TRAVA ANTI-SYBIL) -->
       <div id="auth-subview-blocked" style="display: none; text-align: center;">
-        <div style="width: 52px; height: 52px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: #ef4444;">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        <div
+          style="width: 52px; height: 52px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: #ef4444;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
         </div>
         <h1 class="login-title" style="color: #f87171;">Dispositivo Bloqueado</h1>
         <p class="login-subtitle" style="margin-bottom: 20px;">
           Este dispositivo excedeu o limite seguro de criação de contas e foi travado preventivamente.
         </p>
-        <div style="background: var(--bg-input); border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 12px; margin-bottom: 24px; text-align: left;">
-          <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Identificador do Dispositivo:</div>
-          <div id="blocked-device-fingerprint" style="font-family: monospace; font-size: 12px; color: var(--gold-light); word-break: break-all;">dev_...</div>
+        <div
+          style="background: var(--bg-input); border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 12px; margin-bottom: 24px; text-align: left;">
+          <div
+            style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">
+            Identificador do Dispositivo:</div>
+          <div id="blocked-device-fingerprint"
+            style="font-family: monospace; font-size: 12px; color: var(--gold-light); word-break: break-all;">dev_...
+          </div>
         </div>
         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
           Apenas um Administrador pode liberar este dispositivo através do Painel de Administração.
         </p>
-        <button type="button" class="btn-secondary" style="width: 100%;" onclick="alternarAuthView('login')">Tentar Novamente</button>
+        <button type="button" class="btn-secondary" style="width: 100%;" onclick="alternarAuthView('login')">Tentar
+          Novamente</button>
       </div>
 
       <!-- SUBVIEW 5: FORJAR IDENTIDADE DE AVENTUREIRO (CRIAÇÃO DE PERFIL) -->
@@ -1646,35 +1673,20 @@
         <form id="form-profile-setup" onsubmit="concluirCriacaoPerfil(event); return false;">
           <div class="form-group">
             <label for="setup-name" class="form-label">Nome Completo ou de Exibição *</label>
-            <input 
-              type="text" 
-              id="setup-name" 
-              class="form-input" 
-              placeholder="Ex: Valerius Lunaprata" 
-              minlength="2" 
-              maxlength="60" 
-              required
-            >
+            <input type="text" id="setup-name" class="form-input" placeholder="Ex: Valerius Lunaprata" minlength="2"
+              maxlength="60" required>
           </div>
 
           <div class="form-group">
             <label for="setup-nickname" class="form-label">Nickname Único *</label>
             <div style="position: relative; display: flex; align-items: center;">
               <span style="position: absolute; left: 12px; color: var(--gold-primary); font-weight: 600;">@</span>
-              <input 
-                type="text" 
-                id="setup-nickname" 
-                class="form-input" 
-                style="padding-left: 30px;" 
-                placeholder="valerius_mago" 
-                minlength="3" 
-                maxlength="25" 
-                pattern="^[a-zA-Z0-9_]{3,25}$" 
-                title="De 3 a 25 caracteres: letras, números e underlines" 
-                required
-              >
+              <input type="text" id="setup-nickname" class="form-input" style="padding-left: 30px;"
+                placeholder="valerius_mago" minlength="3" maxlength="25" pattern="^[a-zA-Z0-9_]{3,25}$"
+                title="De 3 a 25 caracteres: letras, números e underlines" required>
             </div>
-            <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">Apelido exclusivo para menções e convites na Taverna.</span>
+            <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">Apelido exclusivo
+              para menções e convites na Taverna.</span>
           </div>
 
           <div class="form-group">
@@ -1694,44 +1706,47 @@
               <label for="setup-bio" class="form-label">Biografia Livre *</label>
               <span id="setup-bio-counter" style="font-size: 11px; color: var(--gold-light);">0/500</span>
             </div>
-            <textarea 
-              id="setup-bio" 
-              class="form-input" 
-              rows="3" 
-              maxlength="500" 
-              placeholder="Conte aos outros aventureiros um pouco sobre você, seu estilo de RPG ou experiência..." 
-              required 
-              style="resize: vertical;" 
-              oninput="atualizarContadorBio(this)"
-            ></textarea>
+            <textarea id="setup-bio" class="form-input" rows="3" maxlength="500"
+              placeholder="Conte aos outros aventureiros um pouco sobre você, seu estilo de RPG ou experiência..."
+              required style="resize: vertical;" oninput="atualizarContadorBio(this)"></textarea>
           </div>
 
           <!-- Seção de Contatos Opcionais -->
-          <div style="background: rgba(212, 163, 75, 0.04); border: 1px dashed var(--border-card); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;">
-            <div style="font-size: 12px; font-weight: 600; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Contatos Opcionais</div>
-            
+          <div
+            style="background: rgba(212, 163, 75, 0.04); border: 1px dashed var(--border-card); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;">
+            <div
+              style="font-size: 12px; font-weight: 600; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+              Contatos Opcionais</div>
+
             <div class="form-group" style="margin-bottom: 8px;">
-              <label for="setup-contact-whatsapp" class="form-label" style="font-size: 11px;">WhatsApp (opcional)</label>
-              <input type="text" id="setup-contact-whatsapp" class="form-input" placeholder="(11) 99999-9999" maxlength="30" style="font-size: 12.5px;">
+              <label for="setup-contact-whatsapp" class="form-label" style="font-size: 11px;">WhatsApp
+                (opcional)</label>
+              <input type="text" id="setup-contact-whatsapp" class="form-input" placeholder="(11) 99999-9999"
+                maxlength="30" style="font-size: 12.5px;">
             </div>
 
             <div class="form-group" style="margin-bottom: 8px;">
               <label for="setup-contact-discord" class="form-label" style="font-size: 11px;">Discord (opcional)</label>
-              <input type="text" id="setup-contact-discord" class="form-input" placeholder="usuario#0000 ou @usuario" maxlength="50" style="font-size: 12.5px;">
+              <input type="text" id="setup-contact-discord" class="form-input" placeholder="usuario#0000 ou @usuario"
+                maxlength="50" style="font-size: 12.5px;">
             </div>
 
             <div class="form-group" style="margin-bottom: 0;">
-              <label for="setup-contact-instagram" class="form-label" style="font-size: 11px;">Instagram (opcional)</label>
-              <input type="text" id="setup-contact-instagram" class="form-input" placeholder="@seu_perfil" maxlength="50" style="font-size: 12.5px;">
+              <label for="setup-contact-instagram" class="form-label" style="font-size: 11px;">Instagram
+                (opcional)</label>
+              <input type="text" id="setup-contact-instagram" class="form-input" placeholder="@seu_perfil"
+                maxlength="50" style="font-size: 12.5px;">
             </div>
           </div>
 
           <!-- Avatar e Banner Reservados -->
-          <div style="background: var(--bg-input); border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 10px; margin-bottom: 20px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
-              <circle cx="9" cy="9" r="2"/>
-              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+          <div
+            style="background: var(--bg-input); border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 10px; margin-bottom: 20px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold-primary)" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+              <circle cx="9" cy="9" r="2" />
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
             </svg>
             <span>Avatar e Banner: Em breve você poderá personalizar estandartes e brasões!</span>
           </div>
@@ -1748,13 +1763,14 @@
        SEÇÃO 2: CAMADA DO APLICATIVO AUTENTICADO
        ========================================================================== -->
   <div id="app-container" style="display: none;">
-    
+
     <!-- Barra Lateral Fixa (Sidebar) -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
         <div class="brand-icon">
           <!-- Ícone Dados Arcana -->
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <rect width="12" height="12" x="2" y="10" rx="2" />
             <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3.16l-4.76-4.76a2.24 2.24 0 0 0-3.16 0L10 6.08" />
             <path d="M6 14h.01" />
@@ -1772,9 +1788,10 @@
         <li>
           <button class="nav-item-btn active" id="nav-inicio" onclick="navegarPara('inicio')">
             <!-- Ícone Casa (Início) -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
             <span>Início</span>
           </button>
@@ -1782,10 +1799,11 @@
         <li>
           <button class="nav-item-btn" id="nav-campanhas" onclick="navegarPara('campanhas')">
             <!-- Ícone Mapa/Livro Aberto (Campanhas) -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-              <line x1="9" y1="3" x2="9" y2="18"/>
-              <line x1="15" y1="6" x2="15" y2="21"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+              <line x1="9" y1="3" x2="9" y2="18" />
+              <line x1="15" y1="6" x2="15" y2="21" />
             </svg>
             <span>Campanhas</span>
           </button>
@@ -1793,10 +1811,11 @@
         <li>
           <button class="nav-item-btn" id="nav-sistemas" onclick="navegarPara('sistemas')">
             <!-- Ícone Livro/Regras (Sistemas) -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-              <path d="M6 6h10"/>
-              <path d="M6 10h10"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+              <path d="M6 6h10" />
+              <path d="M6 10h10" />
             </svg>
             <span>Sistemas</span>
           </button>
@@ -1804,11 +1823,12 @@
         <li>
           <button class="nav-item-btn" id="nav-biblioteca" onclick="navegarPara('biblioteca')">
             <!-- Ícone Prateleira/Biblioteca de Assets -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m16 6 4 14"/>
-              <path d="M12 6v14"/>
-              <path d="M8 8v12"/>
-              <path d="M4 4v16"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="m16 6 4 14" />
+              <path d="M12 6v14" />
+              <path d="M8 8v12" />
+              <path d="M4 4v16" />
             </svg>
             <span>Biblioteca</span>
           </button>
@@ -1816,11 +1836,12 @@
         <li>
           <button class="nav-item-btn" id="nav-personagens" onclick="navegarPara('personagens')">
             <!-- Ícone Personagens / Aventureiros -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
             <span>Personagens</span>
           </button>
@@ -1828,9 +1849,10 @@
         <li>
           <button class="nav-item-btn" id="nav-perfil" onclick="navegarPara('perfil')">
             <!-- Ícone Usuário / Perfil -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
             </svg>
             <span>Perfil</span>
           </button>
@@ -1838,8 +1860,9 @@
         <li id="nav-item-admin" style="display: none;">
           <button class="nav-item-btn" id="nav-admin" onclick="navegarPara('admin')">
             <!-- Ícone Escudo (Administração) -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
             <span>Administração</span>
           </button>
@@ -1848,12 +1871,14 @@
 
       <!-- Botão Sair -->
       <div class="sidebar-footer">
+        <button class="btn-sidebar-help" onclick="toggleModalAjuda()" title="Ajuda e Informações">?</button>
         <button class="btn-logout" onclick="fazerLogout()" id="btn-logout" title="Sair da Taverna">
           <!-- Ícone Logout -->
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
           <span>Sair</span>
         </button>
@@ -1862,8 +1887,6 @@
 
     <!-- Área Principal de Conteúdo das Telas -->
     <main class="main-content">
-      <!-- Botão de Ajuda no Topo Direito -->
-      <button class="help-header-btn" onclick="toggleModalAjuda()" title="Ajuda e Informações">?</button>
 
       <!-- ==========================================
            TELA: INÍCIO (DASHBOARD)
@@ -1874,7 +1897,8 @@
           <p class="welcome-eyebrow">BEM-VINDO(A) DE VOLTA</p>
           <h2 class="welcome-title">Saudações, aventureiro.</h2>
           <p class="page-subtitle">
-            Sua conta está ativa como <span class="role-badge" id="badge-role-display">Jogador</span>. Escolha uma trilha abaixo para começar.
+            Sua conta está ativa como <span class="role-badge" id="badge-role-display">Jogador</span>. Escolha uma
+            trilha abaixo para começar.
           </p>
         </div>
 
@@ -1883,10 +1907,11 @@
           <!-- Card Campanhas -->
           <div class="action-card" onclick="navegarPara('campanhas')">
             <div class="action-card-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-                <line x1="9" y1="3" x2="9" y2="18"/>
-                <line x1="15" y1="6" x2="15" y2="21"/>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+                <line x1="9" y1="3" x2="9" y2="18" />
+                <line x1="15" y1="6" x2="15" y2="21" />
               </svg>
             </div>
             <h3 class="action-card-title">Campanhas</h3>
@@ -1897,11 +1922,12 @@
           <div class="action-card" onclick="navegarPara('personagens')">
             <div class="action-card-icon">
               <!-- Espada -->
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/>
-                <line x1="13" y1="19" x2="19" y2="13"/>
-                <line x1="16" y1="16" x2="20" y2="20"/>
-                <line x1="19" y1="21" x2="21" y2="19"/>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
+                <line x1="13" y1="19" x2="19" y2="13" />
+                <line x1="16" y1="16" x2="20" y2="20" />
+                <line x1="19" y1="21" x2="21" y2="19" />
               </svg>
             </div>
             <h3 class="action-card-title">Personagens</h3>
@@ -1911,9 +1937,10 @@
           <!-- Card Perfil -->
           <div class="action-card" onclick="navegarPara('perfil')">
             <div class="action-card-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
               </svg>
             </div>
             <h3 class="action-card-title">Perfil</h3>
@@ -1925,13 +1952,16 @@
         <div class="highlight-card">
           <div class="highlight-card-header">
             <!-- Ícone Estrela / Faísca -->
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold-primary)" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
             </svg>
             <h4 class="highlight-card-title">Próximo grande passo</h4>
           </div>
           <p class="highlight-card-desc">
-            O VTT tile-based, o construtor de regras e o chat com dados chegam nas próximas iterações. A fundação (auth, perfis, roles e sync em nuvem) já está pronta.
+            O VTT tile-based, o construtor de regras e o chat com dados chegam nas próximas iterações. A fundação (auth,
+            perfis, roles e sync em nuvem) já está pronta.
           </p>
         </div>
       </section>
@@ -1946,7 +1976,8 @@
             <p class="page-subtitle">Suas mesas, aventuras e sagas em andamento.</p>
           </div>
           <button class="btn-create-campaign" id="btn-open-create-campaign" onclick="abrirModalCriarCampanha()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="8" x2="12" y2="16"></line>
               <line x1="8" y1="12" x2="16" y2="12"></line>
@@ -1963,6 +1994,42 @@
             <span>Consultando as crônicas da Taverna...</span>
           </div>
         </div>
+        
+        <div class="divider" style="height: 1px; background: rgba(255,255,255,0.1); margin: 40px 0;"></div>
+        
+        <div class="campaigns-topbar">
+          <div>
+            <h2 class="page-title" style="color: var(--arcana-accent);">Explorar a Taverna</h2>
+            <p class="page-subtitle">Encontre e solicite entrada em campanhas públicas de outros mestres.</p>
+          </div>
+        </div>
+
+        <div class="search-bar-container" style="margin-bottom: 32px; position: relative; max-width: 600px; margin-left: auto; margin-right: auto;">
+          <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; color: var(--gold-primary); opacity: 0.8;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+          <input type="text" id="public-campaigns-search" placeholder="Buscar rumores por mestre, nome, ID ou lore..." class="input-arcana" style="width: 100%; padding: 16px 16px 16px 48px; border-radius: 30px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 0 0 0 rgba(212, 175, 55, 0); transition: all 0.3s ease; font-size: 15px; color: var(--text-main);">
+          <style>
+            #public-campaigns-search:focus {
+              background: rgba(15, 23, 42, 0.9);
+              border-color: var(--gold-primary);
+              box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 0 12px rgba(212, 175, 55, 0.2);
+              outline: none;
+            }
+            #public-campaigns-search::placeholder {
+              color: var(--text-dim);
+              font-style: italic;
+            }
+          </style>
+        </div>
+
+        <!-- Lista de Retângulos Horizontais -->
+        <div class="campaigns-list" id="public-campaigns-list-container">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
       </section>
 
       <!-- ==========================================
@@ -1970,7 +2037,8 @@
            ========================================== -->
       <section id="view-campanha-detalhes" class="view-section">
         <div style="margin-bottom: 20px;">
-          <button class="btn-secondary" onclick="navegarPara('campanhas')" style="display: inline-flex; align-items: center; gap: 8px;">
+          <button class="btn-secondary" onclick="navegarPara('campanhas')"
+            style="display: inline-flex; align-items: center; gap: 8px;">
             &larr; Voltar para Campanhas
           </button>
         </div>
@@ -1986,10 +2054,11 @@
       <section id="view-sistemas" class="view-section">
         <header class="page-header-with-icon">
           <div class="page-header-icon-box">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-              <path d="M6 6h10"/>
-              <path d="M6 10h10"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+              <path d="M6 6h10" />
+              <path d="M6 10h10" />
             </svg>
           </div>
           <div>
@@ -2010,11 +2079,12 @@
       <section id="view-biblioteca" class="view-section">
         <header class="page-header-with-icon">
           <div class="page-header-icon-box">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m16 6 4 14"/>
-              <path d="M12 6v14"/>
-              <path d="M8 8v12"/>
-              <path d="M4 4v16"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="m16 6 4 14" />
+              <path d="M12 6v14" />
+              <path d="M8 8v12" />
+              <path d="M4 4v16" />
             </svg>
           </div>
           <div>
@@ -2047,15 +2117,17 @@
 
         <div class="empty-state-box">
           <!-- Ícone Espada Grande -->
-          <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/>
-            <line x1="13" y1="19" x2="19" y2="13"/>
-            <line x1="16" y1="16" x2="20" y2="20"/>
-            <line x1="19" y1="21" x2="21" y2="19"/>
+          <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
+            <line x1="13" y1="19" x2="19" y2="13" />
+            <line x1="16" y1="16" x2="20" y2="20" />
+            <line x1="19" y1="21" x2="21" y2="19" />
           </svg>
           <h3 class="empty-state-title">Sem personagens ainda</h3>
           <p class="empty-state-text">As fichas dinâmicas chegam com o construtor de regras.</p>
-          <button class="btn-secondary" onclick="mostrarToast('O construtor de fichas dinâmicas será ativado na próxima fase.')">
+          <button class="btn-secondary"
+            onclick="mostrarToast('O construtor de fichas dinâmicas será ativado na próxima fase.')">
             + Criar Novo Personagem
           </button>
         </div>
@@ -2074,13 +2146,15 @@
           <div class="profile-header-group">
             <div class="avatar-large">
               <!-- Ícone Aventureiro -->
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
               </svg>
             </div>
             <div>
-              <h3 class="font-cinzel" id="profile-display-name" style="font-size: 20px; font-weight: 700; color: #fff;">Aventureiro Arcano</h3>
+              <h3 class="font-cinzel" id="profile-display-name" style="font-size: 20px; font-weight: 700; color: #fff;">
+                Aventureiro Arcano</h3>
               <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">
                 Papel: <span class="role-badge">Jogador</span>
               </p>
@@ -2095,13 +2169,15 @@
 
             <div class="form-group">
               <label class="form-label" for="profile-email">E-mail Cadastrado</label>
-              <input type="email" id="profile-email" class="form-input" value="aventureiro@arcana.vtt" readonly style="opacity: 0.7; cursor: not-allowed;">
+              <input type="email" id="profile-email" class="form-input" value="aventureiro@arcana.vtt" readonly
+                style="opacity: 0.7; cursor: not-allowed;">
             </div>
 
             <div class="form-group">
               <label class="form-label">Seu ID de Usuário (para ser convidado para mesas)</label>
               <div class="id-copy-group">
-                <input type="text" id="profile-user-id" class="form-input" value="usr_arcana_9f2a71d" readonly style="font-family: monospace;">
+                <input type="text" id="profile-user-id" class="form-input" value="usr_arcana_9f2a71d" readonly
+                  style="font-family: monospace;">
                 <button type="button" class="btn-secondary" onclick="copiarIdUsuario()">Copiar ID</button>
               </div>
             </div>
@@ -2119,8 +2195,9 @@
       <section id="view-admin" class="view-section">
         <header class="page-header-with-icon">
           <div class="page-header-icon-box">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
           </div>
           <div style="flex: 1;">
@@ -2128,8 +2205,9 @@
             <p class="page-subtitle">Segurança de Dispositivos e Gestão de Bloqueios Anti-Sybil.</p>
           </div>
           <button class="btn-secondary" onclick="carregarDispositivosAdmin()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
-              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
             </svg>
             Atualizar Lista
           </button>
@@ -2154,7 +2232,8 @@
               </thead>
               <tbody id="admin-devices-tbody">
                 <tr>
-                  <td colspan="5" class="table-empty-msg">Nenhum dispositivo bloqueado no momento. A taverna está segura!</td>
+                  <td colspan="5" class="table-empty-msg">Nenhum dispositivo bloqueado no momento. A taverna está
+                    segura!</td>
                 </tr>
               </tbody>
             </table>
@@ -2174,15 +2253,18 @@
       <h3 class="modal-title">Sobre o Arcana VTT</h3>
       <div class="modal-body">
         <p style="margin-bottom: 12px;">
-          Esta é a interface inicial do <strong>Arcana VTT</strong>, projetada com estética dark fantasy para máxima imersão em sessões de RPG.
+          Esta é a interface inicial do <strong>Arcana VTT</strong>, projetada com estética dark fantasy para máxima
+          imersão em sessões de RPG.
         </p>
         <p style="margin-bottom: 12px;">
-          <strong>Navegação:</strong> Utilize o menu lateral à esquerda para circular entre o Dashboard, Campanhas, Sistemas, Biblioteca de Assets e seu Perfil de jogador.
+          <strong>Navegação:</strong> Utilize o menu lateral à esquerda para circular entre o Dashboard, Campanhas,
+          Sistemas, Biblioteca de Assets e seu Perfil de jogador.
         </p>
         <p>
           <em>Status:</em> Frontend desacoplado pronto para conexão futura com Cloudflare Workers e WebSockets.
         </p>
       </div>
+    </div>
   </div>
 
   <!-- ==========================================================================
@@ -2197,7 +2279,8 @@
             Convoque aventureiros, defina as regras e registre as lendas da sua mesa.
           </p>
         </div>
-        <button class="stepper-btn" onclick="fecharModalCriarCampanha()" title="Fechar" style="width: 32px; height: 32px; font-size: 14px;">✕</button>
+        <button class="stepper-btn" onclick="fecharModalCriarCampanha()" title="Fechar"
+          style="width: 32px; height: 32px; font-size: 14px;">✕</button>
       </div>
 
       <form id="form-criar-campanha" onsubmit="submeterCriacaoCampanha(event); return false;">
@@ -2206,20 +2289,13 @@
           <label for="camp-input-name" class="form-label">
             Nome da Campanha <span style="color: var(--gold-primary);">*</span>
           </label>
-          <input 
-            type="text" 
-            id="camp-input-name" 
-            class="form-input" 
-            placeholder="Ex: O Labirinto da Lua Negra" 
-            required 
-            minlength="3" 
-            maxlength="60"
-            oninput="atualizarPreviewCampanha()"
-          >
+          <input type="text" id="camp-input-name" class="form-input" placeholder="Ex: O Labirinto da Lua Negra" required
+            minlength="3" maxlength="60" oninput="atualizarPreviewCampanha()">
         </div>
 
         <!-- 2. Grid de Sistema, Tema e Vagas -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
+        <div
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
           <!-- Sistema de RPG -->
           <div class="form-group">
             <label for="camp-select-system" class="form-label">Sistema de RPG</label>
@@ -2249,7 +2325,8 @@
             <label class="form-label">Vagas de Jogadores (Máx. 12)</label>
             <div class="stepper-control">
               <button type="button" class="stepper-btn" onclick="alterarVagasCampanha(-1)">−</button>
-              <input type="number" id="camp-input-players" class="form-input stepper-input" value="5" min="1" max="12" readonly>
+              <input type="number" id="camp-input-players" class="form-input stepper-input" value="5" min="1" max="12"
+                readonly>
               <button type="button" class="stepper-btn" onclick="alterarVagasCampanha(1)">+</button>
             </div>
           </div>
@@ -2261,15 +2338,10 @@
             <label for="camp-input-lore" class="form-label" style="margin: 0;">Lore e Prelúdio da Aventura</label>
             <span id="camp-lore-counter" style="font-size: 11px; color: var(--gold-light);">0/2000</span>
           </div>
-          <textarea 
-            id="camp-input-lore" 
-            class="form-input" 
-            rows="3" 
-            maxlength="2000" 
+          <textarea id="camp-input-lore" class="form-input" rows="3" maxlength="2000"
             placeholder="Descreva o prelúdio da aventura, o cenário ou o chamado aos heróis..."
             oninput="atualizarContadorLore(this); atualizarPreviewCampanha()"
-            style="resize: vertical; font-size: 13px;"
-          ></textarea>
+            style="resize: vertical; font-size: 13px;"></textarea>
         </div>
 
         <!-- 4. Galeria de Brasões / Avatares (Pool Pré-Pronta) -->
@@ -2312,8 +2384,9 @@
   <!-- Toast Notification -->
   <div class="toast-notification" id="toast-message" role="alert">
     <!-- Ícone de Check -->
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M20 6 9 17l-5-5"/>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold-primary)" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 6 9 17l-5-5" />
     </svg>
     <span id="toast-text">Notificação do sistema</span>
   </div>
@@ -2476,9 +2549,19 @@
       `;
     }
 
+    function obterUsuarioAtual() {
+      if (currentUser) return currentUser;
+      try {
+        const raw = localStorage.getItem('arcana_user_data');
+        if (raw) currentUser = JSON.parse(raw);
+      } catch (e) { }
+      return currentUser;
+    }
+
     function abrirModalCriarCampanha() {
       // 1. Verificação Estrita de Permissão no Frontend (Mestres, Admins e Superadmins)
-      const role = String(currentUser?.role || '').toLowerCase();
+      const user = obterUsuarioAtual();
+      const role = String(user?.role || '').toLowerCase();
       if (role !== 'mestre' && role !== 'admin' && role !== 'superadmin') {
         mostrarToast('Apenas Mestres e Administradores possuem autorização para forjar novas campanhas.');
         return;
@@ -2559,6 +2642,16 @@
       const container = document.getElementById('campaigns-list-container');
       if (!container) return;
 
+      const user = obterUsuarioAtual();
+      const role = String(user?.role || '').toLowerCase();
+      const canCreate = ['admin', 'superadmin', 'mestre'].includes(role);
+
+      // Atualizar visibilidade do botão principal do cabeçalho
+      const topBtnCreate = document.getElementById('btn-open-create-campaign');
+      if (topBtnCreate) {
+        topBtnCreate.style.display = canCreate ? 'flex' : 'none';
+      }
+
       container.innerHTML = `
         <div class="loading-indicator">
           <div class="spinner"></div>
@@ -2579,11 +2672,13 @@
                   <line x1="9" y1="3" x2="9" y2="18"/>
                   <line x1="15" y1="6" x2="15" y2="21"/>
                 </svg>
-                <h3 class="empty-state-title">Nenhuma campanha encontrada</h3>
+                <h3 class="empty-state-title">Ainda não existem campanhas criadas</h3>
                 <p class="empty-state-text">Você ainda não faz parte de nenhuma mesa ou não forjou suas próprias campanhas.</p>
+                ${canCreate ? `
                 <button class="btn-create-campaign" onclick="abrirModalCriarCampanha()">
                   + Forjar Nova Campanha
                 </button>
+                ` : ''}
               </div>
             `;
             return;
@@ -2633,15 +2728,154 @@
           }).join('');
         }
       } catch (err) {
+        if (err.message && err.message.includes('Não autorizado') && currentUser) {
+          const role = String(currentUser?.role || '').toLowerCase();
+          const canCreate = ['admin', 'superadmin', 'mestre'].includes(role);
+
+          container.innerHTML = `
+            <div class="empty-state-box">
+              <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                <line x1="9" y1="3" x2="9" y2="18"/>
+                <line x1="15" y1="6" x2="15" y2="21"/>
+              </svg>
+              <h3 class="empty-state-title">Ainda não existem campanhas criadas</h3>
+              <p class="empty-state-text">Você ainda não faz parte de nenhuma mesa ou não forjou suas próprias campanhas.</p>
+              ${canCreate ? `
+              <button class="btn-create-campaign" onclick="abrirModalCriarCampanha()">
+                + Forjar Nova Campanha
+              </button>
+              ` : ''}
+            </div>
+          `;
+        } else {
+          container.innerHTML = `
+            <div class="empty-state-box">
+              <p style="color: #ef4444;">Falha ao carregar campanhas: ${err.message}</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    let publicCampaignsCache = [];
+
+    async function carregarCampanhasPublicas() {
+      const container = document.getElementById('public-campaigns-list-container');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="loading-indicator">
+          <div class="spinner"></div>
+          <span>Buscando rumores e editais na Taverna...</span>
+        </div>
+      `;
+
+      try {
+        if (!window.apiClient) return;
+        const res = await window.apiClient.listPublicCampaigns();
+
+        if (res && res.sucesso && Array.isArray(res.dados)) {
+          publicCampaignsCache = res.dados;
+          renderizarCampanhasPublicas(publicCampaignsCache);
+        } else {
+          throw new Error('Formato inválido de resposta.');
+        }
+      } catch (err) {
         container.innerHTML = `
           <div class="empty-state-box">
-            <p style="color: #ef4444;">Falha ao carregar campanhas: ${err.message}</p>
+            <p style="color: #ef4444;">Falha ao buscar campanhas públicas: ${err.message}</p>
           </div>
         `;
       }
     }
 
-    async function abrirDetalhesCampanha(campId) {
+    function renderizarCampanhasPublicas(lista) {
+      const container = document.getElementById('public-campaigns-list-container');
+      if (!container) return;
+
+      if (lista.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state-box">
+            <h3 class="empty-state-title">Nenhuma campanha encontrada</h3>
+            <p class="empty-state-text">Não há campanhas públicas no momento ou sua busca não retornou resultados.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = lista.map(camp => {
+        const systemInfo = CAMPAIGN_POOLS.systemsMap[camp.system_id] || { label: camp.system_id || 'Sistema Próprio', badge: camp.system_id || 'Custom' };
+        const themeInfo = CAMPAIGN_POOLS.themesMap[camp.theme_id] || { label: 'Dark Fantasy', color: '#9b2c2c' };
+        const avatar = camp.image_url || CAMPAIGN_POOLS.avatars[0].url;
+        const banner = camp.banner_url || CAMPAIGN_POOLS.banners[0].url;
+        const simpleId = camp.simple_id || 'CAMP-00';
+        const currentPlayers = camp.current_players || 0;
+        const maxPlayers = camp.max_players || 5;
+        const isFull = currentPlayers >= maxPlayers;
+        
+        let reqHint = 'Ver Apresentação &rarr;';
+        if (camp.request_status === 'pendente') reqHint = 'Solicitação Pendente';
+        else if (camp.request_status === 'aceito') reqHint = 'Aceito! Entrar';
+        
+        return `
+          <div class="campaign-horizontal-card" onclick="abrirDetalhesCampanha('${camp.id}', true, '${camp.request_status || ''}')">
+            <div class="campaign-card-bg" style="background-image: url('${banner}');"></div>
+            <div class="campaign-card-gradient"></div>
+            <div class="campaign-card-inner">
+              <img src="${avatar}" alt="Brasão" class="campaign-card-avatar" onerror="this.src='${CAMPAIGN_POOLS.avatars[0].url}'">
+              <div class="campaign-card-main">
+                <div class="campaign-card-header-row">
+                  <h3 class="campaign-card-title">${camp.name}</h3>
+                  <span class="badge-simple-id" title="Código de compartilhamento da mesa">#${simpleId}</span>
+                </div>
+                <div class="campaign-badges-row">
+                  <span class="badge-system">${systemInfo.badge}</span>
+                  <span class="badge-theme" style="border-color: ${themeInfo.color};">${themeInfo.label}</span>
+                  <span style="font-size: 11px; color: var(--text-dim);">• Mestre: <strong>${camp.owner_name || 'Desconhecido'}</strong></span>
+                </div>
+                <p class="campaign-lore-snippet">${camp.lore_description || 'Sem lore ou sinopse informada para esta mesa.'}</p>
+              </div>
+              <div class="campaign-card-meta">
+                <span class="badge-players-count ${isFull ? 'full' : ''}">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                  </svg>
+                  ${currentPlayers} / ${maxPlayers} Vagas
+                </span>
+                <span class="campaign-action-hint" style="color: ${camp.request_status === 'pendente' ? '#f59e0b' : 'inherit'};">${reqHint}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('public-campaigns-search');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          const term = e.target.value.toLowerCase().trim();
+          if (!term) {
+            renderizarCampanhasPublicas(publicCampaignsCache);
+            return;
+          }
+          
+          const filtradas = publicCampaignsCache.filter(c => {
+            const nomeCamp = (c.name || '').toLowerCase();
+            const nomeMestre = (c.owner_name || '').toLowerCase();
+            const lore = (c.lore_description || '').toLowerCase();
+            const id = (c.simple_id || '').toLowerCase();
+            return nomeCamp.includes(term) || nomeMestre.includes(term) || lore.includes(term) || id.includes(term);
+          });
+          
+          renderizarCampanhasPublicas(filtradas);
+        });
+      }
+    });
+
+    async function abrirDetalhesCampanha(campId, isPublic = false, requestStatus = '') {
       navegarPara('campanha-detalhes');
       const detailsBox = document.getElementById('campaign-details-content');
       if (!detailsBox) return;
@@ -2664,6 +2898,8 @@
           const avatar = camp.image_url || CAMPAIGN_POOLS.avatars[0].url;
           const banner = camp.banner_url || CAMPAIGN_POOLS.banners[0].url;
           const players = Array.isArray(camp.players) ? camp.players : [];
+          const mestre = players.find(p => p.role.toLowerCase() === 'mestre' || p.user_id === camp.owner_id);
+          const jogadores = players.filter(p => p.user_id !== camp.owner_id);
 
           detailsBox.innerHTML = `
             <!-- Hero da Campanha -->
@@ -2692,7 +2928,8 @@
             <!-- Grade de Conteúdo da Mesa -->
             <div class="campaign-details-layout">
               <!-- Lore e Crônicas -->
-              <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 24px;">
+              <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 24px; position: relative;">
+                ${(currentUser && currentUser.userId === camp.owner_id) ? `<button class="btn-hollow" style="position: absolute; top: 20px; right: 20px; padding: 6px 12px; font-size: 12px; border-color: var(--gold-primary); color: var(--gold-light);" onclick="mostrarToast('Editor de Campanha será implementado futuramente!')">✏️ Editar Campanha</button>` : ''}
                 <h3 style="font-family: var(--font-title); color: var(--gold-light); margin-top: 0; margin-bottom: 14px; font-size: 1.2rem;">
                   📜 Crônicas & Lore da Aventura
                 </h3>
@@ -2703,16 +2940,36 @@
 
               <!-- Vagas e Aventureiros Convocados -->
               <div style="display: flex; flex-direction: column; gap: 16px;">
+                ${mestre ? `
+                <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 20px;">
+                  <h4 style="font-family: var(--font-title); color: var(--gold-light); margin: 0 0 12px 0; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Mestre da Mesa</span>
+                  </h4>
+                  <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--gold-primary);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold-light);">
+                        ${(mestre.display_name || 'A')[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <div style="font-size: 13px; font-weight: 600; color: var(--text-main);">${mestre.display_name}</div>
+                        <div style="font-size: 11px; color: var(--text-dim);">${mestre.nickname ? '@' + mestre.nickname : ''}</div>
+                      </div>
+                    </div>
+                    <span class="role-badge" style="font-size: 10px; padding: 2px 6px;">Mestre</span>
+                  </div>
+                </div>
+                ` : ''}
+
                 <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 20px;">
                   <h4 style="font-family: var(--font-title); color: var(--gold-light); margin: 0 0 12px 0; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center;">
                     <span>Aventureiros</span>
                     <span class="badge-players-count" style="font-size: 11px;">
-                      ${players.length} / ${camp.max_players} Vagas
+                      ${jogadores.length} / ${camp.max_players} Vagas
                     </span>
                   </h4>
                   
                   <div style="display: flex; flex-direction: column; gap: 10px;">
-                    ${players.map(p => `
+                    ${jogadores.length === 0 ? '<div style="font-size: 13px; color: var(--text-dim);">Nenhum aventureiro se juntou ainda.</div>' : jogadores.map(p => `
                       <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
                         <div style="display: flex; align-items: center; gap: 10px;">
                           <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold-light);">
@@ -2723,22 +2980,145 @@
                             <div style="font-size: 11px; color: var(--text-dim);">${p.nickname ? '@' + p.nickname : ''}</div>
                           </div>
                         </div>
-                        <span class="role-badge" style="font-size: 10px; padding: 2px 6px;">${p.role}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <span class="role-badge" style="font-size: 10px; padding: 2px 6px;">${p.role}</span>
+                          ${(currentUser && currentUser.userId === camp.owner_id && p.user_id !== camp.owner_id) ? 
+                            (p.role.toLowerCase() === 'jogador' ? 
+                              `<button class="btn-hollow" style="padding: 2px 6px; font-size: 10px; border-color: var(--gold-primary); color: var(--gold-light);" onclick="alterarCargoJogador('${camp.id}', '${p.user_id}', 'assistente de mestre')">Promover a Assistente</button>` : 
+                              `<button class="btn-hollow" style="padding: 2px 6px; font-size: 10px; border-color: #ef4444; color: #ef4444;" onclick="alterarCargoJogador('${camp.id}', '${p.user_id}', 'jogador')">Rebaixar a Jogador</button>`) 
+                            : ''}
+                        </div>
                       </div>
                     `).join('')}
                   </div>
                 </div>
 
-                <!-- Botão de Ação: Adentrar o VTT -->
-                <button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="mostrarToast('Conexão WebSocket da Sala VTT em tempo real conectará na próxima fase!')">
-                  🎲 Adentrar Sessão no VTT
-                </button>
+                <div id="campaign-requests-section" style="display: none; background: var(--bg-card); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 20px;">
+                  <h4 style="font-family: var(--font-title); color: var(--gold-light); margin: 0 0 12px 0; font-size: 1.1rem;">
+                    ✋ Solicitações de Entrada
+                  </h4>
+                  <div id="campaign-requests-list" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="font-size: 13px; color: var(--text-dim);">Carregando solicitações...</div>
+                  </div>
+                </div>
+
+                <!-- Botão de Ação: Entrar na Campanha ou Solicitar Entrada -->
+                ${isPublic ? 
+                  (requestStatus === 'pendente' ? 
+                    `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px; opacity: 0.7; cursor: not-allowed;" disabled>
+                      ⏳ Solicitação Pendente
+                    </button>` : 
+                  requestStatus === 'aceito' ? 
+                    `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="window.location.href='campanha.html?id=${camp.id}'">
+                      🎲 Entrar na Campanha
+                    </button>` :
+                    `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="solicitarEntrada('${camp.id}', this)">
+                      ✋ Solicitar Entrada
+                    </button>`)
+                  :
+                  `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="window.location.href='campanha.html?id=${camp.id}'">
+                    🎲 Entrar na Campanha
+                  </button>`
+                }
               </div>
             </div>
           `;
+          // Carregar solicitações se for o mestre
+          if (currentUser && currentUser.userId === camp.owner_id) {
+            const reqSection = document.getElementById('campaign-requests-section');
+            const reqList = document.getElementById('campaign-requests-list');
+            if (reqSection && reqList) {
+              reqSection.style.display = 'block';
+              try {
+                const reqRes = await window.apiClient.listCampaignRequests(camp.id);
+                if (reqRes && reqRes.sucesso && reqRes.dados) {
+                  if (reqRes.dados.length === 0) {
+                    reqList.innerHTML = '<div style="font-size: 13px; color: var(--text-dim);">Nenhuma solicitação pendente.</div>';
+                  } else {
+                    reqList.innerHTML = reqRes.dados.map(r => `
+                      <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                        <div>
+                          <div style="font-size: 13px; font-weight: 600; color: var(--text-main);">${r.display_name}</div>
+                          <div style="font-size: 11px; color: var(--text-dim);">${r.email}</div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                          <button class="btn-gold" style="padding: 4px 8px; font-size: 11px;" onclick="responderSolicitacao('${r.id}', 'aceito')">Aceitar</button>
+                          <button class="btn-hollow" style="padding: 4px 8px; font-size: 11px;" onclick="responderSolicitacao('${r.id}', 'recusado')">Recusar</button>
+                        </div>
+                      </div>
+                    `).join('');
+                  }
+                }
+              } catch (e) {
+                reqList.innerHTML = `<div style="font-size: 13px; color: #ef4444;">Falha ao carregar solicitações.</div>`;
+              }
+            }
+          }
+
         }
       } catch (err) {
         detailsBox.innerHTML = `<p style="color: #ef4444;">Erro ao carregar detalhes da campanha: ${err.message}</p>`;
+      }
+    }
+
+    async function responderSolicitacao(requestId, status) {
+      if (!window.apiClient) return;
+      try {
+        const res = await window.apiClient.updateCampaignRequest(requestId, status);
+        if (res && res.sucesso) {
+          mostrarToast(res.mensagem || 'Solicitação respondida.');
+          // Refresh current view which should be campanha-detalhes
+          // Note: we might need the campId to reload. For now, navigating back and forth or just re-opening works.
+          navegarPara('campanhas');
+        } else {
+          throw new Error(res?.erro || 'Erro ao responder.');
+        }
+      } catch (e) {
+        mostrarToast('Erro: ' + e.message);
+      }
+    }
+
+    async function alterarCargoJogador(campId, targetUserId, newRole) {
+      if (!window.apiClient) return;
+      try {
+        const res = await window.apiClient.updateCampaignPlayerRole(campId, targetUserId, newRole);
+        if (res && res.sucesso) {
+          mostrarToast(res.mensagem || 'Cargo atualizado com sucesso.');
+          navegarPara('campanhas');
+        } else {
+          throw new Error(res?.erro || 'Erro ao atualizar cargo.');
+        }
+      } catch (e) {
+        mostrarToast('Erro: ' + e.message);
+      }
+    }
+    async function solicitarEntrada(campId, btnElement) {
+      if (!window.apiClient) return;
+      
+      const oldHtml = btnElement.innerHTML;
+      btnElement.innerHTML = '<div class="spinner" style="width: 14px; height: 14px; display: inline-block;"></div> Solicitando...';
+      btnElement.disabled = true;
+      btnElement.style.opacity = '0.7';
+      btnElement.style.cursor = 'not-allowed';
+
+      try {
+        const res = await window.apiClient.requestJoinCampaign({ campaignId: campId });
+        if (res && res.sucesso) {
+          mostrarToast('Solicitação enviada! Aguarde o mestre aceitar.');
+          btnElement.innerHTML = '⏳ Solicitação Pendente';
+          
+          // Update cache if possible
+          const cached = publicCampaignsCache.find(c => c.id === campId);
+          if (cached) cached.request_status = 'pendente';
+        } else {
+          throw new Error(res?.erro || 'Falha ao solicitar entrada.');
+        }
+      } catch (err) {
+        mostrarToast('Erro: ' + err.message);
+        btnElement.innerHTML = oldHtml;
+        btnElement.disabled = false;
+        btnElement.style.opacity = '1';
+        btnElement.style.cursor = 'pointer';
       }
     }
 
@@ -2810,6 +3190,7 @@
       // Se for a tela de campanhas, carrega lista dinâmica
       if (telaId === 'campanhas') {
         carregarCampanhas();
+        carregarCampanhasPublicas();
       }
 
       // Se for a tela de administração, carrega lista de dispositivos bloqueados
@@ -2820,7 +3201,7 @@
       // 3. Salvar última tela no localStorage para persistência de navegação
       try {
         localStorage.setItem('arcana_active_view', telaId);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     /**
@@ -2912,7 +3293,7 @@
         const rawUser = localStorage.getItem('arcana_user_data');
         let usuario = {};
         if (rawUser) {
-          try { usuario = JSON.parse(rawUser); } catch (_) {}
+          try { usuario = JSON.parse(rawUser); } catch (_) { }
         }
         usuario.displayName = name;
         usuario.name = name;
@@ -3290,13 +3671,14 @@
       if (window.apiClient) {
         try {
           await window.apiClient.logout();
-        } catch (e) {}
+        } catch (e) { }
       }
 
       try {
         localStorage.removeItem('arcana_user_logged');
         localStorage.removeItem('arcana_user_data');
-      } catch (e) {}
+        localStorage.removeItem('arcana_token');
+      } catch (e) { }
 
       document.getElementById('app-container').style.display = 'none';
       document.getElementById('auth-container').style.display = 'flex';
@@ -3485,4 +3867,5 @@
     });
   </script>
 </body>
+
 </html>
