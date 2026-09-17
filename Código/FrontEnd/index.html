@@ -1994,9 +1994,9 @@
             <span>Consultando as crônicas da Taverna...</span>
           </div>
         </div>
-        
+
         <div class="divider" style="height: 1px; background: rgba(255,255,255,0.1); margin: 40px 0;"></div>
-        
+
         <div class="campaigns-topbar">
           <div>
             <h2 class="page-title" style="color: var(--arcana-accent);">Explorar a Taverna</h2>
@@ -2004,21 +2004,27 @@
           </div>
         </div>
 
-        <div class="search-bar-container" style="margin-bottom: 32px; position: relative; max-width: 600px; margin-left: auto; margin-right: auto;">
-          <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; color: var(--gold-primary); opacity: 0.8;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="search-bar-container"
+          style="margin-bottom: 32px; position: relative; max-width: 600px; margin-left: auto; margin-right: auto;">
+          <div
+            style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; color: var(--gold-primary); opacity: 0.8;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-          <input type="text" id="public-campaigns-search" placeholder="Buscar rumores por mestre, nome, ID ou lore..." class="input-arcana" style="width: 100%; padding: 16px 16px 16px 48px; border-radius: 30px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 0 0 0 rgba(212, 175, 55, 0); transition: all 0.3s ease; font-size: 15px; color: var(--text-main);">
+          <input type="text" id="public-campaigns-search" placeholder="Buscar rumores por mestre, nome, ID ou lore..."
+            class="input-arcana"
+            style="width: 100%; padding: 16px 16px 16px 48px; border-radius: 30px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 0 0 0 rgba(212, 175, 55, 0); transition: all 0.3s ease; font-size: 15px; color: var(--text-main);">
           <style>
             #public-campaigns-search:focus {
               background: rgba(15, 23, 42, 0.9);
               border-color: var(--gold-primary);
-              box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 0 12px rgba(212, 175, 55, 0.2);
+              box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 12px rgba(212, 175, 55, 0.2);
               outline: none;
             }
+
             #public-campaigns-search::placeholder {
               color: var(--text-dim);
               font-style: italic;
@@ -2813,11 +2819,11 @@
         const currentPlayers = camp.current_players || 0;
         const maxPlayers = camp.max_players || 5;
         const isFull = currentPlayers >= maxPlayers;
-        
+
         let reqHint = 'Ver Apresentação &rarr;';
         if (camp.request_status === 'pendente') reqHint = 'Solicitação Pendente';
         else if (camp.request_status === 'aceito') reqHint = 'Aceito! Entrar';
-        
+
         return `
           <div class="campaign-horizontal-card" onclick="abrirDetalhesCampanha('${camp.id}', true, '${camp.request_status || ''}')">
             <div class="campaign-card-bg" style="background-image: url('${banner}');"></div>
@@ -2861,7 +2867,7 @@
             renderizarCampanhasPublicas(publicCampaignsCache);
             return;
           }
-          
+
           const filtradas = publicCampaignsCache.filter(c => {
             const nomeCamp = (c.name || '').toLowerCase();
             const nomeMestre = (c.owner_name || '').toLowerCase();
@@ -2869,7 +2875,7 @@
             const id = (c.simple_id || '').toLowerCase();
             return nomeCamp.includes(term) || nomeMestre.includes(term) || lore.includes(term) || id.includes(term);
           });
-          
+
           renderizarCampanhasPublicas(filtradas);
         });
       }
@@ -2982,11 +2988,11 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
                           <span class="role-badge" style="font-size: 10px; padding: 2px 6px;">${p.role}</span>
-                          ${(currentUser && currentUser.userId === camp.owner_id && p.user_id !== camp.owner_id) ? 
-                            (p.role.toLowerCase() === 'jogador' ? 
-                              `<button class="btn-hollow" style="padding: 2px 6px; font-size: 10px; border-color: var(--gold-primary); color: var(--gold-light);" onclick="alterarCargoJogador('${camp.id}', '${p.user_id}', 'assistente de mestre')">Promover a Assistente</button>` : 
-                              `<button class="btn-hollow" style="padding: 2px 6px; font-size: 10px; border-color: #ef4444; color: #ef4444;" onclick="alterarCargoJogador('${camp.id}', '${p.user_id}', 'jogador')">Rebaixar a Jogador</button>`) 
-                            : ''}
+                          ${(currentUser && currentUser.userId === camp.owner_id && p.user_id !== camp.owner_id) ?
+              (p.role.toLowerCase() === 'jogador' ?
+                `<button class="btn-hollow" style="padding: 2px 6px; font-size: 10px; border-color: var(--gold-primary); color: var(--gold-light);" onclick="alterarCargoJogador('${camp.id}', '${p.user_id}', 'assistente de mestre')">Promover a Assistente</button>` :
+                `<button class="btn-hollow" style="padding: 2px 6px; font-size: 10px; border-color: #ef4444; color: #ef4444;" onclick="alterarCargoJogador('${camp.id}', '${p.user_id}', 'jogador')">Rebaixar a Jogador</button>`)
+              : ''}
                         </div>
                       </div>
                     `).join('')}
@@ -3003,23 +3009,23 @@
                 </div>
 
                 <!-- Botão de Ação: Entrar na Campanha ou Solicitar Entrada -->
-                ${isPublic ? 
-                  (requestStatus === 'pendente' ? 
-                    `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px; opacity: 0.7; cursor: not-allowed;" disabled>
+                ${isPublic ?
+              (requestStatus === 'pendente' ?
+                `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px; opacity: 0.7; cursor: not-allowed;" disabled>
                       ⏳ Solicitação Pendente
-                    </button>` : 
-                  requestStatus === 'aceito' ? 
-                    `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="window.location.href='campanha.html?id=${camp.id}'">
+                    </button>` :
+                requestStatus === 'aceito' ?
+                  `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="window.location.href='campanha.html?id=${camp.id}'">
                       🎲 Entrar na Campanha
                     </button>` :
-                    `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="solicitarEntrada('${camp.id}', this)">
+                  `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="solicitarEntrada('${camp.id}', this)">
                       ✋ Solicitar Entrada
                     </button>`)
-                  :
-                  `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="window.location.href='campanha.html?id=${camp.id}'">
+              :
+              `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="window.location.href='campanha.html?id=${camp.id}'">
                     🎲 Entrar na Campanha
                   </button>`
-                }
+            }
               </div>
             </div>
           `;
@@ -3094,7 +3100,7 @@
     }
     async function solicitarEntrada(campId, btnElement) {
       if (!window.apiClient) return;
-      
+
       const oldHtml = btnElement.innerHTML;
       btnElement.innerHTML = '<div class="spinner" style="width: 14px; height: 14px; display: inline-block;"></div> Solicitando...';
       btnElement.disabled = true;
@@ -3106,7 +3112,7 @@
         if (res && res.sucesso) {
           mostrarToast('Solicitação enviada! Aguarde o mestre aceitar.');
           btnElement.innerHTML = '⏳ Solicitação Pendente';
-          
+
           // Update cache if possible
           const cached = publicCampaignsCache.find(c => c.id === campId);
           if (cached) cached.request_status = 'pendente';
