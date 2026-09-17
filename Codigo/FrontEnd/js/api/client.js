@@ -6,7 +6,7 @@
 
 import { getDeviceFingerprint } from '../security/fingerprint.js';
 
-const API_BASE_URL = (typeof window !== 'undefined' && window.ARCANA_API_URL) || 'http://localhost:8787';
+const API_BASE_URL = (typeof window !== 'undefined' && window.ARCANA_API_URL) || 'https://0pesadelo-web-vtt.trevorrot.workers.dev';
 
 export const apiClient = {
   /**

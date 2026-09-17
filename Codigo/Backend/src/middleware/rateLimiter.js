@@ -4,19 +4,8 @@
 
 const ipRequestMap = new Map();
 
-// Limpeza periódica de entradas expiradas a cada 2 minutos
-const cleanupTimer = setInterval(() => {
-  const now = Date.now();
-  for (const [key, record] of ipRequestMap.entries()) {
-    if (now - record.resetTime > 60000) {
-      ipRequestMap.delete(key);
-    }
-  }
-}, 120000);
-
-if (typeof cleanupTimer.unref === 'function') {
-  cleanupTimer.unref();
-}
+// O timer contínuo não é suportado pelo Cloudflare Workers no escopo global.
+// A limpeza acontecerá naturalmente a cada "Cold Start" ou podemos usar uma checagem reativa.
 
 export function checkRateLimit(ip, maxRequestsPerMinute, bucket = 'default') {
   const key = `${bucket}:${ip}`;
