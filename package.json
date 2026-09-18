@@ -1,0 +1,9 @@
+{
+  "name": "0pesadelowebvtt",
+  "version": "1.0.0",
+  "scripts": {
+    "deploy:backend": "cd Codigo/Backend && npx wrangler deploy",
+    "deploy:frontend": "cd Codigo/FrontEnd && npx wrangler deploy",
+    "deploy": "npm run deploy:backend && npm run deploy:frontend"
+  }
+}
