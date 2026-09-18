@@ -337,6 +337,26 @@ export const dbQueries = {
     return info;
   },
 
+  async updateCampaign(db, campaignId, { name, sessions, nextSession, loreDescription, notices }) {
+    const stmt = db.prepare(`
+      UPDATE campaigns 
+      SET name = COALESCE(?, name),
+          sessions = COALESCE(?, sessions),
+          next_session = COALESCE(?, next_session),
+          lore_description = COALESCE(?, lore_description),
+          notices = COALESCE(?, notices)
+      WHERE id = ?
+    `);
+    return await stmt.bind(
+      name ? name.trim() : null,
+      sessions !== undefined ? Number(sessions) || 0 : null,
+      nextSession !== undefined ? String(nextSession).trim() : null,
+      loreDescription !== undefined ? String(loreDescription).trim() : null,
+      notices !== undefined ? String(notices).trim() : null,
+      campaignId
+    ).run();
+  },
+
   async addPlayerToCampaign(db, campaignId, userId, role = 'jogador') {
     const stmt = db.prepare(`
       INSERT INTO campaign_players (campaign_id, user_id, role)

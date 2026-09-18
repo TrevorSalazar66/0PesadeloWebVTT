@@ -296,6 +296,40 @@ export async function handleSyncRequest(request, env, clientIp) {
         }), { status: 201, headers });
       }
 
+      case 'campaigns.update': {
+        const { campaignId, name, sessions, nextSession, description, notices } = data;
+        
+        if (!campaignId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha ausente.' }), { status: 400, headers });
+        }
+
+        const campaign = await dbQueries.getCampaignById(db, campaignId);
+        if (!campaign) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
+        }
+
+        if (campaign.owner_id !== user.userId && !['admin', 'superadmin'].includes(user.role)) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o mestre da campanha pode editá-la.' }), { status: 403, headers });
+        }
+
+        // Clean text
+        const cleanName = name ? sanitizeText(name) : undefined;
+        const cleanLore = description ? sanitizeText(description).substring(0, CAMPAIGN_LIMITS.MAX_LORE_LENGTH) : undefined;
+        const cleanNextSession = nextSession ? sanitizeText(nextSession) : undefined;
+        const cleanNotices = notices ? sanitizeText(notices) : undefined;
+
+        await dbQueries.updateCampaign(db, campaignId, { 
+          name: cleanName, 
+          sessions, 
+          nextSession: cleanNextSession, 
+          loreDescription: cleanLore, 
+          notices: cleanNotices 
+        });
+
+        const updatedCampaign = await dbQueries.getCampaignById(db, campaignId);
+        return new Response(JSON.stringify({ sucesso: true, mensagem: 'Campanha atualizada com sucesso.', dados: updatedCampaign }), { status: 200, headers });
+      }
+
       case 'campaigns.public': {
         const publicCampaigns = await dbQueries.getPublicCampaigns(db, user.userId);
         return new Response(JSON.stringify({ sucesso: true, dados: publicCampaigns }), { status: 200, headers });

@@ -93,23 +93,23 @@ async function loadCampaignData() {
   }
 
   try {
-    const res = await apiClient.getCampaign({ id: currentCampaignId });
+    const res = await apiClient.getCampaign({ campaignId: currentCampaignId });
     if (res.sucesso && res.dados) {
       const camp = res.dados;
       currentCampaignData = camp;
 
       // Preenche os dados
       document.getElementById('campaign-title').textContent = camp.name || "Campanha Sem Nome";
-      document.getElementById('campaign-summary').textContent = camp.description || "Nenhum resumo fornecido.";
-      document.getElementById('campaign-system').textContent = camp.system || "D&D 5e";
-      document.getElementById('campaign-sessions').textContent = camp.sessions || "0";
+      document.getElementById('campaign-summary').textContent = camp.lore_description || "Nenhum resumo fornecido.";
+      document.getElementById('campaign-system').textContent = camp.system_id || "custom";
+      document.getElementById('campaign-sessions').textContent = camp.sessions !== undefined && camp.sessions !== null ? camp.sessions : "0";
       document.getElementById('campaign-next-session').textContent = camp.next_session || "Não agendada";
       document.getElementById('campaign-notices').textContent = camp.notices || "Ainda não há avisos importantes fixados.";
       
       // Ajusta o nome do GM
-      if (camp.master_id) { // Simulação, caso tenhamos nome do master no DB
+      if (camp.owner_name) { // Usando owner_name retornado do backend
         // Para simplificar vamos apenas mudar o label visual. Numa aplicação real, iteraríamos nos `players`.
-        // document.getElementById('gm-name').textContent = camp.master_name; 
+        // document.getElementById('gm-name').textContent = camp.owner_name; 
       }
 
     } else {
@@ -154,17 +154,21 @@ window.saveCampaignDetails = async function(event) {
   };
 
   try {
-    // Atualiza via API se possível
-    // const res = await apiClient.sync('campaigns.update', newData);
+    // Atualiza via API
+    const res = await apiClient.sync('campaigns.update', newData);
     
-    // Atualiza o DOM para feedback visual imediato
-    document.getElementById('campaign-title').textContent = newData.name || "Campanha Sem Nome";
-    document.getElementById('campaign-sessions').textContent = newData.sessions || "0";
-    document.getElementById('campaign-next-session').textContent = newData.nextSession || "Não agendada";
-    document.getElementById('campaign-summary').textContent = newData.description || "Nenhum resumo fornecido.";
-    document.getElementById('campaign-notices').textContent = newData.notices || "Ainda não há avisos importantes fixados.";
+    if (res.sucesso) {
+      // Atualiza o DOM para feedback visual imediato
+      document.getElementById('campaign-title').textContent = newData.name || "Campanha Sem Nome";
+      document.getElementById('campaign-sessions').textContent = newData.sessions || "0";
+      document.getElementById('campaign-next-session').textContent = newData.nextSession || "Não agendada";
+      document.getElementById('campaign-summary').textContent = newData.description || "Nenhum resumo fornecido.";
+      document.getElementById('campaign-notices').textContent = newData.notices || "Ainda não há avisos importantes fixados.";
 
-    window.closeEditModal();
+      window.closeEditModal();
+    } else {
+      alert("Falha ao salvar: " + (res.erro || "Erro desconhecido"));
+    }
   } catch (error) {
     console.error("Erro ao salvar campanha:", error);
     alert("Ocorreu um erro ao salvar as alterações.");

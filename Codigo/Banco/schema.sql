@@ -79,6 +79,9 @@ CREATE TABLE IF NOT EXISTS campaigns (
     image_url TEXT NOT NULL DEFAULT '',
     banner_url TEXT NOT NULL DEFAULT '',
     max_players INTEGER NOT NULL DEFAULT 5 CHECK (max_players >= 1 AND max_players <= 12),
+    sessions INTEGER NOT NULL DEFAULT 0,
+    next_session TEXT NOT NULL DEFAULT '',
+    notices TEXT NOT NULL DEFAULT '',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
