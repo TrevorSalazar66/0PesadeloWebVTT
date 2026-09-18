@@ -29,7 +29,7 @@ export async function processGoogleCallback(request, env) {
   const code = url.searchParams.get('code');
   const error = url.searchParams.get('error');
 
-  const frontendBase = env?.FRONTEND_URL || 'http://localhost:5500/Código/FrontEnd/index.html';
+  const frontendBase = env?.FRONTEND_URL || 'https://0pesadelo-frontend.trevorrot.workers.dev';
 
   if (error || !code) {
     return Response.redirect(`${frontendBase}?auth_error=${encodeURIComponent(error || 'Código de autorização não fornecido')}`, 302);

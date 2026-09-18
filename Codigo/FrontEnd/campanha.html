@@ -337,6 +337,153 @@
       font-size: 24px;
       font-family: var(--font-title);
     }
+
+    /* ESTILOS DO MESTRE */
+    .gm-card {
+      border: 2px solid var(--gold-primary);
+      box-shadow: 0 0 15px rgba(212, 163, 75, 0.1);
+      position: relative;
+    }
+
+    .gm-card:hover {
+      box-shadow: 0 0 20px rgba(212, 163, 75, 0.2);
+    }
+
+    .gm-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--bg-deep);
+      background: var(--gold-primary);
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      font-weight: 700;
+      margin-top: 4px;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    /* MODAL DE EDIÇÃO */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(8, 8, 17, 0.8);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      width: 100%;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .modal-title {
+      font-family: var(--font-title);
+      color: var(--gold-light);
+      margin-bottom: 24px;
+      font-size: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      color: #fff;
+      font-family: var(--font-body);
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--gold-primary);
+    }
+    
+    .btn-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border-card);
+      color: var(--text-muted);
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all var(--transition-fast);
+    }
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+      color: #fff;
+    }
+    
+    .btn-primary {
+      background: var(--gold-primary);
+      border: none;
+      color: var(--text-dark);
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all var(--transition-fast);
+    }
+    .btn-primary:hover {
+      background: var(--gold-light);
+    }
+
+    .edit-btn {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .edit-btn:hover {
+      border-color: var(--gold-primary);
+      color: var(--gold-light);
+    }
+
+    /* TEXTAREA */
+    textarea.form-control {
+      resize: vertical;
+      min-height: 80px;
+    }
   </style>
 </head>
 
@@ -419,50 +566,51 @@
 
     <!-- ABA 1: GERAL -->
     <section id="view-geral" class="view-section active">
-      <h1 class="page-title">Mina de Phandelver</h1>
+      <h1 class="page-title" id="campaign-title">Mina de Phandelver</h1>
       <div class="dashboard-grid">
         <div>
           <div class="card">
             <h2 style="margin-bottom: 16px; color: var(--gold-light);">Resumo da Aventura</h2>
-            <p style="color: var(--text-muted); line-height: 1.6;">
-              Os heróis chegaram à cidade de Phandalin e descobriram a ameaça das marcas vermelhas.
-              Agora se preparam para adentrar a floresta de Neverwinter em busca da Caverna Ecoante.
+            <p id="campaign-summary" style="color: var(--text-muted); line-height: 1.6;">
+              Carregando resumo...
             </p>
           </div>
           <div class="card">
             <h2 style="margin-bottom: 16px; color: var(--gold-light);">Grupo</h2>
-            <div class="player-list">
-              <div class="player-card">
-                <div class="avatar"></div>
+            <div class="player-list" id="player-list">
+              <div class="player-card gm-card">
+                <div class="avatar gm-avatar"></div>
                 <div class="player-info">
-                  <span class="player-name">João (Mestre)</span>
-                </div>
-              </div>
-              <div class="player-card">
-                <div class="avatar"></div>
-                <div class="player-info">
-                  <span class="player-name">Maria</span>
-                  <span class="character-name">Elara, Elfa Patrulheira</span>
-                </div>
-              </div>
-              <div class="player-card">
-                <div class="avatar"></div>
-                <div class="player-info">
-                  <span class="player-name">Pedro</span>
-                  <span class="character-name">Thorek, Anão Bárbaro</span>
+                  <span class="player-name" id="gm-name">João</span>
+                  <span class="gm-tag">Mestre da Campanha</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
         <div>
-          <div class="card">
-            <h2 style="margin-bottom: 16px; color: var(--gold-light);">Estatísticas</h2>
+          <div class="card" style="position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+              <h2 style="color: var(--gold-light);">Estatísticas</h2>
+              <button class="edit-btn" onclick="openEditModal()" id="btn-edit-stats" title="Editar Informações">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                Editar
+              </button>
+            </div>
             <ul style="list-style: none; color: var(--text-muted); line-height: 2;">
-              <li><strong>Sistema:</strong> D&D 5e</li>
-              <li><strong>Sessões:</strong> 12</li>
-              <li><strong>Próxima Sessão:</strong> Sábado, 20:00</li>
+              <li><strong>Sistema:</strong> <span id="campaign-system">D&D 5e</span></li>
+              <li><strong>Sessões:</strong> <span id="campaign-sessions">12</span></li>
+              <li><strong>Próxima Sessão:</strong> <span id="campaign-next-session">Sábado, 20:00</span></li>
             </ul>
+          </div>
+          
+          <div class="card" id="notice-board-card">
+            <h2 style="margin-bottom: 16px; color: var(--gold-light);">Quadro de Avisos do Mestre</h2>
+            <div style="background: rgba(212, 163, 75, 0.05); border: 1px dashed var(--border-gold); padding: 16px; border-radius: var(--radius-md);">
+              <p id="campaign-notices" style="color: var(--gold-primary); font-style: italic; font-size: 14px; white-space: pre-wrap;">
+                Ainda não há avisos importantes fixados.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -530,8 +678,42 @@
 
   </main>
 
-  <!-- Script da Campanha -->
-  <script src="js/campanha.js"></script>
+  <!-- MODAL DE EDIÇÃO DE INFORMAÇÕES DA CAMPANHA -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-content">
+      <h2 class="modal-title">Editar Detalhes da Campanha</h2>
+      <form id="editCampaignForm" onsubmit="saveCampaignDetails(event)">
+        <div class="form-group">
+          <label>Nome da Campanha</label>
+          <input type="text" class="form-control" id="input-campaign-name" placeholder="Ex: Mina de Phandelver">
+        </div>
+        <div class="form-group">
+          <label>Número de Sessões</label>
+          <input type="number" class="form-control" id="input-sessions" min="0">
+        </div>
+        <div class="form-group">
+          <label>Data da Próxima Sessão</label>
+          <input type="text" class="form-control" id="input-next-session" placeholder="Ex: Sábado, 20:00">
+        </div>
+        <div class="form-group">
+          <label>Resumo da Aventura</label>
+          <textarea class="form-control" id="input-summary" placeholder="Escreva o resumo da sua aventura..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Quadro de Avisos</label>
+          <textarea class="form-control" id="input-notices" placeholder="Avisos importantes para os jogadores..."></textarea>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Client API & Script da Campanha -->
+  <script type="module" src="js/api/client.js"></script>
+  <script type="module" src="js/campanha.js"></script>
 </body>
 
 </html>

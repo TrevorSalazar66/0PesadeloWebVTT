@@ -15,3 +15,9 @@ database_id = "0c182dd7-36f9-45cf-a3bd-bfa8a639ee4d"
 ENVIRONMENT = "development"
 ALLOWED_ORIGINS = "http://localhost:5500,http://127.0.0.1:5500,https://0pesadelo-frontend.trevorrot.workers.dev"
 JWT_SECRET = "arcana-super-secret-key-development-local-2026-vtt"
+FRONTEND_URL = "https://0pesadelo-frontend.trevorrot.workers.dev"
+
+# NOTA: O GOOGLE_CLIENT_ID e o GOOGLE_CLIENT_SECRET não devem ficar aqui pois ficam expostos no GitHub!
+# Eles devem ser adicionados na Cloudflare usando os comandos de terminal:
+# npx wrangler secret put GOOGLE_CLIENT_ID
+# npx wrangler secret put GOOGLE_CLIENT_SECRET

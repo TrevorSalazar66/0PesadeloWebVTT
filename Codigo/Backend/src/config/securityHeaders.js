@@ -3,7 +3,7 @@
  */
 
 export function getAllowedOrigins(env) {
-  const configured = env?.ALLOWED_ORIGINS || 'http://localhost:5500,http://127.0.0.1:5500,https://arcana.pages.dev';
+  const configured = env?.ALLOWED_ORIGINS || 'http://localhost:5500,http://127.0.0.1:5500,https://0pesadelo-frontend.trevorrot.workers.dev';
   return configured.split(',').map(o => o.trim()).filter(Boolean);
 }
 
