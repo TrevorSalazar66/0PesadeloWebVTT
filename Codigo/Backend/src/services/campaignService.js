@@ -15,11 +15,20 @@ const MYSTIC_WORDS = [
 
 // Sistemas Oficiais Suportados
 export const OFFICIAL_SYSTEMS = [
-  { id: 'dnd5e', name: 'D&D 5ª Edição', badge: 'D&D 5e', icon: 'dragon' },
-  { id: 'tormenta20', name: 'Tormenta 20', badge: 'T20', icon: 'shield' },
-  { id: 'cthulhu', name: 'Chamado de Cthulhu 7e', badge: 'CoC 7e', icon: 'tentacle' },
-  { id: 'ordem', name: 'Ordem Paranormal RPG', badge: 'Ordem', icon: 'eye' },
-  { id: 'custom', name: 'Sistema Próprio / Livre', badge: 'Custom', icon: 'book' }
+  { 
+    id: 'alphad6', 
+    name: 'AlphaD6 RPG', 
+    badge: 'AlphaD6', 
+    icon: 'dice-d6',
+    description: 'Sistema oficial baseado em Dice Pool D6, atributos e especializações'
+  },
+  { 
+    id: 'custom', 
+    name: 'Sistema Próprio / Livre', 
+    badge: 'Custom', 
+    icon: 'book',
+    description: 'Regras livres e rolagens matemáticas genéricas'
+  }
 ];
 
 // Temas Estéticos e Narrativos

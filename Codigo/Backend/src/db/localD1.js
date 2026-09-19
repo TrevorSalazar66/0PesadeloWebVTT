@@ -88,6 +88,22 @@ export function createLocalD1(dbPath = ':memory:') {
         ALTER TABLE campaigns ADD COLUMN notices TEXT NOT NULL DEFAULT '';
       `);
     }
+
+    if (campTableSql && !campTableSql.includes('clock_data')) {
+      try {
+        sqlite.exec(`
+          ALTER TABLE campaigns ADD COLUMN clock_data TEXT NOT NULL DEFAULT '{"ano":1,"mes":1,"dia":1,"hora":8,"minuto":0,"periodo":"Manhã"}';
+        `);
+      } catch (_) {}
+    }
+
+    if (campTableSql && !campTableSql.includes('settings')) {
+      try {
+        sqlite.exec(`
+          ALTER TABLE campaigns ADD COLUMN settings TEXT NOT NULL DEFAULT '{"auto_approve_actions":0,"clock_triggers":{"messages_threshold":0,"minutes_per_threshold":0}}';
+        `);
+      } catch (_) {}
+    }
   } catch (err) {
     console.warn('[LocalD1] Migração preventiva campaigns:', err.message);
   }

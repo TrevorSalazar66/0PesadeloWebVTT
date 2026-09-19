@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criação de Personagem - AlphaD6 | Arcana VTT</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-deep: #080811;
+      --bg-surface: #10101d;
+      --bg-card: #141424;
+      --bg-card-hover: #19192e;
+      --bg-input: #0b0b14;
+
+      --border-subtle: #1e1e32;
+      --border-card: #25253e;
+      --border-gold: rgba(212, 163, 75, 0.4);
+
+      --gold-primary: #d4a34b;
+      --gold-light: #e5b758;
+      --gold-hover: #f1c76e;
+      --gold-dark: #2a2012;
+      --gold-border-dark: #573f1d;
+
+      --accent-cyan: #38bdf8;
+      --accent-purple: #a855f7;
+      --accent-emerald: #10b981;
+      --accent-crimson: #ef4444;
+
+      --text-main: #f5f5f7;
+      --text-muted: #8e8ea6;
+      --text-dim: #5c5c74;
+      --text-dark: #120e06;
+
+      --font-title: 'Cinzel', serif, Georgia;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-pill: 9999px;
+
+      --transition-fast: 0.18s ease;
+      --transition-normal: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: radial-gradient(circle at 50% 0%, rgba(212, 163, 75, 0.08) 0%, transparent 60%);
+    }
+
+    header {
+      padding: 1rem 2rem;
+      background-color: rgba(16, 16, 29, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .logo-box {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      font-size: 1.5rem;
+      color: var(--gold-primary);
+    }
+
+    .logo-text {
+      font-family: var(--font-title);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--gold-light);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border-card);
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: var(--transition-fast);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--gold-primary);
+      color: var(--text-main);
+    }
+
+    main {
+      flex: 1;
+      max-width: 1050px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 3rem;
+      width: 100%;
+    }
+
+    .wizard-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      position: relative;
+    }
+
+    /* BARRA DE PROGRESSO DO WIZARD */
+    .steps-nav {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 2.5rem;
+    }
+
+    .steps-nav::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--border-subtle);
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+
+    .step-node {
+      position: relative;
+      z-index: 2;
+      background: var(--bg-card);
+      border: 2px solid var(--border-card);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      transition: var(--transition-normal);
+    }
+
+    .step-node.active {
+      border-color: var(--gold-primary);
+      background: var(--gold-dark);
+      color: var(--gold-light);
+      box-shadow: 0 0 12px rgba(212, 163, 75, 0.35);
+    }
+
+    .step-node.done {
+      border-color: var(--accent-emerald);
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-emerald);
+    }
+
+    .step-title-badge {
+      font-family: var(--font-title);
+      font-size: 1.5rem;
+      color: var(--gold-light);
+      margin-bottom: 0.5rem;
+    }
+
+    .step-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ETAPAS (SEÇÕES DO WIZARD) */
+    .wizard-step {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .wizard-step.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* FORM GROUPS & GRIDS */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .form-control {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-fast);
+      font-family: inherit;
+    }
+
+    .form-control:focus {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 0 2px rgba(212, 163, 75, 0.2);
+    }
+
+    textarea.form-control {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    /* CARDS DE ATRIBUTOS */
+    .attr-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      position: relative;
+    }
+
+    .attr-name {
+      font-family: var(--font-title);
+      font-size: 1rem;
+      color: var(--gold-light);
+    }
+
+    .attr-val-box {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1;
+    }
+
+    .attr-dice-badge {
+      font-size: 0.75rem;
+      background: rgba(212, 163, 75, 0.15);
+      color: var(--gold-light);
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--radius-pill);
+      font-weight: 600;
+    }
+
+    .attr-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .btn-attr {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-card);
+      background: var(--bg-card);
+      color: var(--text-main);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+    }
+
+    .btn-attr:hover:not(:disabled) {
+      border-color: var(--gold-primary);
+      background: var(--gold-dark);
+      color: var(--gold-light);
+    }
+
+    .btn-attr:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .pool-counter-banner {
+      background: rgba(212, 163, 75, 0.1);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .pool-number {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--gold-light);
+    }
+
+    /* SILHUETA DE EQUIPAMENTO (PAPERDOLL) */
+    .paperdoll-container {
+      display: grid;
+      grid-template-columns: 1fr 280px 1fr;
+      gap: 1.5rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .paperdoll-silhouette {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      height: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background-image: radial-gradient(circle, rgba(212, 163, 75, 0.05) 0%, transparent 70%);
+    }
+
+    .silhouette-svg {
+      width: 140px;
+      height: 300px;
+      opacity: 0.35;
+      fill: var(--text-muted);
+    }
+
+    .slot-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      transition: var(--transition-fast);
+    }
+
+    .slot-card:hover {
+      border-color: var(--border-gold);
+    }
+
+    .slot-label {
+      font-size: 0.75rem;
+      color: var(--gold-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .slot-value {
+      font-size: 0.9rem;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    /* TAGS DE SUGESTÕES */
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .tag-chip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      color: var(--text-muted);
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .tag-chip:hover {
+      border-color: var(--gold-primary);
+      color: var(--gold-light);
+      background: var(--gold-dark);
+    }
+
+    /* FOOTER DO WIZARD */
+    .wizard-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold-primary), var(--gold-light));
+      color: var(--text-dark);
+      border: none;
+      padding: 0.75rem 1.75rem;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: var(--transition-fast);
+      box-shadow: 0 4px 14px rgba(212, 163, 75, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold-hover));
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      color: var(--text-main);
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: var(--transition-fast);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--border-gold);
+    }
+
+    /* CARDS DE RESUMO */
+    .summary-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.75rem;
+    }
+
+    .summary-name {
+      font-family: var(--font-title);
+      font-size: 1.35rem;
+      color: var(--gold-light);
+    }
+
+    .badge-wealth {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 0.3rem 0.8rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge-anima {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 0.3rem 0.8rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .grid-4, .grid-3, .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .paperdoll-container {
+        grid-template-columns: 1fr;
+      }
+      .wizard-container {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo-box">
+      <span class="logo-icon">⚔️</span>
+      <span class="logo-text">Arcana VTT</span>
+    </div>
+    <a href="index.html" class="btn-ghost">
+      ← Voltar ao Hub
+    </a>
+  </header>
+
+  <main>
+    <div class="wizard-container">
+      
+      <!-- INDICADORES DE PASSOS -->
+      <div class="steps-nav">
+        <div class="step-node active" id="node-1">1</div>
+        <div class="step-node" id="node-2">2</div>
+        <div class="step-node" id="node-3">3</div>
+        <div class="step-node" id="node-4">4</div>
+        <div class="step-node" id="node-5">5</div>
+        <div class="step-node" id="node-6">6</div>
+      </div>
+
+      <!-- FORMULÁRIO WIZARD -->
+      <form id="form-criar-personagem">
+        
+        <!-- PASSO 1: IDENTIDADE & ARQUÉTIPO -->
+        <div class="wizard-step active" id="step-1">
+          <div class="step-title-badge">Passo 1: Identidade & Arquétipo</div>
+          <div class="step-desc">Dê vida ao seu personagem. O arquétipo e a raça são de criação livre para favorecer sua narrativa.</div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="input-nome">Nome do Personagem *</label>
+              <input type="text" id="input-nome" class="form-control" placeholder="Ex: Barnaby Crow, Vanya Salazar..." required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="input-arquetipo">Arquétipo / Conceito * (Livre)</label>
+              <input type="text" id="input-arquetipo" class="form-control" placeholder="Ex: Detetive Ocultista, Soldado Veterano, Erudita Renegada..." required>
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div class="form-group">
+              <label class="form-label" for="input-raca">Raça / Ancestralidade</label>
+              <input type="text" id="input-raca" class="form-control" value="Humano" placeholder="Humano, Elfo, Autômato...">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="input-sexo">Sexo / Gênero</label>
+              <input type="text" id="input-sexo" class="form-control" placeholder="Masculino, Feminino, Não-binário...">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="input-idade">Idade</label>
+              <input type="text" id="input-idade" class="form-control" placeholder="Ex: 28 anos, Jovem adulto...">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="input-campanha">Vincular a uma Campanha (Opcional)</label>
+            <select id="input-campanha" class="form-control">
+              <option value="">Personagem Avulso (Sem campanha)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- PASSO 2: DISTRIBUIÇÃO DE ATRIBUTOS -->
+        <div class="wizard-step" id="step-2">
+          <div class="step-title-badge">Passo 2: Atributos do Sistema</div>
+          <div class="step-desc">Você possui 6 pontos para distribuir entre seus atributos. Cada ponto representa um dado D6 nos seus testes.</div>
+
+          <div class="pool-counter-banner">
+            <div>
+              <div style="font-size: 0.85rem; color: var(--text-muted);">Pontos Livres para Investir</div>
+              <div style="font-size: 0.8rem; color: var(--text-dim);">Total de atributos no Nível 1 = 10 (4 base + 6 livres)</div>
+            </div>
+            <div class="pool-number" id="pontos-restantes-banner">6</div>
+          </div>
+
+          <div class="grid-4">
+            <!-- CORPO -->
+            <div class="attr-card">
+              <div class="attr-name">Corpo</div>
+              <div class="attr-val-box" id="val-corpo">1</div>
+              <div class="attr-dice-badge" id="badge-corpo">1d6</div>
+              <div class="attr-controls">
+                <button type="button" class="btn-attr" onclick="alterarAtributo('corpo', -1)">-</button>
+                <button type="button" class="btn-attr" onclick="alterarAtributo('corpo', +1)">+</button>
+              </div>
+            </div>
+
+            <!-- MENTE -->
+            <div class="attr-card">
+              <div class="attr-name">Mente</div>
+              <div class="attr-val-box" id="val-mente">1</div>
+              <div class="attr-dice-badge" id="badge-mente">1d6</div>
+              <div class="attr-controls">
+                <button type="button" class="btn-attr" onclick="alterarAtributo('mente', -1)">-</button>
+                <button type="button" class="btn-attr" onclick="alterarAtributo('mente', +1)">+</button>
+              </div>
+            </div>
+
+            <!-- SOCIAL -->
+            <div class="attr-card">
+              <div class="attr-name">Social</div>
+              <div class="attr-val-box" id="val-social">1</div>
+              <div class="attr-dice-badge" id="badge-social">1d6</div>
+              <div class="attr-controls">
+                <button type="button" class="btn-attr" onclick="alterarAtributo('social', -1)">-</button>
+                <button type="button" class="btn-attr" onclick="alterarAtributo('social', +1)">+</button>
+              </div>
+            </div>
+
+            <!-- ESPÍRITO -->
+            <div class="attr-card">
+              <div class="attr-name">Espírito</div>
+              <div class="attr-val-box" id="val-espirito">1</div>
+              <div class="attr-dice-badge" id="badge-espirito">1d6</div>
+              <div class="attr-controls">
+                <button type="button" class="btn-attr" onclick="alterarAtributo('espirito', -1)">-</button>
+                <button type="button" class="btn-attr" onclick="alterarAtributo('espirito', +1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASSO 3: ESPECIALIZAÇÕES -->
+        <div class="wizard-step" id="step-3">
+          <div class="step-title-badge">Passo 3: Especializações</div>
+          <div class="step-desc">Seu personagem ganha exatamente 1 Especialização para cada ponto no atributo Mente. Especializações adicionam +1d6 em testes específicos.</div>
+
+          <div id="container-especializacoes" class="grid-2">
+            <!-- Gerado dinamicamente com base no valor de Mente -->
+          </div>
+
+          <div style="margin-top: 1.5rem;">
+            <div class="form-label">Sugestões de Especializações Populares (Clique para preencher)</div>
+            <div class="tags-container">
+              <span class="tag-chip" onclick="aplicarSugestaoEsp('Luta Armada')">Luta Armada</span>
+              <span class="tag-chip" onclick="aplicarSugestaoEsp('Investigação')">Investigação</span>
+              <span class="tag-chip" onclick="aplicarSugestaoEsp('Medicina de Campo')">Medicina de Campo</span>
+              <span class="tag-chip" onclick="aplicarSugestaoEsp('Furtividade')">Furtividade</span>
+              <span class="tag-chip" onclick="aplicarSugestaoEsp('Conhecimento Oculto')">Conhecimento Oculto</span>
+              <span class="tag-chip" onclick="aplicarSugestaoEsp('Persuasão & Lábia')">Persuasão & Lábia</span>
+              <span class="tag-chip" onclick="aplicarSugestaoEsp('Mecânica & Armadilhas')">Mecânica & Armadilhas</span>
+              <span class="tag-chip" onclick="aplicarSugestaoEsp('Sobrevivência Selvagem')">Sobrevivência Selvagem</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASSO 4: OS 3 CONTATOS DO PASSADO -->
+        <div class="wizard-step" id="step-4">
+          <div class="step-title-badge">Passo 4: Os 3 Contatos Narrativos</div>
+          <div class="step-desc">Cadastre 3 NPCs do passado do seu personagem que você pode recorrer durante a campanha.</div>
+
+          <!-- CONTATO 1 -->
+          <div class="summary-box" style="margin-bottom: 1rem;">
+            <div class="grid-3">
+              <div class="form-group">
+                <label class="form-label">Nome do Contato 1 *</label>
+                <input type="text" id="contato-1-nome" class="form-control" placeholder="Ex: Barnaby O Ferreiro" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Vínculo</label>
+                <select id="contato-1-vinculo" class="form-control">
+                  <option value="amizade">Amizade Leal</option>
+                  <option value="divida">Dívida de Honra</option>
+                  <option value="favor">Favor Pendente</option>
+                  <option value="antigo_aliado">Antigo Aliado</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ocupação / Cargo</label>
+                <input type="text" id="contato-1-ocupacao" class="form-control" placeholder="Ex: Ferreiro de Armas, Guarda...">
+              </div>
+            </div>
+            <input type="text" id="contato-1-detalhes" class="form-control" placeholder="Breve detalhe: o que esse NPC pode fazer por você?">
+          </div>
+
+          <!-- CONTATO 2 -->
+          <div class="summary-box" style="margin-bottom: 1rem;">
+            <div class="grid-3">
+              <div class="form-group">
+                <label class="form-label">Nome do Contato 2 *</label>
+                <input type="text" id="contato-2-nome" class="form-control" placeholder="Ex: Vanya, Espiã da Corte" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Vínculo</label>
+                <select id="contato-2-vinculo" class="form-control">
+                  <option value="divida">Dívida de Honra</option>
+                  <option value="amizade">Amizade Leal</option>
+                  <option value="favor">Favor Pendente</option>
+                  <option value="antigo_aliado">Antigo Aliado</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ocupação / Cargo</label>
+                <input type="text" id="contato-2-ocupacao" class="form-control" placeholder="Ex: Informante da Taberna...">
+              </div>
+            </div>
+            <input type="text" id="contato-2-detalhes" class="form-control" placeholder="Breve detalhe: o que esse NPC pode fazer por você?">
+          </div>
+
+          <!-- CONTATO 3 -->
+          <div class="summary-box">
+            <div class="grid-3">
+              <div class="form-group">
+                <label class="form-label">Nome do Contato 3 *</label>
+                <input type="text" id="contato-3-nome" class="form-control" placeholder="Ex: Dr. Sterling, Médico Ocultista" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Vínculo</label>
+                <select id="contato-3-vinculo" class="form-control">
+                  <option value="favor">Favor Pendente</option>
+                  <option value="amizade">Amizade Leal</option>
+                  <option value="divida">Dívida de Honra</option>
+                  <option value="antigo_aliado">Antigo Aliado</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ocupação / Cargo</label>
+                <input type="text" id="contato-3-ocupacao" class="form-control" placeholder="Ex: Cirurgião / Apotecário...">
+              </div>
+            </div>
+            <input type="text" id="contato-3-detalhes" class="form-control" placeholder="Breve detalhe: o que esse NPC pode fazer por você?">
+          </div>
+        </div>
+
+        <!-- PASSO 5: SILHUETA DE EQUIPAMENTO & MOCHILA -->
+        <div class="wizard-step" id="step-5">
+          <div class="step-title-badge">Passo 5: Equipamentos na Silhueta & Mochila</div>
+          <div class="step-desc">Selecione os equipamentos vestidos no corpo e itens na sua mochila. As proteções fornecem bônus direto na sua Defesa.</div>
+
+          <div class="paperdoll-container">
+            <!-- COLUNA ESQUERDA -->
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <div class="slot-card">
+                <div class="slot-label">👑 Cabeça</div>
+                <input type="text" id="slot-cabeca" class="form-control" placeholder="Capuz, Elmo, Óculos...">
+              </div>
+              <div class="slot-card">
+                <div class="slot-label">🛡️ Tronco / Armadura</div>
+                <select id="slot-tronco" class="form-control" onchange="atualizarPreviewDefesa()">
+                  <option value="">Roupas Comuns (+0 Defesa)</option>
+                  <option value="defesa_leve">Defesa Básica (+1 Defesa)</option>
+                  <option value="defesa_media">Defesa Reforçada (+2 Defesa)</option>
+                  <option value="defesa_pesada">Defesa Mestra (+4 Defesa)</option>
+                </select>
+              </div>
+              <div class="slot-card">
+                <div class="slot-label">🧥 Costas</div>
+                <input type="text" id="slot-costas" class="form-control" placeholder="Capa de Viagem, Aljava...">
+              </div>
+              <div class="slot-card">
+                <div class="slot-label">👖 Pernas</div>
+                <input type="text" id="slot-pernas" class="form-control" placeholder="Calças de Couro...">
+              </div>
+            </div>
+
+            <!-- CENTRO: SILHUETA -->
+            <div class="paperdoll-silhouette">
+              <svg class="silhouette-svg" viewBox="0 0 24 24">
+                <path d="M12 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-7 8c-1.1 0-2 .9-2 2v7h2v5h4v-5h2v5h4v-5h2v-7c0-1.1-.9-2-2-2h-10z"/>
+              </svg>
+              <div style="position: absolute; bottom: 1rem; font-size: 0.85rem; color: var(--gold-light); font-weight: 600;">
+                Defesa Total: <span id="preview-defesa-total">1</span>
+              </div>
+            </div>
+
+            <!-- COLUNA DIREITA -->
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <div class="slot-card">
+                <div class="slot-label">⚔️ Mão Principal (Arma)</div>
+                <select id="slot-mao-primaria" class="form-control">
+                  <option value="arma_cortante_pequena">Arma Cortante Pequena (1d4+1)</option>
+                  <option value="arma_cortante_grande">Arma Cortante Grande (1d6+2)</option>
+                  <option value="arma_impactante_pequena">Arma Impactante Pequena (1d6+2)</option>
+                  <option value="arma_perfurante_pequena">Arma Perfurante Pequena (1d4+3)</option>
+                  <option value="arco_e_flecha">Arco e Flecha (1d6+3)</option>
+                  <option value="fogo_pequena_fraca">Arma de Fogo Pequena (2d4)</option>
+                </select>
+              </div>
+              <div class="slot-card">
+                <div class="slot-label">🛡️ Mão Secundária</div>
+                <input type="text" id="slot-mao-secundaria" class="form-control" placeholder="Escudo Leve, Tocha, Foco...">
+              </div>
+              <div class="slot-card">
+                <div class="slot-label">👢 Pés</div>
+                <input type="text" id="slot-pes" class="form-control" placeholder="Botas de Couro...">
+              </div>
+              <div class="slot-card">
+                <div class="slot-label">💍 Acessórios</div>
+                <input type="text" id="slot-acessorios" class="form-control" placeholder="Anel, Amuleto, Relógio...">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASSO 6: LORE, BIOGRAFIA & REVISÃO -->
+        <div class="wizard-step" id="step-6">
+          <div class="step-title-badge">Passo 6: Lore & Revisão Final</div>
+          <div class="step-desc">Adicione a história e motivações do seu personagem antes de concluir a criação.</div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="input-historia">História de Origem</label>
+              <textarea id="input-historia" class="form-control" placeholder="Como seu personagem chegou até aqui? O que ele busca?"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="input-personalidade">Personalidade & Maneirismos</label>
+              <textarea id="input-personalidade" class="form-control" placeholder="Traços marcantes, virtudes, falhas e hábitos..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="input-motivacao">Motivação Central</label>
+            <input type="text" id="input-motivacao" class="form-control" placeholder="Ex: Vingar a morte de seu mestre, desvendar o mistério das ruínas...">
+          </div>
+
+          <!-- RESUMO CONSOLIDADO -->
+          <div class="summary-box" style="margin-top: 1.5rem;">
+            <div class="summary-header">
+              <div>
+                <div class="summary-name" id="rev-nome">Nome do Personagem</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);" id="rev-subtitulo">Arquétipo • Raça</div>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <span class="badge-wealth" id="rev-riqueza">Riqueza: Calculando...</span>
+                <span class="badge-anima" id="rev-anima">Anima: 2d6 + 10</span>
+              </div>
+            </div>
+            <div class="grid-4" style="text-align: center;">
+              <div><strong>Corpo:</strong> <span id="rev-corpo">1</span></div>
+              <div><strong>Mente:</strong> <span id="rev-mente">1</span></div>
+              <div><strong>Social:</strong> <span id="rev-social">1</span></div>
+              <div><strong>Espírito:</strong> <span id="rev-espirito">1</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTROLES DE NAVEGAÇÃO DO WIZARD -->
+        <div class="wizard-footer">
+          <button type="button" class="btn-secondary" id="btn-voltar" onclick="avancarPasso(-1)" style="visibility: hidden;">
+            ← Anterior
+          </button>
+          <button type="button" class="btn-primary" id="btn-proximo" onclick="avancarPasso(1)">
+            Próximo Passo →
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </main>
+
+  <!-- Client API & Script da Criação -->
+  <script type="module" src="js/api/client.js"></script>
+  <script type="module" src="js/criar_personagem.js"></script>
+</body>
+</html>

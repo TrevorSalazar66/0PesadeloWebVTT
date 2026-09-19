@@ -1488,6 +1488,267 @@
         align-items: flex-start;
       }
     }
+
+    /* ==========================================================================
+       ESTILOS: ÁRVORE HIERÁRQUICA DE PERSONAGENS (SISTEMAS > CAMPANHAS > PERSONAGENS)
+       ========================================================================== */
+    .characters-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .tree-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .tree-system-block {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .tree-system-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: linear-gradient(90deg, rgba(212, 163, 75, 0.12) 0%, rgba(16, 16, 29, 0.6) 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--transition-fast);
+    }
+
+    .tree-system-header:hover {
+      background: linear-gradient(90deg, rgba(212, 163, 75, 0.18) 0%, rgba(20, 20, 36, 0.8) 100%);
+    }
+
+    .tree-system-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tree-system-title {
+      font-family: var(--font-title);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      margin: 0;
+    }
+
+    .tree-campaign-list {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .tree-campaign-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .tree-campaign-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--transition-fast);
+    }
+
+    .tree-campaign-header:hover {
+      background: rgba(212, 163, 75, 0.06);
+    }
+
+    .tree-campaign-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tree-campaign-title {
+      font-family: var(--font-title);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    .tree-characters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+      padding: 16px;
+    }
+
+    .character-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all var(--transition-normal);
+      position: relative;
+    }
+
+    .character-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--gold-primary);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 12px rgba(212, 163, 75, 0.15);
+    }
+
+    .character-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .character-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: var(--gold-dark);
+      border: 1.5px solid var(--gold-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--gold-light);
+      flex-shrink: 0;
+    }
+
+    .character-info-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .character-name {
+      font-family: var(--font-title);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 2px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .character-archetype {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .character-pills-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .pill-stat {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pill-anima {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+    }
+
+    .pill-defense {
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      color: #60a5fa;
+    }
+
+    .pill-wealth {
+      background: rgba(212, 163, 75, 0.12);
+      border: 1px solid rgba(212, 163, 75, 0.35);
+      color: var(--gold-light);
+    }
+
+    .character-attributes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      text-align: center;
+    }
+
+    .attr-mini-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .attr-mini-label {
+      font-size: 9.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .attr-mini-val {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold-light);
+    }
+
+    .character-actions-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .btn-enter-table {
+      flex: 1;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold-primary));
+      color: var(--text-dark);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: filter var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-enter-table:hover {
+      filter: brightness(1.1);
+    }
   </style>
 </head>
 
@@ -2113,29 +2374,31 @@
       </section>
 
       <!-- ==========================================
-           TELA: PERSONAGENS
+           TELA: PERSONAGENS (PASTAS HIERÁRQUICAS)
            ========================================== -->
       <section id="view-personagens" class="view-section">
-        <header class="page-header">
-          <h2 class="page-title">Personagens</h2>
-          <p class="page-subtitle">Sua coleção de heróis, fichas e companheiros.</p>
-        </header>
+        <div class="characters-topbar">
+          <div>
+            <h2 class="page-title" style="margin-bottom: 4px;">Seus Personagens</h2>
+            <p class="page-subtitle" style="margin: 0;">Organizados por Sistema e Campanha.</p>
+          </div>
+          <a href="criar_personagem.html" class="btn-create-campaign" style="text-decoration: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            + Forjar Novo Personagem
+          </a>
+        </div>
 
-        <div class="empty-state-box">
-          <!-- Ícone Espada Grande -->
-          <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
-            <line x1="13" y1="19" x2="19" y2="13" />
-            <line x1="16" y1="16" x2="20" y2="20" />
-            <line x1="19" y1="21" x2="21" y2="19" />
-          </svg>
-          <h3 class="empty-state-title">Sem personagens ainda</h3>
-          <p class="empty-state-text">As fichas dinâmicas chegam com o construtor de regras.</p>
-          <button class="btn-secondary"
-            onclick="mostrarToast('O construtor de fichas dinâmicas será ativado na próxima fase.')">
-            + Criar Novo Personagem
-          </button>
+        <!-- Árvore de Pastas Hierárquica -->
+        <div class="tree-container" id="characters-tree-container">
+          <div class="loading-indicator">
+            <div class="spinner"></div>
+            <span>Consultando os registros de heróis na Taverna...</span>
+          </div>
         </div>
       </section>
 
@@ -2306,11 +2569,8 @@
           <div class="form-group">
             <label for="camp-select-system" class="form-label">Sistema de RPG</label>
             <select id="camp-select-system" class="form-input" onchange="atualizarPreviewCampanha()">
-              <option value="dnd5e">D&D 5ª Edição</option>
-              <option value="tormenta20">Tormenta 20</option>
-              <option value="cthulhu">Chamado de Cthulhu 7e</option>
-              <option value="ordem">Ordem Paranormal RPG</option>
-              <option value="custom" selected>Sistema Próprio / Livre</option>
+              <option value="alphad6" selected>AlphaD6 RPG (Oficial)</option>
+              <option value="custom">Sistema Próprio / Livre</option>
             </select>
           </div>
 
@@ -2426,11 +2686,8 @@
         { id: 'bn_mountains', url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900', label: 'Picos Gélidos' }
       ],
       systemsMap: {
-        'dnd5e': { label: 'D&D 5ª Edição', badge: 'D&D 5e' },
-        'tormenta20': { label: 'Tormenta 20', badge: 'Tormenta 20' },
-        'cthulhu': { label: 'Chamado de Cthulhu 7e', badge: 'Cthulhu 7e' },
-        'ordem': { label: 'Ordem Paranormal RPG', badge: 'Ordem Paranormal' },
-        'custom': { label: 'Sistema Próprio / Livre', badge: 'Sistema Próprio' }
+        'alphad6': { label: 'AlphaD6 RPG', badge: 'AlphaD6' },
+        'custom': { label: 'Sistema Próprio / Livre', badge: 'Custom' }
       },
       themesMap: {
         'dark-fantasy': { label: 'Fantasia Sombria', color: '#9b2c2c' },
@@ -3199,6 +3456,11 @@
         carregarCampanhasPublicas();
       }
 
+      // Se for a tela de personagens, carrega árvore hierárquica
+      if (telaId === 'personagens') {
+        carregarPersonagens();
+      }
+
       // Se for a tela de administração, carrega lista de dispositivos bloqueados
       if (telaId === 'admin') {
         carregarDispositivosAdmin();
@@ -3208,6 +3470,178 @@
       try {
         localStorage.setItem('arcana_active_view', telaId);
       } catch (e) { }
+    }
+
+    /**
+     * Carrega e renderiza a árvore hierárquica de personagens (Sistemas > Campanhas > Personagens)
+     */
+    async function carregarPersonagens() {
+      const container = document.getElementById('characters-tree-container');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="loading-indicator">
+          <div class="spinner"></div>
+          <span>Consultando os registros de heróis na Taverna...</span>
+        </div>
+      `;
+
+      try {
+        if (!window.apiClient) return;
+        const res = await window.apiClient.sync('characters.listHierarchical', {});
+
+        if (res && res.sucesso && Array.isArray(res.dados)) {
+          if (res.dados.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state-box">
+                <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
+                  <line x1="13" y1="19" x2="19" y2="13" />
+                  <line x1="16" y1="16" x2="20" y2="20" />
+                  <line x1="19" y1="21" x2="21" y2="19" />
+                </svg>
+                <h3 class="empty-state-title">Nenhum personagem forjado ainda</h3>
+                <p class="empty-state-text">Você ainda não possui personagens vinculados a campanhas ou criados no sistema AlphaD6.</p>
+                <a href="criar_personagem.html" class="btn-create-campaign" style="text-decoration: none; margin-top: 8px;">
+                  + Forjar Meu Primeiro Personagem
+                </a>
+              </div>
+            `;
+            return;
+          }
+
+          renderizarArvorePersonagens(res.dados);
+        } else {
+          throw new Error(res?.erro || 'Falha ao buscar personagens.');
+        }
+      } catch (err) {
+        container.innerHTML = `
+          <div class="empty-state-box">
+            <p style="color: #ef4444;">Erro ao carregar personagens: ${err.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderizarArvorePersonagens(sistemas) {
+      const container = document.getElementById('characters-tree-container');
+      if (!container) return;
+
+      container.innerHTML = sistemas.map(sys => {
+        const totalChars = sys.campaigns.reduce((acc, c) => acc + (c.characters ? c.characters.length : 0), 0);
+        
+        return `
+          <div class="tree-system-block">
+            <div class="tree-system-header" onclick="toggleTreeSection(this)">
+              <div class="tree-system-title-group">
+                <span style="font-size: 18px;">📂</span>
+                <h3 class="tree-system-title">${sys.systemName}</h3>
+                <span class="badge-system">${totalChars} Personagem(ns)</span>
+              </div>
+              <span class="tree-chevron" style="color: var(--gold-light); font-size: 14px;">▼</span>
+            </div>
+
+            <div class="tree-campaign-list">
+              ${sys.campaigns.map(camp => `
+                <div class="tree-campaign-block">
+                  <div class="tree-campaign-header" onclick="toggleTreeSection(this)">
+                    <div class="tree-campaign-title-group">
+                      <span style="font-size: 16px;">📁</span>
+                      <h4 class="tree-campaign-title">${camp.campaignName}</h4>
+                      ${camp.simpleId ? `<span class="badge-simple-id">#${camp.simpleId}</span>` : ''}
+                      <span style="font-size: 11px; color: var(--text-dim); margin-left: 6px;">(${camp.characters.length} herói)</span>
+                    </div>
+                    <span class="tree-chevron" style="color: var(--text-muted); font-size: 12px;">▼</span>
+                  </div>
+
+                  <div class="tree-characters-grid">
+                    ${camp.characters.map(char => {
+                      const sheet = char.sheet || {};
+                      const ident = sheet.identidade || {};
+                      const attrs = sheet.atributos || { corpo: 1, mente: 1, social: 1, espirito: 1 };
+                      const currentAnima = sheet.current_anima !== undefined ? sheet.current_anima : (sheet.max_anima || 15);
+                      const maxAnima = sheet.max_anima || 15;
+                      const defesa = sheet.sistema_estado?.defesa_total !== undefined ? sheet.sistema_estado.defesa_total : (sheet.defesa_total || 1);
+                      const wealthNome = sheet.wealth?.tier_nome || 'Classe Média';
+                      const nivel = sheet.nivel || 1;
+                      const arquetipo = ident.arquetipo || 'Aventureiro';
+                      const initial = (char.name || 'A')[0].toUpperCase();
+
+                      return `
+                        <div class="character-card">
+                          <div class="character-card-header">
+                            <div class="character-avatar">${initial}</div>
+                            <div class="character-info-main">
+                              <h4 class="character-name" title="${char.name}">${char.name}</h4>
+                              <div class="character-archetype">Nv. ${nivel} • ${arquetipo} (${ident.raca || 'Livre'})</div>
+                            </div>
+                          </div>
+
+                          <div class="character-pills-row">
+                            <span class="pill-stat pill-anima" title="Anima / Pontos de Vida">
+                              ❤️ ${currentAnima}/${maxAnima} Anima
+                            </span>
+                            <span class="pill-stat pill-defense" title="Defesa Total Equipada">
+                              🛡️ Defesa ${defesa}
+                            </span>
+                            <span class="pill-stat pill-wealth" title="Nível de Riqueza">
+                              💰 ${wealthNome}
+                            </span>
+                          </div>
+
+                          <div class="character-attributes-grid">
+                            <div class="attr-mini-box">
+                              <span class="attr-mini-label">Corpo</span>
+                              <span class="attr-mini-val">${attrs.corpo}d6</span>
+                            </div>
+                            <div class="attr-mini-box">
+                              <span class="attr-mini-label">Mente</span>
+                              <span class="attr-mini-val">${attrs.mente}d6</span>
+                            </div>
+                            <div class="attr-mini-box">
+                              <span class="attr-mini-label">Social</span>
+                              <span class="attr-mini-val">${attrs.social}d6</span>
+                            </div>
+                            <div class="attr-mini-box">
+                              <span class="attr-mini-label">Espírito</span>
+                              <span class="attr-mini-val">${attrs.espirito}d6</span>
+                            </div>
+                          </div>
+
+                          <div class="character-actions-row">
+                            ${char.campaignId ? `
+                              <a href="campanha.html?id=${char.campaignId}" class="btn-enter-table">
+                                ⚔️ Entrar na Mesa
+                              </a>
+                            ` : `
+                              <span style="font-size: 11px; color: var(--text-dim); text-align: center; width: 100%;">Personagem Avulso</span>
+                            `}
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleTreeSection(headerEl) {
+      const parent = headerEl.parentElement;
+      const content = parent.querySelector('.tree-campaign-list, .tree-characters-grid');
+      const chevron = headerEl.querySelector('.tree-chevron');
+      if (content) {
+        if (content.style.display === 'none') {
+          content.style.display = content.classList.contains('tree-characters-grid') ? 'grid' : 'flex';
+          if (chevron) chevron.textContent = '▼';
+        } else {
+          content.style.display = 'none';
+          if (chevron) chevron.textContent = '▶';
+        }
+      }
     }
 
     /**

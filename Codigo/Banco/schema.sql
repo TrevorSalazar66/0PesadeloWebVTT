@@ -82,6 +82,8 @@ CREATE TABLE IF NOT EXISTS campaigns (
     sessions INTEGER NOT NULL DEFAULT 0,
     next_session TEXT NOT NULL DEFAULT '',
     notices TEXT NOT NULL DEFAULT '',
+    clock_data TEXT NOT NULL DEFAULT '{"ano":1,"mes":1,"dia":1,"hora":8,"minuto":0,"periodo":"Manhã"}',
+    settings TEXT NOT NULL DEFAULT '{"auto_approve_actions":0,"clock_triggers":{"messages_threshold":0,"minutes_per_threshold":0}}',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -133,3 +135,18 @@ CREATE TABLE IF NOT EXISTS campaign_requests (
 );
 CREATE INDEX IF NOT EXISTS idx_requests_campaign ON campaign_requests(campaign_id);
 CREATE INDEX IF NOT EXISTS idx_requests_user ON campaign_requests(user_id);
+
+-- 9. Tabela de Cenas da Campanha (com Gatilhos de XP)
+CREATE TABLE IF NOT EXISTS scenes (
+    id TEXT PRIMARY KEY,
+    campaign_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    image_url TEXT NOT NULL DEFAULT '',
+    xp_triggers TEXT NOT NULL DEFAULT '[]',
+    is_active INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_scenes_campaign ON scenes(campaign_id);
+

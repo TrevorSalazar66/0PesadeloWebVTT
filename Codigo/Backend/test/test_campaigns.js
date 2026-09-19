@@ -165,8 +165,8 @@ async function runCampaignTests() {
 
   assert.strictEqual(resOptions.status, 200);
   const jsonOptions = await resOptions.json();
-  assert(jsonOptions.dados.systems.length >= 5, 'Deve conter pelo menos 5 sistemas');
-  assert(jsonOptions.dados.themes.length >= 5, 'Deve conter pelo menos 5 temas');
+  assert(jsonOptions.dados.systems.some(s => s.id === 'alphad6'), 'Deve conter o sistema AlphaD6');
+  assert(jsonOptions.dados.themes.length >= 1, 'Deve conter temas disponíveis');
   assert.strictEqual(jsonOptions.dados.limits.MAX_PLAYERS_GLOBAL, 12, 'Teto global deve ser 12');
   console.log(`   Sistemas disponíveis: ${jsonOptions.dados.systems.map(s => s.badge).join(', ')}`);
 

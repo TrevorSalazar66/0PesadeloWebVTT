@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ront-nd",
+  "name": "0pesadelo-frontend",
   "compatibility_date": "2026-09-17",
   "observability": {
     "enabled": true

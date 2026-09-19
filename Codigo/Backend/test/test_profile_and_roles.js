@@ -175,10 +175,10 @@ async function runTests() {
   }
 
   // Promove Valerius para superadmin no banco e testa alteração
-  await dbQueries.updateUserRole(db, 'usr_segundo', 'assistente de mestre');
+  await dbQueries.updateUserRole(db, 'usr_segundo', 'superadmin');
   const userCheck = await dbQueries.getUserById(db, 'usr_segundo');
   console.log(`   Usuário secundário promovido diretamente para: ${userCheck.role}`);
-  if (userCheck.role !== 'assistente de mestre') {
+  if (userCheck.role !== 'superadmin') {
     throw new Error('Falha ao atualizar cargo do usuário');
   }
 

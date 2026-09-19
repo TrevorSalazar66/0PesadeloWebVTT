@@ -484,6 +484,159 @@
       resize: vertical;
       min-height: 80px;
     }
+
+    /* ESTILOS: PARTY SHOWCASE & DIÁRIO */
+    .character-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all var(--transition-normal);
+      position: relative;
+    }
+
+    .character-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--gold-primary);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 15px rgba(212, 163, 75, 0.15);
+    }
+
+    .character-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .character-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: var(--gold-dark);
+      border: 1.5px solid var(--gold-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--gold-light);
+      flex-shrink: 0;
+    }
+
+    .character-info-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .character-card-title {
+      font-family: var(--font-title);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 2px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .character-player-sub {
+      font-size: 11.5px;
+      color: var(--text-dim);
+    }
+
+    .character-pills-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .pill-stat {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pill-anima {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+    }
+
+    .pill-defense {
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      color: #60a5fa;
+    }
+
+    .pill-wealth {
+      background: rgba(212, 163, 75, 0.12);
+      border: 1px solid rgba(212, 163, 75, 0.35);
+      color: var(--gold-light);
+    }
+
+    .character-attributes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      text-align: center;
+    }
+
+    .attr-mini-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .attr-mini-label {
+      font-size: 9.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .attr-mini-val {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold-light);
+    }
+
+    .badge-players-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: var(--radius-pill);
+    }
+
+    .badge-my-char {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(212, 163, 75, 0.2);
+      border: 1px solid var(--gold-primary);
+      color: var(--gold-light);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: var(--radius-pill);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
   </style>
 </head>
 
@@ -598,9 +751,9 @@
               </button>
             </div>
             <ul style="list-style: none; color: var(--text-muted); line-height: 2;">
-              <li><strong>Sistema:</strong> <span id="campaign-system">D&D 5e</span></li>
-              <li><strong>Sessões:</strong> <span id="campaign-sessions">12</span></li>
-              <li><strong>Próxima Sessão:</strong> <span id="campaign-next-session">Sábado, 20:00</span></li>
+              <li><strong>Sistema:</strong> <span id="campaign-system">AlphaD6 RPG</span></li>
+              <li><strong>Sessões:</strong> <span id="campaign-sessions">0</span></li>
+              <li><strong>Próxima Sessão:</strong> <span id="campaign-next-session">Não agendada</span></li>
             </ul>
           </div>
           
@@ -659,9 +812,45 @@
 
     <!-- ABA 5: DIÁRIO -->
     <section id="view-diario" class="view-section">
-      <h1 class="page-title">Diário e Fichas</h1>
-      <div class="card">
-        <p style="color: var(--text-muted);">Aqui ficam as fichas dos personagens, relatos, e notas sobre NPCs.</p>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h1 class="page-title" style="margin-bottom: 4px;">Diário da Campanha & Heróis</h1>
+          <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Fichas do grupo, relatos de aventura e crônicas da mesa.</p>
+        </div>
+        <div id="diario-create-char-container">
+          <!-- Renderizado dinamicamente caso o jogador ainda não tenha personagem criado -->
+        </div>
+      </div>
+
+      <!-- Grade dos Personagens da Mesa (Party Showcase) -->
+      <div style="margin-bottom: 32px;">
+        <h2 style="font-family: var(--font-title); color: var(--gold-light); font-size: 1.25rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+          <span>🛡️ Grupo de Aventureiros (Party)</span>
+          <span class="badge-players-count" id="party-count-badge" style="font-size: 11px;">0 Heróis</span>
+        </h2>
+        
+        <div id="party-characters-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+          <div class="loading-indicator">
+            <div class="spinner"></div>
+            <span>Consultando as fichas do grupo...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diário e Crônicas Coletivas -->
+      <div class="dashboard-grid">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="color: var(--gold-light); font-size: 1.2rem;">📜 Crônicas & Relatos da Mesa</h2>
+            <button class="edit-btn" onclick="salvarDiarioCronicas()" id="btn-save-cronicas">Salvar Crônica</button>
+          </div>
+          <textarea class="form-control" id="campaign-journal-text" rows="8" placeholder="Registre aqui os acontecimentos marcantes da última sessão, pistas encontradas e decisões cruciais do grupo..."></textarea>
+        </div>
+
+        <div class="card">
+          <h2 style="color: var(--gold-light); font-size: 1.2rem; margin-bottom: 16px;">🔍 Anotações de NPCs & Rumores</h2>
+          <textarea class="form-control" id="campaign-npcs-text" rows="8" placeholder="Nomes de contatos, suspeitos, aliados ou lugares descobertos durante a jornada..."></textarea>
+        </div>
       </div>
     </section>
 
@@ -685,7 +874,14 @@
       <form id="editCampaignForm" onsubmit="saveCampaignDetails(event)">
         <div class="form-group">
           <label>Nome da Campanha</label>
-          <input type="text" class="form-control" id="input-campaign-name" placeholder="Ex: Mina de Phandelver">
+          <input type="text" class="form-control" id="input-campaign-name" placeholder="Ex: A Caverna dos Ecos">
+        </div>
+        <div class="form-group">
+          <label>Sistema de RPG</label>
+          <select class="form-control" id="input-campaign-system">
+            <option value="alphad6">AlphaD6 RPG (Oficial)</option>
+            <option value="custom">Sistema Próprio / Livre</option>
+          </select>
         </div>
         <div class="form-group">
           <label>Número de Sessões</label>

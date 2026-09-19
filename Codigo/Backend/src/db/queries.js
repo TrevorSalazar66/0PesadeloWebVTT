@@ -337,10 +337,12 @@ export const dbQueries = {
     return info;
   },
 
-  async updateCampaign(db, campaignId, { name, sessions, nextSession, loreDescription, notices }) {
+  async updateCampaign(db, campaignId, { name, systemId, themeId, sessions, nextSession, loreDescription, notices }) {
     const stmt = db.prepare(`
       UPDATE campaigns 
       SET name = COALESCE(?, name),
+          system_id = COALESCE(?, system_id),
+          theme_id = COALESCE(?, theme_id),
           sessions = COALESCE(?, sessions),
           next_session = COALESCE(?, next_session),
           lore_description = COALESCE(?, lore_description),
@@ -349,12 +351,24 @@ export const dbQueries = {
     `);
     return await stmt.bind(
       name ? name.trim() : null,
-      sessions !== undefined ? Number(sessions) || 0 : null,
-      nextSession !== undefined ? String(nextSession).trim() : null,
-      loreDescription !== undefined ? String(loreDescription).trim() : null,
-      notices !== undefined ? String(notices).trim() : null,
+      systemId ? String(systemId).trim() : null,
+      themeId ? String(themeId).trim() : null,
+      sessions !== undefined && sessions !== null && sessions !== '' ? Number(sessions) || 0 : null,
+      nextSession !== undefined && nextSession !== null ? String(nextSession).trim() : null,
+      loreDescription !== undefined && loreDescription !== null ? String(loreDescription).trim() : null,
+      notices !== undefined && notices !== null ? String(notices).trim() : null,
       campaignId
     ).run();
+  },
+
+  async updateCampaignClock(db, campaignId, clockData) {
+    const stmt = db.prepare('UPDATE campaigns SET clock_data = ? WHERE id = ?');
+    return await stmt.bind(typeof clockData === 'string' ? clockData : JSON.stringify(clockData), campaignId).run();
+  },
+
+  async updateCampaignSettings(db, campaignId, settingsData) {
+    const stmt = db.prepare('UPDATE campaigns SET settings = ? WHERE id = ?');
+    return await stmt.bind(typeof settingsData === 'string' ? settingsData : JSON.stringify(settingsData), campaignId).run();
   },
 
   async addPlayerToCampaign(db, campaignId, userId, role = 'jogador') {
@@ -416,11 +430,121 @@ export const dbQueries = {
     return res.results || res;
   },
 
+  async getCharacterById(db, id) {
+    const stmt = db.prepare('SELECT * FROM characters WHERE id = ?');
+    return await stmt.bind(id).first();
+  },
+
+  async getCharacterByUserAndCampaign(db, userId, campaignId) {
+    const stmt = db.prepare('SELECT * FROM characters WHERE user_id = ? AND campaign_id = ?');
+    return await stmt.bind(userId, campaignId).first();
+  },
+
+  async getCharactersByUserHierarchical(db, userId) {
+    const stmt = db.prepare(`
+      SELECT c.*, 
+             cmp.name as campaign_name, 
+             cmp.simple_id as campaign_simple_id, 
+             cmp.system_id as campaign_system_id, 
+             cmp.image_url as campaign_image_url, 
+             cmp.banner_url as campaign_banner_url
+      FROM characters c
+      LEFT JOIN campaigns cmp ON c.campaign_id = cmp.id
+      WHERE c.user_id = ?
+      ORDER BY c.created_at DESC
+    `);
+    const res = await stmt.bind(userId).all();
+    return res.results || res;
+  },
+
+  async getCampaignPartyCharacters(db, campaignId) {
+    const stmt = db.prepare(`
+      SELECT c.*, 
+             u.display_name as player_name, 
+             u.avatar_url as player_avatar,
+             p.nickname as player_nickname
+      FROM characters c
+      JOIN users u ON c.user_id = u.id
+      LEFT JOIN user_profiles p ON u.id = p.user_id
+      WHERE c.campaign_id = ?
+      ORDER BY c.name ASC
+    `);
+    const res = await stmt.bind(campaignId).all();
+    return res.results || res;
+  },
+
+  async updateCharacterSheet(db, id, sheetData) {
+    const stmt = db.prepare('UPDATE characters SET sheet_data = ? WHERE id = ?');
+    return await stmt.bind(typeof sheetData === 'string' ? sheetData : JSON.stringify(sheetData), id).run();
+  },
+
   async createCharacter(db, { id, userId, campaignId = null, name, sheetData = '{}' }) {
     const stmt = db.prepare(`
       INSERT INTO characters (id, user_id, campaign_id, name, sheet_data)
       VALUES (?, ?, ?, ?, ?)
     `);
     return await stmt.bind(id, userId, campaignId, name.trim(), typeof sheetData === 'string' ? sheetData : JSON.stringify(sheetData)).run();
+  },
+
+  async getCharactersByCampaign(db, campaignId) {
+    const stmt = db.prepare('SELECT * FROM characters WHERE campaign_id = ? ORDER BY name ASC');
+    const res = await stmt.bind(campaignId).all();
+    return res.results || res;
+  },
+
+  // ==========================================
+  // CENAS DA CAMPANHA (COM GATILHOS DE XP)
+  // ==========================================
+  async createScene(db, { id, campaignId, name, description = '', imageUrl = '', xpTriggers = '[]', isActive = 0 }) {
+    const stmt = db.prepare(`
+      INSERT INTO scenes (id, campaign_id, name, description, image_url, xp_triggers, is_active)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    return await stmt.bind(
+      id,
+      campaignId,
+      name.trim(),
+      description.trim(),
+      imageUrl.trim(),
+      typeof xpTriggers === 'string' ? xpTriggers : JSON.stringify(xpTriggers),
+      isActive ? 1 : 0
+    ).run();
+  },
+
+  async getScenesByCampaign(db, campaignId) {
+    const stmt = db.prepare('SELECT * FROM scenes WHERE campaign_id = ? ORDER BY created_at ASC');
+    const res = await stmt.bind(campaignId).all();
+    return res.results || res;
+  },
+
+  async getSceneById(db, id) {
+    const stmt = db.prepare('SELECT * FROM scenes WHERE id = ?');
+    return await stmt.bind(id).first();
+  },
+
+  async updateScene(db, id, { name, description, imageUrl, xpTriggers, isActive }) {
+    const stmt = db.prepare(`
+      UPDATE scenes
+      SET name = COALESCE(?, name),
+          description = COALESCE(?, description),
+          image_url = COALESCE(?, image_url),
+          xp_triggers = COALESCE(?, xp_triggers),
+          is_active = COALESCE(?, is_active)
+      WHERE id = ?
+    `);
+    return await stmt.bind(
+      name !== undefined ? name.trim() : null,
+      description !== undefined ? description.trim() : null,
+      imageUrl !== undefined ? imageUrl.trim() : null,
+      xpTriggers !== undefined ? (typeof xpTriggers === 'string' ? xpTriggers : JSON.stringify(xpTriggers)) : null,
+      isActive !== undefined ? (isActive ? 1 : 0) : null,
+      id
+    ).run();
+  },
+
+  async deleteScene(db, id) {
+    const stmt = db.prepare('DELETE FROM scenes WHERE id = ?');
+    return await stmt.bind(id).run();
   }
 };
+
