@@ -291,12 +291,175 @@
     }
 
     /* Estilos do Painel de Administração */
+    .admin-nav-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-card);
+      padding-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .admin-nav-btn {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition-fast);
+    }
+
+    .admin-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .admin-nav-btn.active {
+      background: var(--gold-dark);
+      border-color: var(--gold-primary);
+      color: var(--gold-light);
+      box-shadow: var(--shadow-gold-sm);
+    }
+
+    /* Cards de Estatísticas Globais */
+    .admin-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .admin-stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+      transition: all var(--transition-fast);
+    }
+
+    .admin-stat-card:hover {
+      border-color: var(--border-gold);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .admin-stat-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .admin-stat-val {
+      font-family: var(--font-title);
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--gold-light);
+      line-height: 1;
+    }
+
+    .admin-stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .admin-stat-sub {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    /* Badges de Cargos */
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+
+    .role-badge-jogador {
+      background: rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #cbd5e1;
+    }
+
+    .role-badge-assistente, .role-badge-assistente_de_mestre {
+      background: rgba(45, 212, 191, 0.12);
+      border: 1px solid rgba(45, 212, 191, 0.3);
+      color: #2dd4bf;
+    }
+
+    .role-badge-mestre {
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      color: #c084fc;
+    }
+
+    .role-badge-admin {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fbbf24;
+    }
+
+    .role-badge-superadmin {
+      background: rgba(212, 163, 75, 0.2);
+      border: 1px solid var(--gold-primary);
+      color: var(--gold-light);
+      box-shadow: 0 0 10px rgba(212, 163, 75, 0.3);
+    }
+
+    /* Dropdown de Seleção de Cargo */
+    .role-select-dropdown {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      transition: all var(--transition-fast);
+    }
+
+    .role-select-dropdown:hover, .role-select-dropdown:focus {
+      border-color: var(--gold-primary);
+      background: var(--bg-surface);
+    }
+
+    /* Sub-painéis de conteúdo */
+    .admin-subtab-pane {
+      display: none;
+    }
+
+    .admin-subtab-pane.active {
+      display: block;
+      animation: fadeIn 0.25s ease-out;
+    }
+
     .admin-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-card);
       border-radius: var(--radius-xl);
-      padding: 28px;
+      padding: 24px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      margin-bottom: 24px;
     }
 
     .admin-card-header {
@@ -306,13 +469,16 @@
       margin-bottom: 20px;
       padding-bottom: 16px;
       border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     .admin-card-title {
       font-family: var(--font-title);
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
       color: #ffffff;
+      margin: 0;
     }
 
     .badge-total-blocked {
@@ -346,8 +512,8 @@
     }
 
     .admin-table td {
-      padding: 14px;
-      font-size: 13.5px;
+      padding: 12px 14px;
+      font-size: 13px;
       border-bottom: 1px solid var(--border-subtle);
       color: var(--text-main);
       vertical-align: middle;
@@ -360,7 +526,7 @@
     .device-hash-cell {
       font-family: monospace;
       color: var(--gold-light);
-      font-size: 12.5px;
+      font-size: 12px;
     }
 
     .badge-blocked-pill {
@@ -2889,7 +3055,7 @@
       </section>
 
       <!-- ==========================================
-           TELA: ADMINISTRAÇÃO (PAINEL DE SEGURANÇA)
+           TELA: ADMINISTRAÇÃO (PAINEL GERAL & RBAC)
            ========================================== -->
       <section id="view-admin" class="view-section">
         <header class="page-header-with-icon">
@@ -2901,41 +3067,232 @@
           </div>
           <div style="flex: 1;">
             <h2 class="page-title">Painel de Administração</h2>
-            <p class="page-subtitle">Segurança de Dispositivos e Gestão de Bloqueios Anti-Sybil.</p>
+            <p class="page-subtitle">Métricas Globais, Gestão de Usuários, Controle Anti-Sybil e Auditoria do Arcana VTT.</p>
           </div>
-          <button class="btn-secondary" onclick="carregarDispositivosAdmin()">
+          <button class="btn-secondary" onclick="recarregarSubAbaAdminAtiva()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
             </svg>
-            Atualizar Lista
+            Atualizar Dados
           </button>
         </header>
 
-        <div class="admin-card">
-          <div class="admin-card-header">
-            <h3 class="admin-card-title">Dispositivos com Trava Permanente</h3>
-            <span class="badge-total-blocked" id="badge-total-blocked">0 bloqueados</span>
+        <!-- Barra de Navegação de Sub-Abas Administrativas -->
+        <div class="admin-nav-tabs">
+          <button class="admin-nav-btn active" id="btn-subtab-admin-stats" onclick="alternarSubAbaAdmin('stats')">
+            <span>📊</span> Visão Geral
+          </button>
+          <button class="admin-nav-btn" id="btn-subtab-admin-users" onclick="alternarSubAbaAdmin('users')">
+            <span>👥</span> Usuários & Cargos
+          </button>
+          <button class="admin-nav-btn" id="btn-subtab-admin-devices" onclick="alternarSubAbaAdmin('devices')">
+            <span>🛡️</span> Segurança Anti-Sybil
+          </button>
+          <button class="admin-nav-btn" id="btn-subtab-admin-campaigns" onclick="alternarSubAbaAdmin('campaigns')">
+            <span>🗺️</span> Campanhas Globais
+          </button>
+          <button class="admin-nav-btn" id="btn-subtab-admin-audit" onclick="alternarSubAbaAdmin('audit')">
+            <span>📜</span> Logs de Auditoria
+          </button>
+        </div>
+
+        <!-- SUB-ABA 1: VISÃO GERAL & MÉTRICAS -->
+        <div class="admin-subtab-pane active" id="subtab-admin-stats">
+          <div class="admin-stats-grid">
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon">👥</div>
+              <div class="admin-stat-val" id="admin-stat-users">-</div>
+              <div class="admin-stat-label">Total de Aventureiros</div>
+              <div class="admin-stat-sub">Cadastrados no reino</div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon">🎲</div>
+              <div class="admin-stat-val" id="admin-stat-gms">-</div>
+              <div class="admin-stat-label">Mestres Ativos</div>
+              <div class="admin-stat-sub">Comandando crônicas</div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon">🗺️</div>
+              <div class="admin-stat-val" id="admin-stat-campaigns">-</div>
+              <div class="admin-stat-label">Campanhas Forjadas</div>
+              <div class="admin-stat-sub" id="admin-stat-campaigns-sub">Públicas e privadas</div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon">📜</div>
+              <div class="admin-stat-val" id="admin-stat-characters">-</div>
+              <div class="admin-stat-label">Personagens Criados</div>
+              <div class="admin-stat-sub">Fichas em jogo</div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon">🛡️</div>
+              <div class="admin-stat-val" id="admin-stat-devices" style="color: #f87171;">-</div>
+              <div class="admin-stat-label">Dispositivos Bloqueados</div>
+              <div class="admin-stat-sub">Trava Anti-Sybil ativa</div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon">⚖️</div>
+              <div class="admin-stat-val" id="admin-stat-audits" style="color: #60a5fa;">-</div>
+              <div class="admin-stat-label">Ações de Auditoria</div>
+              <div class="admin-stat-sub">Registros de governança</div>
+            </div>
           </div>
 
-          <div class="table-responsive">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Fingerprint / Dispositivo</th>
-                  <th>Motivo do Bloqueio</th>
-                  <th>Contas Criadas</th>
-                  <th>Data do Bloqueio</th>
-                  <th style="text-align: right;">Ação</th>
-                </tr>
-              </thead>
-              <tbody id="admin-devices-tbody">
-                <tr>
-                  <td colspan="5" class="table-empty-msg">Nenhum dispositivo bloqueado no momento. A taverna está
-                    segura!</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3 class="admin-card-title">Resumo do Servidor & Integridade</h3>
+            </div>
+            <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6;">
+              O <strong>Arcana VTT</strong> está operando em Cloudflare Workers com D1 Database, sincronização em tempo real via Durable Objects (WebSocket) e proteção anti-abuso de hardware fingerprints. Como Administrador ou Superadmin, você pode gerenciar a comunidade, monitorar mesas ativas e auditar alterações em cargos.
+            </p>
+          </div>
+        </div>
+
+        <!-- SUB-ABA 2: GESTÃO DE USUÁRIOS & CARGOS -->
+        <div class="admin-subtab-pane" id="subtab-admin-users">
+          <div class="admin-card">
+            <div class="admin-card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 class="admin-card-title">Diretório de Usuários & Controle de Acesso</h3>
+                <span class="badge-total-blocked" id="badge-total-users" style="background: rgba(96, 165, 250, 0.12); color: #60a5fa; border-color: rgba(96, 165, 250, 0.3);">0 usuários</span>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                <input type="text" id="admin-users-search" placeholder="Buscar por nick ou e-mail..."
+                  class="form-control" style="max-width: 240px; padding: 6px 12px; font-size: 13px;" oninput="filtrarUsuariosAdmin()">
+                <select id="admin-users-role-filter" class="role-select-dropdown" onchange="filtrarUsuariosAdmin()">
+                  <option value="">Todos os Cargos</option>
+                  <option value="jogador">Jogador</option>
+                  <option value="assistente">Assistente de Mestre</option>
+                  <option value="mestre">Mestre</option>
+                  <option value="admin">Administrador</option>
+                  <option value="superadmin">Superadmin</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Usuário / Aventureiro</th>
+                    <th>E-mail</th>
+                    <th>Cargo Atual</th>
+                    <th>Membro Desde</th>
+                    <th style="text-align: right;">Ação / Alterar Cargo</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-users-tbody">
+                  <tr>
+                    <td colspan="5" class="table-empty-msg">Carregando aventureiros do reino...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-ABA 3: SEGURANÇA ANTI-SYBIL (DISPOSITIVOS) -->
+        <div class="admin-subtab-pane" id="subtab-admin-devices">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <div>
+                <h3 class="admin-card-title">Dispositivos com Trava Permanente</h3>
+                <span class="badge-total-blocked" id="badge-total-blocked">0 bloqueados</span>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Fingerprint / Dispositivo</th>
+                    <th>Motivo do Bloqueio</th>
+                    <th>Contas Criadas</th>
+                    <th>Data do Bloqueio</th>
+                    <th style="text-align: right;">Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-devices-tbody">
+                  <tr>
+                    <td colspan="5" class="table-empty-msg">Nenhum dispositivo bloqueado no momento. A taverna está segura!</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-ABA 4: CAMPANHAS GLOBAIS -->
+        <div class="admin-subtab-pane" id="subtab-admin-campaigns">
+          <div class="admin-card">
+            <div class="admin-card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 class="admin-card-title">Crônicas & Mesas Forjadas na Plataforma</h3>
+                <span class="badge-total-blocked" id="badge-total-campaigns" style="background: rgba(168, 85, 247, 0.12); color: #c084fc; border-color: rgba(168, 85, 247, 0.3);">0 campanhas</span>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                <input type="text" id="admin-campaigns-search" placeholder="Buscar por título ou mestre..."
+                  class="form-control" style="max-width: 240px; padding: 6px 12px; font-size: 13px;" oninput="filtrarCampanhasAdmin()">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nome da Campanha</th>
+                    <th>Mestre / Criador</th>
+                    <th>Sistema</th>
+                    <th>Visibilidade</th>
+                    <th>Data de Criação</th>
+                    <th style="text-align: right;">Acesso</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-campaigns-tbody">
+                  <tr>
+                    <td colspan="6" class="table-empty-msg">Carregando campanhas do reino...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-ABA 5: LOGS DE AUDITORIA -->
+        <div class="admin-subtab-pane" id="subtab-admin-audit">
+          <div class="admin-card">
+            <div class="admin-card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 class="admin-card-title">Trilha de Auditoria Administrativa</h3>
+                <span class="badge-total-blocked" id="badge-total-audit" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3);">Últimas 100 ações</span>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                <select id="admin-audit-action-filter" class="role-select-dropdown" onchange="filtrarLogsAuditoriaAdmin()">
+                  <option value="">Todas as Ações</option>
+                  <option value="CHANGE_USER_ROLE">Alteração de Cargo</option>
+                  <option value="UNBLOCK_DEVICE">Desbloqueio de Dispositivo</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Data / Hora</th>
+                    <th>Administrador</th>
+                    <th>Ação Executada</th>
+                    <th>Alvo</th>
+                    <th>Detalhes / Transição</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-audit-tbody">
+                  <tr>
+                    <td colspan="5" class="table-empty-msg">Nenhuma ação administrativa registrada ainda.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
@@ -4040,9 +4397,9 @@
         carregarPersonagens();
       }
 
-      // Se for a tela de administração, carrega lista de dispositivos bloqueados
+      // Se for a tela de administração, carrega a sub-aba ativa (Visão Geral por padrão)
       if (telaId === 'admin') {
-        carregarDispositivosAdmin();
+        alternarSubAbaAdmin(adminState.activeSubTab || 'stats');
       }
 
       // 3. Salvar última tela no localStorage para persistência de navegação
@@ -4728,6 +5085,426 @@
       document.getElementById('auth-container').style.display = 'flex';
       alternarAuthView('login');
       mostrarToast('Você saiu da taverna.');
+    }
+
+    // ==========================================================================
+    // PAINEL DE ADMINISTRAÇÃO & GOVERNANÇA (RBAC, MÉTRICAS, DISPOSITIVOS, AUDITORIA)
+    // ==========================================================================
+
+    const adminState = {
+      activeSubTab: 'stats',
+      users: [],
+      campaigns: [],
+      auditLogs: []
+    };
+
+    /**
+     * Alterna entre as sub-abas do Painel de Administração
+     */
+    function alternarSubAbaAdmin(tabKey) {
+      adminState.activeSubTab = tabKey || 'stats';
+
+      // 1. Atualizar botões
+      const btns = document.querySelectorAll('.admin-nav-btn');
+      btns.forEach(b => b.classList.remove('active'));
+      const btnAtivo = document.getElementById(`btn-subtab-admin-${adminState.activeSubTab}`);
+      if (btnAtivo) btnAtivo.classList.add('active');
+
+      // 2. Atualizar sub-painéis
+      const panes = document.querySelectorAll('.admin-subtab-pane');
+      panes.forEach(p => p.classList.remove('active'));
+      const paneAtivo = document.getElementById(`subtab-admin-${adminState.activeSubTab}`);
+      if (paneAtivo) paneAtivo.classList.add('active');
+
+      // 3. Disparar carregamento assíncrono dos dados da aba ativa
+      if (adminState.activeSubTab === 'stats') {
+        carregarAdminStats();
+      } else if (adminState.activeSubTab === 'users') {
+        carregarUsuariosAdmin();
+      } else if (adminState.activeSubTab === 'devices') {
+        carregarDispositivosAdmin();
+      } else if (adminState.activeSubTab === 'campaigns') {
+        carregarCampanhasAdmin();
+      } else if (adminState.activeSubTab === 'audit') {
+        carregarLogsAuditoriaAdmin();
+      }
+    }
+
+    /**
+     * Recarrega os dados da sub-aba atualmente selecionada
+     */
+    function recarregarSubAbaAdminAtiva() {
+      alternarSubAbaAdmin(adminState.activeSubTab || 'stats');
+    }
+
+    /**
+     * Carrega métricas e estatísticas globais da plataforma
+     */
+    async function carregarAdminStats() {
+      if (!window.apiClient) return;
+
+      try {
+        const res = await window.apiClient.adminGetStats();
+        if (res && res.dados) {
+          const d = res.dados;
+          const elUsers = document.getElementById('admin-stat-users');
+          const elGms = document.getElementById('admin-stat-gms');
+          const elCamps = document.getElementById('admin-stat-campaigns');
+          const elChars = document.getElementById('admin-stat-characters');
+          const elDevices = document.getElementById('admin-stat-devices');
+          const elAudits = document.getElementById('admin-stat-audits');
+
+          if (elUsers) elUsers.textContent = d.totalUsers ?? 0;
+          if (elGms) elGms.textContent = (d.roles?.mestre || 0) + (d.roles?.['assistente de mestre'] || 0);
+          if (elCamps) elCamps.textContent = d.totalCampaigns ?? 0;
+          if (elChars) elChars.textContent = d.totalCharacters ?? 0;
+          if (elDevices) elDevices.textContent = d.totalBlockedDevices ?? 0;
+
+          // Carrega contagem rápida dos logs de auditoria
+          if (elAudits) {
+            window.apiClient.adminListAuditLogs({ limit: 100 }).then(auditRes => {
+              if (auditRes && auditRes.dados) {
+                elAudits.textContent = auditRes.dados.length;
+              }
+            }).catch(() => {
+              elAudits.textContent = '0';
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao carregar estatísticas do admin:', err);
+      }
+    }
+
+    /**
+     * Carrega a lista completa de usuários cadastrados
+     */
+    async function carregarUsuariosAdmin() {
+      const tbody = document.getElementById('admin-users-tbody');
+      const badge = document.getElementById('badge-total-users');
+      if (!tbody) return;
+      if (!window.apiClient) return;
+
+      tbody.innerHTML = '<tr><td colspan="5" class="table-empty-msg">Consultando aventureiros no livro da vida...</td></tr>';
+
+      try {
+        const res = await window.apiClient.adminListUsers({ limit: 100 });
+        const users = res.dados || [];
+        adminState.users = users;
+        if (badge) badge.textContent = `${users.length} usuários`;
+        filtrarUsuariosAdmin();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="table-empty-msg" style="color: #f87171;">Erro ao carregar usuários: ${err.message}</td></tr>`;
+      }
+    }
+
+    /**
+     * Filtra a lista de usuários localmente por termo de busca e cargo
+     */
+    function filtrarUsuariosAdmin() {
+      const busca = (document.getElementById('admin-users-search')?.value || '').toLowerCase().trim();
+      const filtroRole = (document.getElementById('admin-users-role-filter')?.value || '').toLowerCase().trim();
+
+      let filtrados = adminState.users || [];
+      if (busca) {
+        filtrados = filtrados.filter(u =>
+          (u.display_name && u.display_name.toLowerCase().includes(busca)) ||
+          (u.nickname && u.nickname.toLowerCase().includes(busca)) ||
+          (u.email && u.email.toLowerCase().includes(busca))
+        );
+      }
+      if (filtroRole) {
+        filtrados = filtrados.filter(u => {
+          const r = String(u.role || '').toLowerCase();
+          if (filtroRole === 'assistente') {
+            return r.includes('assistente');
+          }
+          return r === filtroRole;
+        });
+      }
+
+      renderizarUsuariosAdmin(filtrados);
+    }
+
+    /**
+     * Renderiza as linhas da tabela de usuários com validação RBAC para alteração de cargo
+     */
+    function renderizarUsuariosAdmin(usuarios) {
+      const tbody = document.getElementById('admin-users-tbody');
+      if (!tbody) return;
+
+      if (!usuarios || usuarios.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="table-empty-msg">Nenhum aventureiro encontrado com os critérios informados.</td></tr>';
+        return;
+      }
+
+      // Verificar se o usuário logado é Superadmin para liberar o seletor de cargo
+      let currentUserRole = '';
+      try {
+        const raw = localStorage.getItem('arcana_user_data');
+        if (raw) {
+          const u = JSON.parse(raw);
+          currentUserRole = String(u.role || '').toLowerCase();
+        }
+      } catch (_) { }
+
+      const isSuperadmin = currentUserRole === 'superadmin';
+
+      tbody.innerHTML = usuarios.map(u => {
+        const roleKey = String(u.role || 'jogador').toLowerCase();
+        const roleClass = roleKey === 'superadmin' ? 'role-badge-superadmin' :
+                          roleKey === 'admin' ? 'role-badge-admin' :
+                          roleKey === 'mestre' ? 'role-badge-mestre' :
+                          (roleKey.includes('assistente')) ? 'role-badge-assistente' : 'role-badge-jogador';
+
+        const roleLabels = {
+          jogador: 'Jogador',
+          'assistente de mestre': 'Assistente de Mestre',
+          assistente: 'Assistente',
+          mestre: 'Mestre',
+          admin: 'Administrador',
+          superadmin: 'Superadmin'
+        };
+
+        const displayNick = u.nickname ? `${u.nickname} (${u.display_name})` : (u.display_name || 'Sem nome');
+        const initial = (u.nickname || u.display_name || 'U').charAt(0).toUpperCase();
+        const avatarImg = u.avatar_url
+          ? `<img src="${u.avatar_url}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-gold);" alt="Avatar">`
+          : `<div style="width: 30px; height: 30px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--border-gold); color: var(--gold-light); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">${initial}</div>`;
+
+        const dataFormatada = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '-';
+        const safeName = (u.nickname || u.display_name || u.email || 'Usuário').replace(/'/g, "\\'");
+
+        let actionCell = '';
+        if (isSuperadmin) {
+          actionCell = `
+            <select class="role-select-dropdown" onchange="alterarCargoUsuario('${u.id}', this.value, '${safeName}')">
+              <option value="jogador" ${roleKey === 'jogador' ? 'selected' : ''}>Jogador</option>
+              <option value="assistente de mestre" ${roleKey === 'assistente de mestre' || roleKey === 'assistente' ? 'selected' : ''}>Assistente de Mestre</option>
+              <option value="mestre" ${roleKey === 'mestre' ? 'selected' : ''}>Mestre</option>
+              <option value="admin" ${roleKey === 'admin' ? 'selected' : ''}>Administrador</option>
+              <option value="superadmin" ${roleKey === 'superadmin' ? 'selected' : ''}>Superadmin</option>
+            </select>
+          `;
+        } else {
+          actionCell = `<span style="font-size: 11.5px; color: var(--text-dim);">Apenas Superadmin</span>`;
+        }
+
+        return `
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                ${avatarImg}
+                <div>
+                  <div style="font-weight: 600; color: #fff; font-size: 13.5px;">${displayNick}</div>
+                  <div style="font-size: 11px; color: var(--text-dim); font-family: monospace;">ID: ${u.id.substring(0, 12)}...</div>
+                </div>
+              </div>
+            </td>
+            <td style="color: var(--text-muted); font-size: 13px;">${u.email || '-'}</td>
+            <td><span class="role-badge ${roleClass}">${roleLabels[roleKey] || roleKey}</span></td>
+            <td style="color: var(--text-muted); font-size: 12.5px;">${dataFormatada}</td>
+            <td style="text-align: right;">${actionCell}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    /**
+     * Altera o cargo de um usuário (exclusivo para Superadmin)
+     */
+    async function alterarCargoUsuario(targetUserId, newRole, userName) {
+      if (!confirm(`Deseja realmente alterar o cargo de "${userName}" para "${newRole.toUpperCase()}"?`)) {
+        carregarUsuariosAdmin();
+        return;
+      }
+
+      try {
+        const res = await window.apiClient.adminSetUserRole(targetUserId, newRole);
+        mostrarToast(res.mensagem || `Cargo atualizado com sucesso!`);
+        carregarUsuariosAdmin();
+      } catch (err) {
+        mostrarToast(`Erro ao alterar cargo: ${err.message}`);
+        carregarUsuariosAdmin();
+      }
+    }
+
+    /**
+     * Carrega e filtra campanhas globais para moderação
+     */
+    async function carregarCampanhasAdmin() {
+      const tbody = document.getElementById('admin-campaigns-tbody');
+      const badge = document.getElementById('badge-total-campaigns');
+      if (!tbody) return;
+      if (!window.apiClient) return;
+
+      tbody.innerHTML = '<tr><td colspan="6" class="table-empty-msg">Consultando as crônicas do reino...</td></tr>';
+
+      try {
+        const res = await window.apiClient.adminListCampaigns({ limit: 100 });
+        const campaigns = res.dados || [];
+        adminState.campaigns = campaigns;
+        if (badge) badge.textContent = `${campaigns.length} campanhas`;
+        filtrarCampanhasAdmin();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="table-empty-msg" style="color: #f87171;">Erro ao carregar campanhas: ${err.message}</td></tr>`;
+      }
+    }
+
+    /**
+     * Filtra campanhas por busca de texto
+     */
+    function filtrarCampanhasAdmin() {
+      const busca = (document.getElementById('admin-campaigns-search')?.value || '').toLowerCase().trim();
+      let filtradas = adminState.campaigns || [];
+      if (busca) {
+        filtradas = filtradas.filter(c =>
+          (c.name && c.name.toLowerCase().includes(busca)) ||
+          (c.simple_id && c.simple_id.toLowerCase().includes(busca)) ||
+          (c.owner_name && c.owner_name.toLowerCase().includes(busca)) ||
+          (c.owner_email && c.owner_email.toLowerCase().includes(busca))
+        );
+      }
+      renderizarCampanhasAdmin(filtradas);
+    }
+
+    /**
+     * Renderiza as campanhas no painel admin
+     */
+    function renderizarCampanhasAdmin(campanhas) {
+      const tbody = document.getElementById('admin-campaigns-tbody');
+      if (!tbody) return;
+
+      if (!campanhas || campanhas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="table-empty-msg">Nenhuma crônica encontrada.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = campanhas.map(c => {
+        const isPublic = Number(c.is_public) === 1;
+        const visBadge = isPublic
+          ? `<span class="badge-active-pill" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 2px 8px; font-size: 11px;">Pública</span>`
+          : `<span class="badge-active-pill" style="background: rgba(148, 163, 184, 0.12); border: 1px solid rgba(148, 163, 184, 0.3); color: #94a3b8; padding: 2px 8px; font-size: 11px;">Privada</span>`;
+
+        const dataFormatada = c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '-';
+        const playersCount = `${c.current_players || 0} / ${c.max_players || 6}`;
+
+        return `
+          <tr>
+            <td>
+              <div style="font-weight: 600; color: #fff; font-size: 13.5px;">${c.name}</div>
+              <div style="font-size: 11px; color: var(--gold-light); font-family: monospace;">${c.simple_id || c.id}</div>
+            </td>
+            <td>
+              <div style="font-size: 13px; color: var(--text-main);">${c.owner_name || 'Desconhecido'}</div>
+              <div style="font-size: 11px; color: var(--text-dim);">${c.owner_email || ''}</div>
+            </td>
+            <td><span style="font-size: 12px; font-weight: 600; color: var(--gold-light); text-transform: uppercase;">${c.system_id || 'AlphaD6'}</span></td>
+            <td>${visBadge} <span style="font-size: 11px; color: var(--text-dim); margin-left: 4px;">(${playersCount})</span></td>
+            <td style="color: var(--text-muted); font-size: 12.5px;">${dataFormatada}</td>
+            <td style="text-align: right;">
+              <a href="campanha.html?id=${c.id}" class="btn-secondary" style="padding: 4px 10px; font-size: 11.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                Acessar Mesa
+              </a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    /**
+     * Carrega o histórico de auditoria administrativa
+     */
+    async function carregarLogsAuditoriaAdmin() {
+      const tbody = document.getElementById('admin-audit-tbody');
+      const badge = document.getElementById('badge-total-audit');
+      if (!tbody) return;
+      if (!window.apiClient) return;
+
+      tbody.innerHTML = '<tr><td colspan="5" class="table-empty-msg">Consultando os registros da balança de auditoria...</td></tr>';
+
+      try {
+        const res = await window.apiClient.adminListAuditLogs({ limit: 100 });
+        const logs = res.dados || [];
+        adminState.auditLogs = logs;
+        if (badge) badge.textContent = `${logs.length} ações`;
+        filtrarLogsAuditoriaAdmin();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="table-empty-msg" style="color: #f87171;">Erro ao carregar auditoria: ${err.message}</td></tr>`;
+      }
+    }
+
+    /**
+     * Filtra logs de auditoria por tipo de ação
+     */
+    function filtrarLogsAuditoriaAdmin() {
+      const filtroAcao = (document.getElementById('admin-audit-action-filter')?.value || '').trim();
+      let filtrados = adminState.auditLogs || [];
+      if (filtroAcao) {
+        filtrados = filtrados.filter(l => {
+          if (filtroAcao === 'CHANGE_USER_ROLE') {
+            return l.action === 'ROLE_CHANGE' || l.action === 'CHANGE_USER_ROLE';
+          }
+          if (filtroAcao === 'UNBLOCK_DEVICE') {
+            return l.action === 'DEVICE_UNBLOCK' || l.action === 'UNBLOCK_DEVICE';
+          }
+          return l.action === filtroAcao;
+        });
+      }
+      renderizarLogsAuditoriaAdmin(filtrados);
+    }
+
+    /**
+     * Renderiza a lista de ações de auditoria
+     */
+    function renderizarLogsAuditoriaAdmin(logs) {
+      const tbody = document.getElementById('admin-audit-tbody');
+      if (!tbody) return;
+
+      if (!logs || logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="table-empty-msg">Nenhuma ação de auditoria encontrada.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = logs.map(l => {
+        const dataHora = l.created_at ? new Date(l.created_at).toLocaleString('pt-BR') : '-';
+
+        let actionBadge = '';
+        if (l.action === 'ROLE_CHANGE' || l.action === 'CHANGE_USER_ROLE') {
+          actionBadge = `<span class="role-badge role-badge-admin">Alteração de Cargo</span>`;
+        } else if (l.action === 'DEVICE_UNBLOCK' || l.action === 'UNBLOCK_DEVICE') {
+          actionBadge = `<span class="role-badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">Desbloqueio de Trava</span>`;
+        } else {
+          actionBadge = `<span class="role-badge role-badge-jogador">${l.action}</span>`;
+        }
+
+        let detailsStr = '';
+        try {
+          const d = typeof l.details === 'string' ? JSON.parse(l.details) : (l.details || {});
+          if (d.previousRole && d.newRole) {
+            detailsStr = `De: <span style="color: var(--text-dim); text-decoration: line-through;">${d.previousRole}</span> ➔ <strong style="color: var(--gold-light);">${d.newRole}</strong> (Usuário: ${d.targetName || d.targetEmail || l.target_id})`;
+          } else if (d.reason) {
+            detailsStr = `${d.reason}`;
+          } else {
+            detailsStr = JSON.stringify(d);
+          }
+        } catch (_) {
+          detailsStr = String(l.details || '-');
+        }
+
+        return `
+          <tr>
+            <td style="color: var(--text-muted); font-size: 12px; font-family: monospace;">${dataHora}</td>
+            <td>
+              <div style="font-weight: 600; font-size: 13px; color: #fff;">${l.admin_name || 'Admin'}</div>
+              <div style="font-size: 11px; color: var(--text-dim); font-family: monospace;">ID: ${l.admin_id ? l.admin_id.substring(0, 10) : ''}</div>
+            </td>
+            <td>${actionBadge}</td>
+            <td style="font-family: monospace; font-size: 12px; color: var(--gold-light);">${l.target_type || ''}: ${l.target_id || '-'}</td>
+            <td style="font-size: 12.5px; color: var(--text-main);">${detailsStr}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
     /**

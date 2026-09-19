@@ -217,7 +217,7 @@ async function runAllTests() {
     headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookieJogador1 },
     body: JSON.stringify({
       action: 'characters.create',
-      data: { name: 'Jaskier o Bardo', sheetData: { carisma: 18, pv: 24 } }
+      data: { name: 'Jaskier o Bardo', campaignId: campId, sheetData: { carisma: 18, pv: 24 } }
     })
   }), env, {});
   assert(resCreateChar.status === 201, 'Criação de personagem (/api/sync characters.create) retornou HTTP 201');

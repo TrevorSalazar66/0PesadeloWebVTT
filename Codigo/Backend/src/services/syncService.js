@@ -1892,7 +1892,24 @@ export async function handleSyncRequest(request, env, clientIp) {
         }), { status: 200, headers });
       }
 
-      // GOVERNANÇA E ADMINISTRAÇÃO (EXCLUSIVO PARA ROLE === 'Admin')
+      // GOVERNANÇA E ADMINISTRAÇÃO (EXCLUSIVO PARA ROLE === 'admin' / 'superadmin')
+      case 'admin.stats': {
+        const result = await adminService.getPlatformStats(db, user);
+        if (result.error) {
+          return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
+        }
+        return new Response(JSON.stringify({ sucesso: true, dados: result.data }), { status: 200, headers });
+      }
+
+      case 'admin.users.list': {
+        const { search = '', role = null, limit = 50, offset = 0 } = data;
+        const result = await adminService.listUsers(db, user, { search, role, limit, offset });
+        if (result.error) {
+          return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
+        }
+        return new Response(JSON.stringify({ sucesso: true, dados: result.data }), { status: 200, headers });
+      }
+
       case 'admin.devices.list': {
         const result = await adminService.listBlockedDevices(db, user);
         if (result.error) {
@@ -1917,6 +1934,24 @@ export async function handleSyncRequest(request, env, clientIp) {
           return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
         }
         return new Response(JSON.stringify({ sucesso: true, mensagem: result.message }), { status: 200, headers });
+      }
+
+      case 'admin.campaigns.list': {
+        const { search = '', limit = 50, offset = 0 } = data;
+        const result = await adminService.listAllCampaigns(db, user, { search, limit, offset });
+        if (result.error) {
+          return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
+        }
+        return new Response(JSON.stringify({ sucesso: true, dados: result.data }), { status: 200, headers });
+      }
+
+      case 'admin.audit.logs': {
+        const { limit = 50 } = data;
+        const result = await adminService.listAuditLogs(db, user, { limit });
+        if (result.error) {
+          return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
+        }
+        return new Response(JSON.stringify({ sucesso: true, dados: result.data }), { status: 200, headers });
       }
 
       default:

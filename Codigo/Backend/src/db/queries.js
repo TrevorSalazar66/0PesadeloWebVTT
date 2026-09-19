@@ -584,6 +584,116 @@ export const dbQueries = {
     `);
     const res = await stmt.bind(systemId).all();
     return res.results || res;
+  },
+
+  // ==========================================
+  // GOVERNANÇA & PAINEL ADMINISTRATIVO (ADMIN / SUPERADMIN)
+  // ==========================================
+  async getAdminPlatformStats(db) {
+    const totalUsersRow = await db.prepare('SELECT COUNT(*) as total FROM users').first();
+    const totalCampaignsRow = await db.prepare('SELECT COUNT(*) as total FROM campaigns').first();
+    const totalCharactersRow = await db.prepare('SELECT COUNT(*) as total FROM characters').first();
+    const totalBlockedDevicesRow = await db.prepare("SELECT COUNT(*) as total FROM device_security WHERE status = 'BLOCKED_PERMANENT'").first();
+
+    const rolesQuery = await db.prepare('SELECT role, COUNT(*) as count FROM users GROUP BY role').all();
+    const rolesRows = rolesQuery.results || rolesQuery || [];
+    const rolesMap = { jogador: 0, 'assistente de mestre': 0, mestre: 0, admin: 0, superadmin: 0 };
+    for (const r of rolesRows) {
+      const k = String(r.role || '').toLowerCase();
+      rolesMap[k] = r.count;
+    }
+
+    return {
+      totalUsers: totalUsersRow?.total || 0,
+      totalCampaigns: totalCampaignsRow?.total || 0,
+      totalCharacters: totalCharactersRow?.total || 0,
+      totalBlockedDevices: totalBlockedDevicesRow?.total || 0,
+      roles: rolesMap
+    };
+  },
+
+  async listUsersAdmin(db, { search = '', role = null, limit = 50, offset = 0 } = {}) {
+    let sql = `
+      SELECT u.id, u.email, u.display_name, u.role, u.email_verified, u.profile_completed, 
+             u.auth_provider, u.created_at,
+             p.nickname, p.age_group, p.avatar_url, p.bio, p.contacts
+      FROM users u
+      LEFT JOIN user_profiles p ON u.id = p.user_id
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (search && search.trim()) {
+      const cleanSearch = `%${search.trim().toLowerCase()}%`;
+      sql += ` AND (LOWER(u.display_name) LIKE ? OR LOWER(u.email) LIKE ? OR LOWER(COALESCE(p.nickname, '')) LIKE ?)`;
+      params.push(cleanSearch, cleanSearch, cleanSearch);
+    }
+
+    if (role && role !== 'todos') {
+      sql += ` AND LOWER(u.role) = ?`;
+      params.push(role.toLowerCase().trim());
+    }
+
+    sql += ` ORDER BY u.created_at DESC LIMIT ? OFFSET ?`;
+    params.push(Math.max(1, Math.min(200, limit)), Math.max(0, offset));
+
+    const stmt = db.prepare(sql);
+    const res = await stmt.bind(...params).all();
+    return res.results || res || [];
+  },
+
+  async listAllCampaignsAdmin(db, { search = '', limit = 50, offset = 0 } = {}) {
+    let sql = `
+      SELECT c.*, 
+             u.display_name as owner_name, 
+             u.email as owner_email,
+             (SELECT COUNT(*) FROM campaign_players cp WHERE cp.campaign_id = c.id) as current_players,
+             (SELECT COUNT(*) FROM characters ch WHERE ch.campaign_id = c.id) as total_characters
+      FROM campaigns c
+      LEFT JOIN users u ON c.owner_id = u.id
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (search && search.trim()) {
+      const cleanSearch = `%${search.trim().toLowerCase()}%`;
+      sql += ` AND (LOWER(c.name) LIKE ? OR LOWER(c.simple_id) LIKE ? OR LOWER(u.display_name) LIKE ?)`;
+      params.push(cleanSearch, cleanSearch, cleanSearch);
+    }
+
+    sql += ` ORDER BY c.created_at DESC LIMIT ? OFFSET ?`;
+    params.push(Math.max(1, Math.min(200, limit)), Math.max(0, offset));
+
+    const stmt = db.prepare(sql);
+    const res = await stmt.bind(...params).all();
+    return res.results || res || [];
+  },
+
+  async logAdminAudit(db, { id, adminId, adminName, action, targetType, targetId, details = {} }) {
+    const auditId = id || `audit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const stmt = db.prepare(`
+      INSERT INTO admin_audit_logs (id, admin_id, admin_name, action, target_type, target_id, details, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    `);
+    return await stmt.bind(
+      auditId,
+      adminId,
+      adminName || 'Admin',
+      action,
+      targetType,
+      targetId,
+      typeof details === 'string' ? details : JSON.stringify(details)
+    ).run();
+  },
+
+  async listAdminAuditLogs(db, { limit = 50 } = {}) {
+    const stmt = db.prepare(`
+      SELECT * FROM admin_audit_logs 
+      ORDER BY created_at DESC 
+      LIMIT ?
+    `);
+    const res = await stmt.bind(Math.max(1, Math.min(100, limit))).all();
+    return res.results || res || [];
   }
 };
 

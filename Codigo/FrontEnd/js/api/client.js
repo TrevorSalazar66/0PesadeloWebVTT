@@ -185,6 +185,14 @@ export const apiClient = {
 
   // === MÉTODOS DE ADMINISTRAÇÃO & SEGURANÇA ===
 
+  adminGetStats() {
+    return this.sync('admin.stats');
+  },
+
+  adminListUsers(params = {}) {
+    return this.sync('admin.users.list', params);
+  },
+
   adminListDevices() {
     return this.sync('admin.devices.list');
   },
@@ -195,6 +203,14 @@ export const apiClient = {
 
   adminSetUserRole(targetUserId, role) {
     return this.sync('admin.user.setRole', { targetUserId, role });
+  },
+
+  adminListCampaigns(params = {}) {
+    return this.sync('admin.campaigns.list', params);
+  },
+
+  adminListAuditLogs(params = {}) {
+    return this.sync('admin.audit.logs', params);
   }
 };
 
