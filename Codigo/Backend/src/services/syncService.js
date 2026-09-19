@@ -787,7 +787,446 @@ export async function handleSyncRequest(request, env, clientIp) {
         }
       }
 
+      // ==========================================
+      // CHAT DA CAMPANHA & PERSISTÊNCIA EM TEMPO REAL
+      // ==========================================
+      case 'chat.getHistory': {
+        const { campaignId, limit = 50, beforeTimestamp = null } = data;
+        if (!campaignId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha é obrigatório.' }), { status: 400, headers });
+        }
+
+        const campaign = await dbQueries.getCampaignById(db, campaignId);
+        if (!campaign) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
+        }
+
+        const isPlayer = await dbQueries.isUserInCampaign(db, campaignId, user.userId);
+        const isOwner = campaign.owner_id === user.userId;
+        const isAdmin = ['admin', 'superadmin'].includes(user.role);
+
+        if (!isPlayer && !isOwner && !isAdmin) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Você não participa desta campanha.' }), { status: 403, headers });
+        }
+
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, campaignId, user.userId) || 'jogador');
+        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+
+        const messages = await dbQueries.getCampaignMessages(db, campaignId, {
+          limit,
+          beforeTimestamp,
+          userId: user.userId,
+          isGm
+        });
+
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagens: messages,
+          isGm,
+          campaignId
+        }), { status: 200, headers });
+      }
+
+      case 'chat.send': {
+        const {
+          campaignId,
+          content,
+          msgType = 'ic',
+          authorName = null,
+          authorAvatar = null,
+          authorRole = null,
+          characterId = null,
+          replyTo = null,
+          whisperTarget = null
+        } = data;
+
+        if (!campaignId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha é obrigatório.' }), { status: 400, headers });
+        }
+
+        if (!content || typeof content !== 'string' || !content.trim()) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Mensagem vazia não pode ser enviada.' }), { status: 400, headers });
+        }
+
+        const campaign = await dbQueries.getCampaignById(db, campaignId);
+        if (!campaign) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
+        }
+
+        const isPlayer = await dbQueries.isUserInCampaign(db, campaignId, user.userId);
+        const isOwner = campaign.owner_id === user.userId;
+        const isAdmin = ['admin', 'superadmin'].includes(user.role);
+
+        if (!isPlayer && !isOwner && !isAdmin) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Você não tem permissão para falar nesta campanha.' }), { status: 403, headers });
+        }
+
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, campaignId, user.userId) || 'jogador');
+        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+
+        let finalAuthorName = authorName;
+        let finalAuthorAvatar = authorAvatar || '';
+        let finalAuthorRole = authorRole || (isGm ? 'mestre' : 'jogador');
+        let finalCharacterId = characterId;
+        let finalMsgType = msgType;
+        let finalMetadata = replyTo ? { reply_to: replyTo } : {};
+        let finalWhisperTargetId = null;
+        let rawContent = content.trim();
+
+        let charSheet = null;
+        if (!finalCharacterId && !isGm) {
+          const char = await dbQueries.getCharacterByUserAndCampaign(db, user.userId, campaignId);
+          if (char) {
+            finalCharacterId = char.id;
+            if (!finalAuthorName) finalAuthorName = char.name;
+            try {
+              charSheet = typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data) : char.sheet_data;
+            } catch (_) {}
+          }
+        } else if (finalCharacterId) {
+          const char = await dbQueries.getCharacterById(db, finalCharacterId);
+          if (char) {
+            if (!finalAuthorName) finalAuthorName = char.name;
+            try {
+              charSheet = typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data) : char.sheet_data;
+            } catch (_) {}
+          }
+        }
+
+        if (!finalAuthorName) {
+          finalAuthorName = isGm ? 'Mestre' : (user.displayName || user.email);
+        }
+
+        // --- PARSER DE COMANDOS DE CHAT ---
+
+        // 1. Rolagens (/roll, /r, /gmroll, /gr)
+        if (rawContent.startsWith('/roll') || rawContent.startsWith('/r ') || rawContent === '/r' || rawContent.startsWith('/gmroll') || rawContent.startsWith('/gr ') || rawContent === '/gr') {
+          const rollResult = rpgEngineService.parseChatRollCommand(rawContent, charSheet);
+          if (!rollResult) {
+            return new Response(JSON.stringify({ sucesso: false, erro: 'Comando de rolagem inválido.' }), { status: 400, headers });
+          }
+
+          finalMsgType = 'roll';
+          let textoFormatado = '';
+          if (rollResult.tipo === 'rolagem_livre') {
+            const modStr = rollResult.modificador !== 0 ? (rollResult.modificador > 0 ? ` + ${rollResult.modificador}` : ` - ${Math.abs(rollResult.modificador)}`) : '';
+            textoFormatado = `🎲 Rolou ${rollResult.expressaoOriginal}: <strong>[ ${rollResult.dados.join(', ')} ]</strong>${modStr} = <strong>${rollResult.total}</strong>`;
+          } else if (rollResult.tipo === 'pool_d6') {
+            const vereditoLabel = rollResult.veredicto === 'SUCESSO_TOTAL' ? 'SUCESSO TOTAL' : (rollResult.veredicto === 'SUCESSO_PARCIAL' ? 'SUCESSO PARCIAL' : 'FALHA TOTAL');
+            const attrLabel = rollResult.atributo ? ` (${rollResult.atributo.toUpperCase()})` : '';
+            const qtdSucessos = rollResult.totalSucessos !== undefined ? rollResult.totalSucessos : (Array.isArray(rollResult.sucessos) ? rollResult.sucessos.length : 0);
+            const sucessosStr = qtdSucessos > 0 ? ` (Dados $\\ge 4$: [ ${rollResult.sucessos.join(', ')} ])` : '';
+            textoFormatado = `🎲 Teste AlphaD6${attrLabel} [${rollResult.dadosCount}d6]: <strong>[ ${rollResult.dados.join(', ')} ]</strong> ➔ <strong>${qtdSucessos} Sucesso(s)</strong>${sucessosStr} (${vereditoLabel})`;
+          }
+
+
+          finalMetadata = {
+            ...finalMetadata,
+            roll_data: rollResult
+          };
+
+          if (rollResult.isSecret) {
+            finalWhisperTargetId = campaign.owner_id;
+            finalMetadata.isSecret = true;
+          }
+
+          rawContent = textoFormatado;
+        }
+        // 2. Descanso (/descanso ou /rest)
+        else if (rawContent.startsWith('/descanso') || rawContent.startsWith('/rest')) {
+          const isLongo = rawContent.toLowerCase().includes('longo');
+          const tipoDescanso = isLongo ? 'longo' : 'curto';
+
+          let autoApprove = 1;
+          if (campaign.settings) {
+            try {
+              const s = typeof campaign.settings === 'string' ? JSON.parse(campaign.settings) : campaign.settings;
+              if (s.auto_approve_actions !== undefined) autoApprove = Number(s.auto_approve_actions);
+            } catch (_) {}
+          }
+
+          if (autoApprove === 0 && !isGm) {
+            finalMsgType = 'action_card';
+            const duraHoras = isLongo ? 8 : 1;
+            const curaPrevista = isLongo ? 6 : 2;
+            finalMetadata = {
+              ...finalMetadata,
+              action_data: {
+                tipo: 'descanso',
+                tipoDescanso,
+                status: 'pendente',
+                duracaoHoras: duraHoras,
+                curaAnima: curaPrevista,
+                characterId: finalCharacterId,
+                characterName: finalAuthorName,
+                solicitanteUserId: user.userId
+              }
+            };
+            rawContent = `🛌 <strong>${finalAuthorName}</strong> solicitou um <strong>Descanso ${tipoDescanso.toUpperCase()}</strong> (${duraHoras}h). Aguardando autorização do Mestre.`;
+          } else {
+            finalMsgType = 'roll';
+            let currentAnima = 10;
+            let maxAnima = 20;
+            if (charSheet) {
+              currentAnima = charSheet.anima !== undefined ? charSheet.anima : 10;
+              maxAnima = charSheet.max_anima || 20;
+            }
+            const restResult = rpgEngineService.applyRest({ tipo: tipoDescanso, currentAnima, maxAnima });
+            if (finalCharacterId && charSheet) {
+              charSheet.anima = restResult.animaAtual;
+              charSheet.passagem_para_o_vazio = false;
+              await dbQueries.updateCharacterSheet(db, finalCharacterId, charSheet);
+            }
+            let clock = null;
+            try {
+              clock = typeof campaign.clock_data === 'string' ? JSON.parse(campaign.clock_data) : campaign.clock_data;
+            } catch (_) {}
+            const updatedClock = rpgEngineService.advanceWorldClock(clock, { hours: restResult.duracaoHoras });
+            await dbQueries.updateCampaignClock(db, campaignId, updatedClock);
+
+            finalMetadata = {
+              ...finalMetadata,
+              rest_result: restResult,
+              clock: updatedClock
+            };
+            rawContent = `🛌 <strong>${finalAuthorName}</strong> concluiu um <strong>Descanso ${tipoDescanso.toUpperCase()}</strong>! (+${restResult.efetivamenteCurado} Anima). Relógio avançou ${restResult.duracaoHoras}h.`;
+          }
+        }
+        // 3. Emotes / Ações (/me [ação])
+        else if (rawContent.startsWith('/me ')) {
+          finalMsgType = 'acao';
+          rawContent = rawContent.substring(4).trim();
+        }
+        // 4. Fora do Jogo (/ooc [texto] ou // [texto])
+        else if (rawContent.startsWith('/ooc ') || rawContent.startsWith('//')) {
+          finalMsgType = 'ooc';
+          rawContent = rawContent.startsWith('/ooc ') ? rawContent.substring(5).trim() : rawContent.substring(2).trim();
+        }
+        // 5. Narração do Mestre (/gm [texto] ou /nar [texto])
+        else if (rawContent.startsWith('/gm ') || rawContent.startsWith('/nar ')) {
+          if (isGm) {
+            finalMsgType = 'narracao';
+            finalAuthorName = 'Narrador';
+            finalAuthorRole = 'mestre';
+            rawContent = rawContent.startsWith('/gm ') ? rawContent.substring(4).trim() : rawContent.substring(5).trim();
+          }
+        }
+        // 6. Fala de NPC (/npc [Nome] [texto])
+        else if (rawContent.startsWith('/npc ') && isGm) {
+          const afterNpc = rawContent.substring(5).trim();
+          const firstSpace = afterNpc.indexOf(' ');
+          if (firstSpace > 0) {
+            const npcName = afterNpc.substring(0, firstSpace).trim();
+            const npcSpeech = afterNpc.substring(firstSpace + 1).trim();
+            finalAuthorName = npcName;
+            finalAuthorRole = 'npc';
+            finalMsgType = 'ic';
+            rawContent = npcSpeech;
+          }
+        }
+        // 7. Sussurro (/w [alvo] [mensagem] ou /whisper [alvo] [mensagem])
+        else if (rawContent.startsWith('/w ') || rawContent.startsWith('/whisper ')) {
+          const prefixLen = rawContent.startsWith('/whisper ') ? 9 : 3;
+          const rest = rawContent.substring(prefixLen).trim();
+          const firstSpace = rest.indexOf(' ');
+          if (firstSpace > 0) {
+            const targetName = rest.substring(0, firstSpace).trim().toLowerCase();
+            const whisperMsg = rest.substring(firstSpace + 1).trim();
+
+            if (targetName === 'mestre' || targetName === 'gm') {
+              finalWhisperTargetId = campaign.owner_id;
+              finalMetadata.targetName = 'Mestre';
+            } else {
+              const players = await dbQueries.getCampaignPlayers(db, campaignId);
+              const matchPlayer = players.find(p => 
+                (p.display_name && p.display_name.toLowerCase().includes(targetName)) ||
+                (p.name && p.name.toLowerCase().includes(targetName)) ||
+                (p.nickname && p.nickname.toLowerCase().includes(targetName))
+              );
+              if (matchPlayer) {
+                finalWhisperTargetId = matchPlayer.user_id;
+                finalMetadata.targetName = matchPlayer.display_name || matchPlayer.name || targetName;
+              } else {
+                finalWhisperTargetId = campaign.owner_id;
+                finalMetadata.targetName = targetName;
+              }
+            }
+
+            finalMsgType = 'whisper';
+            rawContent = whisperMsg;
+          }
+        }
+
+        // Se o autor selecionou explicitamente falar como Narrador, NPC ou OOC
+        if (msgType === 'narracao' && isGm) {
+          finalMsgType = 'narracao';
+          finalAuthorName = authorName || 'Narrador';
+          finalAuthorRole = 'mestre';
+        } else if (msgType === 'ooc') {
+          finalMsgType = 'ooc';
+        } else if (msgType === 'acao') {
+          finalMsgType = 'acao';
+        }
+
+        const savedMsg = await dbQueries.saveCampaignMessage(db, {
+          campaignId,
+          userId: user.userId,
+          characterId: finalCharacterId,
+          authorName: finalAuthorName,
+          authorAvatar: finalAuthorAvatar,
+          authorRole: finalAuthorRole,
+          msgType: finalMsgType,
+          content: rawContent,
+          metadata: finalMetadata,
+          whisperTargetId: finalWhisperTargetId
+        });
+
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: savedMsg
+        }), { status: 200, headers });
+      }
+
+      case 'chat.deleteMessage': {
+        const { campaignId, messageId } = data;
+        if (!campaignId || !messageId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha e da mensagem são obrigatórios.' }), { status: 400, headers });
+        }
+
+        const campaign = await dbQueries.getCampaignById(db, campaignId);
+        if (!campaign) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
+        }
+
+        const msg = await dbQueries.getCampaignMessageById(db, messageId);
+        if (!msg || msg.campaign_id !== campaignId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Mensagem não encontrada.' }), { status: 404, headers });
+        }
+
+        const isOwner = campaign.owner_id === user.userId;
+        const isAdmin = ['admin', 'superadmin'].includes(user.role);
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, campaignId, user.userId) || 'jogador');
+        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+        const isAuthor = msg.user_id === user.userId;
+
+        if (!isAuthor && !isGm) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Você não tem permissão para apagar esta mensagem.' }), { status: 403, headers });
+        }
+
+        await dbQueries.deleteCampaignMessage(db, messageId, campaignId);
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: 'Mensagem apagada com sucesso.'
+        }), { status: 200, headers });
+      }
+
+      case 'chat.clearHistory': {
+        const { campaignId } = data;
+        if (!campaignId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha é obrigatório.' }), { status: 400, headers });
+        }
+
+        const campaign = await dbQueries.getCampaignById(db, campaignId);
+        if (!campaign) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
+        }
+
+        const isOwner = campaign.owner_id === user.userId;
+        const isAdmin = ['admin', 'superadmin'].includes(user.role);
+
+        if (!isOwner && !isAdmin) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o Mestre da campanha pode limpar o histórico do chat.' }), { status: 403, headers });
+        }
+
+        await dbQueries.clearAllCampaignMessages(db, campaignId);
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: 'Histórico de chat da campanha limpo com sucesso.'
+        }), { status: 200, headers });
+      }
+
+      case 'chat.respondActionCard': {
+        const { campaignId, messageId, acao } = data;
+        if (!campaignId || !messageId || !acao) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Dados incompletos para resposta da ação.' }), { status: 400, headers });
+        }
+
+        const campaign = await dbQueries.getCampaignById(db, campaignId);
+        if (!campaign) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
+        }
+
+        const isOwner = campaign.owner_id === user.userId;
+        const isAdmin = ['admin', 'superadmin'].includes(user.role);
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, campaignId, user.userId) || 'jogador');
+        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+
+        if (!isGm) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o Mestre ou Assistente pode autorizar/recusar solicitações.' }), { status: 403, headers });
+        }
+
+        const msg = await dbQueries.getCampaignMessageById(db, messageId);
+        if (!msg || msg.campaign_id !== campaignId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Mensagem de ação não encontrada.' }), { status: 404, headers });
+        }
+
+        let metadata = msg.metadata || {};
+        if (typeof metadata === 'string') {
+          try { metadata = JSON.parse(metadata); } catch (_) { metadata = {}; }
+        }
+
+        const actionData = metadata.action_data;
+        if (!actionData) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Esta mensagem não possui uma ação pendente vinculada.' }), { status: 400, headers });
+        }
+
+        if (actionData.status !== 'pendente') {
+          return new Response(JSON.stringify({ sucesso: false, erro: `Esta solicitação já foi respondida (${actionData.status}).` }), { status: 400, headers });
+        }
+
+        if (acao === 'aceitar') {
+          actionData.status = 'aprovado';
+          actionData.respondidoPor = user.displayName || 'Mestre';
+          actionData.respondidoEm = new Date().toISOString();
+
+          if (actionData.tipo === 'descanso' && actionData.characterId) {
+            const char = await dbQueries.getCharacterById(db, actionData.characterId);
+            if (char) {
+              let sheet = typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data || '{}') : (char.sheet_data || {});
+              const maxAnima = sheet.max_anima || 20;
+              const currentAnima = sheet.anima !== undefined ? sheet.anima : 10;
+              const curaAnima = actionData.curaAnima || 2;
+              sheet.anima = Math.min(maxAnima, currentAnima + curaAnima);
+              sheet.passagem_para_o_vazio = false;
+              await dbQueries.updateCharacterSheet(db, actionData.characterId, sheet);
+            }
+
+            let clock = null;
+            try {
+              clock = typeof campaign.clock_data === 'string' ? JSON.parse(campaign.clock_data) : campaign.clock_data;
+            } catch (_) {}
+            const updatedClock = rpgEngineService.advanceWorldClock(clock, { hours: actionData.duracaoHoras || 1 });
+            await dbQueries.updateCampaignClock(db, campaignId, updatedClock);
+            actionData.relogio = updatedClock;
+          }
+        } else {
+          actionData.status = 'recusado';
+          actionData.respondidoPor = user.displayName || 'Mestre';
+          actionData.respondidoEm = new Date().toISOString();
+        }
+
+        metadata.action_data = actionData;
+        await dbQueries.updateCampaignMessageMetadata(db, messageId, metadata);
+
+        return new Response(JSON.stringify({
+          sucesso: true,
+          actionData,
+          mensagem: `Solicitação ${acao === 'aceitar' ? 'aprovada' : 'recusada'} com sucesso.`
+        }), { status: 200, headers });
+      }
+
       case 'rpg.chatCommand': {
+
         const { comando, command, characterId, campaignId } = data;
         const cmd = comando || command;
         if (!cmd || typeof cmd !== 'string') {

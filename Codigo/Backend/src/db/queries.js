@@ -434,6 +434,19 @@ export const dbQueries = {
     return await stmt.bind(newRole, campaignId, userId).run();
   },
 
+  async isUserInCampaign(db, campaignId, userId) {
+    const stmt = db.prepare('SELECT role FROM campaign_players WHERE campaign_id = ? AND user_id = ?');
+    const res = await stmt.bind(campaignId, userId).first();
+    return !!res;
+  },
+
+  async getCampaignPlayerRole(db, campaignId, userId) {
+    const stmt = db.prepare('SELECT role FROM campaign_players WHERE campaign_id = ? AND user_id = ?');
+    const res = await stmt.bind(campaignId, userId).first();
+    return res ? res.role : null;
+  },
+
+
   async kickPlayerFromCampaign(db, campaignId, userId) {
     // 1. Remove da tabela de participantes
     const stmt = db.prepare(`
@@ -860,6 +873,137 @@ export const dbQueries = {
     `);
     const res = await stmt.bind(Math.max(1, Math.min(100, limit))).all();
     return res.results || res || [];
+  },
+
+  // ==========================================
+  // MENSAGENS & CHAT DA CAMPANHA
+  // ==========================================
+  async saveCampaignMessage(db, {
+    id,
+    campaignId,
+    userId,
+    characterId = null,
+    authorName,
+    authorAvatar = '',
+    authorRole = 'jogador',
+    msgType = 'ic',
+    content,
+    metadata = {},
+    whisperTargetId = null
+  }) {
+    const msgId = id || `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const metadataStr = typeof metadata === 'string' ? metadata : JSON.stringify(metadata);
+
+    const stmt = db.prepare(`
+      INSERT INTO campaign_messages (
+        id, campaign_id, user_id, character_id,
+        author_name, author_avatar, author_role,
+        msg_type, content, metadata, whisper_target_id,
+        is_deleted, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'))
+    `);
+
+    await stmt.bind(
+      msgId,
+      campaignId,
+      userId,
+      characterId,
+      authorName.trim(),
+      authorAvatar || '',
+      authorRole,
+      msgType,
+      content.trim(),
+      metadataStr,
+      whisperTargetId || null
+    ).run();
+
+    return await this.getCampaignMessageById(db, msgId);
+  },
+
+  async getCampaignMessageById(db, messageId) {
+    const stmt = db.prepare('SELECT * FROM campaign_messages WHERE id = ?');
+    const msg = await stmt.bind(messageId).first();
+    if (msg && typeof msg.metadata === 'string') {
+      try {
+        msg.metadata = JSON.parse(msg.metadata);
+      } catch (_) {
+        msg.metadata = {};
+      }
+    }
+    return msg;
+  },
+
+  async getCampaignMessages(db, campaignId, { limit = 50, beforeTimestamp = null, userId = null, isGm = false } = {}) {
+    const safeLimit = Math.max(1, Math.min(100, limit));
+    let sql = `
+      SELECT * FROM campaign_messages
+      WHERE campaign_id = ? AND is_deleted = 0
+    `;
+    const params = [campaignId];
+
+    if (!isGm && userId) {
+      sql += ` AND (whisper_target_id IS NULL OR user_id = ? OR whisper_target_id = ? OR whisper_target_id = 'all')`;
+      params.push(userId, userId);
+    }
+
+    if (beforeTimestamp) {
+      sql += ` AND created_at < ?`;
+      params.push(beforeTimestamp);
+    }
+
+    sql += ` ORDER BY created_at DESC LIMIT ?`;
+    params.push(safeLimit);
+
+    const stmt = db.prepare(sql);
+    const res = await stmt.bind(...params).all();
+    const rows = res.results || res || [];
+
+    // Parse metadata e reverte para ordem cronológica (mais antiga -> mais nova)
+    const formatted = rows.map(r => {
+      let meta = {};
+      if (typeof r.metadata === 'string') {
+        try {
+          meta = JSON.parse(r.metadata);
+        } catch (_) {}
+      } else if (r.metadata && typeof r.metadata === 'object') {
+        meta = r.metadata;
+      }
+      return {
+        ...r,
+        metadata: meta
+      };
+    }).reverse();
+
+    return formatted;
+  },
+
+  async deleteCampaignMessage(db, messageId, campaignId) {
+    const stmt = db.prepare(`
+      UPDATE campaign_messages 
+      SET is_deleted = 1 
+      WHERE id = ? AND campaign_id = ?
+    `);
+    return await stmt.bind(messageId, campaignId).run();
+  },
+
+  async clearAllCampaignMessages(db, campaignId) {
+    const stmt = db.prepare(`
+      UPDATE campaign_messages 
+      SET is_deleted = 1 
+      WHERE campaign_id = ?
+    `);
+    return await stmt.bind(campaignId).run();
+  },
+
+  async updateCampaignMessageMetadata(db, messageId, metadataObj) {
+    const metaStr = typeof metadataObj === 'string' ? metadataObj : JSON.stringify(metadataObj);
+    const stmt = db.prepare(`
+      UPDATE campaign_messages 
+      SET metadata = ? 
+      WHERE id = ?
+    `);
+    return await stmt.bind(metaStr, messageId).run();
   }
 };
+
 

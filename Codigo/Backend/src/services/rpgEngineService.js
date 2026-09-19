@@ -242,28 +242,41 @@ export function parseAndRollFreeExpression(expression) {
 }
 
 /**
- * Parser inteligente de comandos do chat (/roll ou /r)
+ * Parser inteligente de comandos do chat (/roll, /r, /gmroll ou /gr)
  */
 export function parseChatRollCommand(text, characterSheet = null) {
   if (typeof text !== 'string') return null;
   const trimmed = text.trim();
-  if (!trimmed.startsWith('/roll') && !trimmed.startsWith('/r ') && trimmed !== '/r') {
+  const isGmRoll = trimmed.startsWith('/gmroll') || trimmed.startsWith('/gr ') || trimmed === '/gr';
+  const isNormalRoll = trimmed.startsWith('/roll') || trimmed.startsWith('/r ') || trimmed === '/r';
+
+  if (!isNormalRoll && !isGmRoll) {
     return null;
   }
 
-  const rawArgs = trimmed.startsWith('/roll') 
-    ? trimmed.substring(5).trim() 
-    : trimmed.substring(2).trim();
+  let rawArgs = '';
+  if (trimmed.startsWith('/gmroll')) {
+    rawArgs = trimmed.substring(7).trim();
+  } else if (trimmed.startsWith('/gr')) {
+    rawArgs = trimmed.substring(3).trim();
+  } else if (trimmed.startsWith('/roll')) {
+    rawArgs = trimmed.substring(5).trim();
+  } else {
+    rawArgs = trimmed.substring(2).trim();
+  }
 
   if (!rawArgs) {
     // Default /roll sem argumentos -> 1d6
-    return parseAndRollFreeExpression('1d6');
+    const res = parseAndRollFreeExpression('1d6');
+    return isGmRoll ? { ...res, isSecret: true } : res;
   }
 
   // Verifica se é uma expressão livre como 2d6+3 ou 1d20
   if (/^(\d*)d(\d+)(?:[+-]\d+)?$/i.test(rawArgs.replace(/\s+/g, ''))) {
-    return parseAndRollFreeExpression(rawArgs);
+    const res = parseAndRollFreeExpression(rawArgs);
+    return isGmRoll ? { ...res, isSecret: true } : res;
   }
+
 
   // Se não for rolagem livre simples, analisa como comando do sistema D6
   const tokens = rawArgs.split(/\s+/);
@@ -342,7 +355,7 @@ export function parseChatRollCommand(text, characterSheet = null) {
   totalDados += Math.max(0, vantagens);
   totalDados += Math.max(0, ajudas);
 
-  return evaluateD6Pool({
+  const poolResult = evaluateD6Pool({
     dadosCount: totalDados,
     dificuldade,
     atributo,
@@ -350,7 +363,10 @@ export function parseChatRollCommand(text, characterSheet = null) {
     vantagens,
     ajudas
   });
+
+  return isGmRoll ? { ...poolResult, isSecret: true } : poolResult;
 }
+
 
 // ==========================================
 // ANIMA & RECURSOS DO PERSONAGEM (ALPHAD6)

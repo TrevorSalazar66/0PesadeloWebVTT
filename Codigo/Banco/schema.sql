@@ -179,3 +179,27 @@ CREATE INDEX IF NOT EXISTS idx_gm_banned_player ON gm_banned_players(player_id);
 CREATE INDEX IF NOT EXISTS idx_audit_admin ON admin_audit_logs(admin_id);
 CREATE INDEX IF NOT EXISTS idx_audit_created ON admin_audit_logs(created_at);
 CREATE INDEX IF NOT EXISTS idx_audit_action ON admin_audit_logs(action);
+
+-- 12. Tabela de Mensagens e Histórico de Chat da Campanha
+CREATE TABLE IF NOT EXISTS campaign_messages (
+    id TEXT PRIMARY KEY,
+    campaign_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    character_id TEXT,
+    author_name TEXT NOT NULL,
+    author_avatar TEXT DEFAULT '',
+    author_role TEXT DEFAULT 'jogador',
+    msg_type TEXT NOT NULL DEFAULT 'ic',
+    content TEXT NOT NULL,
+    metadata TEXT NOT NULL DEFAULT '{}',
+    whisper_target_id TEXT DEFAULT NULL,
+    is_deleted INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_campaign ON campaign_messages(campaign_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_messages_user ON campaign_messages(user_id);
+CREATE INDEX IF NOT EXISTS idx_messages_whisper ON campaign_messages(whisper_target_id);
+

@@ -254,50 +254,610 @@
       color: var(--gold-light);
     }
 
-    /* LAYOUT ABA CHAT */
+    /* ==========================================
+       ESTILOS NOBRES DO CHAT DA CAMPANHA
+       ========================================== */
     .chat-container {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 64px);
-      max-width: 800px;
+      height: calc(100vh - 48px);
+      max-width: 980px;
       margin: 0 auto;
       background: var(--bg-surface);
       border: 1px solid var(--border-card);
       border-radius: var(--radius-lg);
       overflow: hidden;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.03);
+      position: relative;
     }
 
+    /* Top Bar do Chat */
+    .chat-header-bar {
+      padding: 12px 20px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 10;
+    }
+
+    .chat-header-title-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-header-title {
+      font-family: var(--font-title);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gold-light);
+      margin: 0;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chat-live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: var(--radius-pill);
+      font-size: 10.5px;
+      color: #34d399;
+      font-weight: 600;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .chat-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chat-tool-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition-fast);
+    }
+
+    .chat-tool-btn:hover {
+      border-color: var(--gold-primary);
+      color: var(--gold-light);
+      background: rgba(212, 163, 75, 0.08);
+    }
+
+    .chat-tool-btn.active {
+      border-color: var(--gold-primary);
+      color: var(--gold-light);
+      background: rgba(212, 163, 75, 0.15);
+      box-shadow: 0 0 12px rgba(212, 163, 75, 0.2);
+    }
+
+    /* Gaveta de Dados Rápidos */
+    .chat-quick-dice-drawer {
+      background: rgba(14, 14, 26, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-gold);
+      padding: 10px 16px;
+      display: none;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      z-index: 9;
+      animation: slideDown 0.2s ease-out;
+    }
+
+    .chat-quick-dice-drawer.active {
+      display: flex;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .quick-die-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all var(--transition-fast);
+    }
+
+    .quick-die-btn:hover {
+      border-color: var(--gold-primary);
+      background: rgba(212, 163, 75, 0.15);
+      color: var(--gold-light);
+      transform: translateY(-1px);
+    }
+
+    .quick-die-btn.attr-btn {
+      border-color: rgba(212, 163, 75, 0.35);
+      background: rgba(212, 163, 75, 0.06);
+      color: var(--gold-light);
+    }
+
+    /* Container de Mensagens */
     .chat-messages {
       flex: 1;
-      padding: 20px;
+      padding: 20px 24px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
+      scroll-behavior: smooth;
     }
 
+    /* CARD BASE DE MENSAGEM */
+    .msg-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      position: relative;
+      transition: all var(--transition-fast);
+      animation: fadeInUp 0.22s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-card:hover {
+      border-color: rgba(212, 163, 75, 0.3);
+      background: var(--bg-card-hover);
+    }
+
+    /* Toolbar Flutuante de Ações na Mensagem */
+    .msg-card-toolbar {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      display: none;
+      align-items: center;
+      gap: 4px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 2px 4px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      z-index: 5;
+    }
+
+    .msg-card:hover .msg-card-toolbar {
+      display: flex;
+    }
+
+    .msg-action-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 3px 6px;
+      font-size: 11px;
+      border-radius: 4px;
+      transition: all var(--transition-fast);
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .msg-action-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .msg-action-icon-btn.btn-del:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+
+    /* Cabeçalho da Mensagem */
+    .msg-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .msg-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--gold-dark);
+      border: 1px solid var(--border-gold);
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .msg-author-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .msg-author-name {
+      font-weight: 700;
+      font-size: 13.5px;
+      color: #fff;
+    }
+
+    .msg-role-tag {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 6px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+    }
+
+    .msg-role-tag.tag-mestre {
+      background: rgba(212, 163, 75, 0.2);
+      border: 1px solid var(--border-gold);
+      color: var(--gold-light);
+    }
+
+    .msg-role-tag.tag-npc {
+      background: rgba(168, 85, 247, 0.2);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      color: #c084fc;
+    }
+
+    .msg-role-tag.tag-ooc {
+      background: rgba(100, 116, 139, 0.2);
+      color: #94a3b8;
+    }
+
+    .msg-role-tag.tag-whisper {
+      background: rgba(168, 85, 247, 0.25);
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      color: #d8b4fe;
+    }
+
+    .msg-timestamp {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      margin-left: auto;
+      margin-right: 48px; /* Espaço para toolbar */
+    }
+
+    /* Bloco de Citação / Resposta */
+    .msg-quote-preview {
+      background: rgba(0, 0, 0, 0.25);
+      border-left: 3px solid var(--gold-primary);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .msg-quote-author {
+      font-weight: 700;
+      color: var(--gold-light);
+      margin-bottom: 2px;
+    }
+
+    /* Conteúdo da Mensagem */
+    .msg-card-content {
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #e2e8f0;
+      word-break: break-word;
+    }
+
+    /* TIPOS ESPECÍFICOS DE MENSAGEM */
+
+    /* 1. In-Character (IC) */
+    .msg-card.msg-ic {
+      border-left: 3px solid var(--gold-primary);
+    }
+    .msg-card.msg-ic .msg-card-content {
+      color: #f8fafc;
+    }
+
+    /* 2. Out-Of-Character (OOC) */
+    .msg-card.msg-ooc {
+      background: rgba(15, 15, 26, 0.7);
+      border-left: 3px solid #64748b;
+      opacity: 0.9;
+    }
+    .msg-card.msg-ooc .msg-card-content {
+      color: var(--text-muted);
+      font-style: normal;
+    }
+
+    /* 3. Narração do Mestre */
+    .msg-card.msg-narracao {
+      background: linear-gradient(135deg, rgba(212, 163, 75, 0.08) 0%, rgba(16, 16, 29, 0.95) 100%);
+      border: 1px solid var(--border-gold);
+      border-left: 4px solid var(--gold-primary);
+      box-shadow: 0 0 15px rgba(212, 163, 75, 0.08);
+    }
+    .msg-card.msg-narracao .msg-author-name {
+      font-family: var(--font-title);
+      color: var(--gold-light);
+      font-size: 14px;
+    }
+    .msg-card.msg-narracao .msg-card-content {
+      font-family: Georgia, serif;
+      font-size: 14px;
+      color: #fef08a;
+      line-height: 1.65;
+    }
+
+    /* 4. Ação Narrativa / Emote (/me) */
+    .msg-card.msg-acao {
+      border-left: 3px solid #a855f7;
+      background: rgba(168, 85, 247, 0.05);
+    }
+    .msg-card.msg-acao .msg-card-content {
+      color: #d8b4fe;
+      font-style: italic;
+    }
+
+    /* 5. Sussurro Privado (/w) */
+    .msg-card.msg-whisper {
+      background: linear-gradient(135deg, rgba(88, 28, 135, 0.15) 0%, rgba(16, 16, 29, 0.95) 100%);
+      border: 1px dashed rgba(168, 85, 247, 0.6);
+      border-left: 4px solid #c084fc;
+    }
+    .msg-card.msg-whisper .msg-card-content {
+      color: #e9d5ff;
+    }
+
+    /* 6. Rolagem de Dados (Roll) */
+    .msg-card.msg-roll {
+      border-left: 3px solid #10b981;
+      background: rgba(16, 185, 129, 0.04);
+    }
+    .msg-card.msg-roll .msg-card-content {
+      font-size: 13.5px;
+      color: #f1f5f9;
+    }
+
+    /* 7. Card de Ação Interativa (action_card) */
+    .msg-card.msg-action-card {
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-left: 4px solid #f59e0b;
+      background: rgba(245, 158, 11, 0.05);
+    }
+    .action-card-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    /* BANNER DE RESPOSTA ATIVA */
+    .chat-reply-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: rgba(212, 163, 75, 0.1);
+      border-top: 1px solid var(--border-gold);
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 12px;
+      color: var(--gold-light);
+    }
+    .chat-reply-banner.active {
+      display: flex;
+    }
+
+    /* ÁREA DE INPUT INFERIOR */
     .chat-input-area {
       position: relative;
-      padding: 16px;
+      padding: 12px 16px;
       background: var(--bg-card);
       border-top: 1px solid var(--border-subtle);
       display: flex;
-      gap: 12px;
+      align-items: center;
+      gap: 10px;
     }
 
-    /* AUTOCOMPLETE DE COMANDOS DO CHAT */
+    /* Seletor "Falar Como" */
+    .persona-dropdown-container {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .persona-select-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      max-width: 170px;
+    }
+
+    .persona-select-btn:hover {
+      border-color: var(--gold-primary);
+      background: rgba(212, 163, 75, 0.08);
+    }
+
+    .persona-btn-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--gold-dark);
+      border: 1px solid var(--border-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--gold-light);
+      flex-shrink: 0;
+    }
+
+    .persona-btn-label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 12px;
+    }
+
+    .persona-menu {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      width: 220px;
+      background: rgba(16, 16, 29, 0.98);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-md);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
+      display: none;
+      flex-direction: column;
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    .persona-menu.active {
+      display: flex;
+    }
+
+    .persona-menu-header {
+      padding: 8px 12px;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--gold-light);
+      background: rgba(212, 163, 75, 0.08);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .persona-menu-item {
+      padding: 9px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 12.5px;
+      color: #e2e8f0;
+      transition: all var(--transition-fast);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .persona-menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .persona-menu-item:hover,
+    .persona-menu-item.active {
+      background: rgba(212, 163, 75, 0.15);
+      color: #fff;
+    }
+
+    /* Input e Botão de Enviar */
+    .chat-input {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      outline: none;
+      transition: all var(--transition-fast);
+    }
+
+    .chat-input:focus {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 0 2px rgba(212, 163, 75, 0.15);
+    }
+
+    .chat-send-btn {
+      background: var(--gold-primary);
+      color: var(--text-dark);
+      border: none;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition-fast);
+      flex-shrink: 0;
+    }
+
+    .chat-send-btn:hover {
+      background: var(--gold-light);
+      box-shadow: 0 0 14px rgba(212, 163, 75, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* AUTOCOMPLETE DE COMANDOS */
     .chat-autocomplete {
       position: absolute;
       bottom: calc(100% + 8px);
       left: 16px;
       right: 16px;
-      background: rgba(16, 16, 29, 0.96);
+      background: rgba(16, 16, 29, 0.98);
       backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
       border: 1px solid var(--border-gold);
       border-radius: var(--radius-md);
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(212, 163, 75, 0.15);
-      max-height: 250px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(212, 163, 75, 0.2);
+      max-height: 260px;
       overflow-y: auto;
       z-index: 1000;
       display: none;
@@ -308,125 +868,6 @@
       display: flex;
     }
 
-    .autocomplete-header {
-      padding: 8px 12px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--gold-light);
-      border-bottom: 1px solid var(--border-subtle);
-      background: rgba(212, 163, 75, 0.08);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .autocomplete-hint {
-      font-size: 10px;
-      color: var(--text-dim);
-      font-weight: 400;
-      text-transform: none;
-    }
-
-    .autocomplete-item {
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-      transition: var(--transition-fast);
-    }
-
-    .autocomplete-item:last-child {
-      border-bottom: none;
-    }
-
-    .autocomplete-item:hover,
-    .autocomplete-item.selected {
-      background: rgba(212, 163, 75, 0.15);
-      border-left: 3px solid var(--gold-primary);
-      padding-left: 11px;
-    }
-
-    .autocomplete-cmd-box {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .autocomplete-cmd-name {
-      font-family: monospace;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--gold-light);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .autocomplete-cmd-syntax {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .autocomplete-cmd-desc {
-      font-size: 11px;
-      color: var(--text-dim);
-      text-align: right;
-      max-width: 240px;
-    }
-
-    .autocomplete-tab-badge {
-      font-size: 9px;
-      background: rgba(212, 163, 75, 0.2);
-      color: var(--gold-light);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-
-    .chat-input {
-      flex: 1;
-      background: var(--bg-input);
-      border: 1px solid var(--border-card);
-      border-radius: var(--radius-md);
-      padding: 12px 16px;
-      color: #fff;
-      font-family: var(--font-body);
-      outline: none;
-    }
-
-    .chat-input:focus {
-      border-color: var(--gold-primary);
-    }
-
-    .chat-btn {
-      background: var(--gold-primary);
-      color: var(--text-dark);
-      border: none;
-      padding: 0 20px;
-      border-radius: var(--radius-md);
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .msg-box {
-      background: var(--bg-card);
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      border-left: 3px solid var(--border-subtle);
-    }
-
-    .msg-box.mestre {
-      border-left-color: var(--gold-primary);
-    }
-
-    .msg-box.roll {
-      border-left-color: #10b981;
-      background: rgba(16, 185, 129, 0.05);
-    }
 
     /* ABA CENAS (VTT GRID) */
     .vtt-canvas {
@@ -965,13 +1406,193 @@
       border-color: rgba(239, 68, 68, 0.4);
       background: rgba(239, 68, 68, 0.03);
     }
+
+    /* Responsividade e Otimizações Mobile (Gaveta & Barra Inferior) em campanha.html */
+    .mobile-header-bar {
+      display: none;
+    }
+    .drawer-overlay {
+      display: none;
+    }
+    .mobile-bottom-nav {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-header-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        background: rgba(16, 16, 29, 0.95);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 0 16px;
+        z-index: 90;
+      }
+
+      .mobile-header-title {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--gold-light);
+      }
+
+      .mobile-hamburger-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-card);
+        border-radius: var(--radius-md);
+        color: var(--gold-primary);
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .campaign-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 260px !important;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 100;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8);
+        align-items: flex-start !important;
+        padding: 16px !important;
+      }
+
+      .campaign-sidebar.mobile-open {
+        transform: translateX(0);
+      }
+
+      .campaign-sidebar .nav-btn {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        padding-left: 12px !important;
+        gap: 12px !important;
+      }
+
+      .campaign-sidebar .nav-btn .nav-label {
+        display: block !important;
+      }
+
+      .drawer-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 95;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      .drawer-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .campaign-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding-top: 56px !important;
+        padding-bottom: 64px !important;
+      }
+
+      .view-section {
+        padding: 16px 12px 70px 12px !important;
+      }
+
+      #view-cenas {
+        padding: 0 !important;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: rgba(16, 16, 29, 0.96);
+        backdrop-filter: blur(14px);
+        border-top: 1px solid var(--border-gold-glow);
+        z-index: 85;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0 4px;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+      }
+
+      .bottom-nav-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 4px 0;
+        transition: all var(--transition-fast);
+      }
+
+      .bottom-nav-btn svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .bottom-nav-btn.active {
+        color: var(--gold-light);
+      }
+
+      .bottom-nav-btn.active svg {
+        stroke: var(--gold-light);
+        filter: drop-shadow(0 0 6px rgba(212, 163, 75, 0.5));
+      }
+    }
   </style>
 </head>
 
 <body>
 
-  <!-- Menu Lateral da Campanha -->
-  <nav class="campaign-sidebar">
+  <!-- Cabeçalho Exclusivo Mobile da Campanha -->
+  <header class="mobile-header-bar">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 18px;">⚔️</span>
+      <span class="mobile-header-title" id="mobile-campaign-header-name">Sessão Ativa</span>
+    </div>
+    <button class="mobile-hamburger-btn" onclick="toggleMobileDrawer()" title="Menu da Mesa">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+  </header>
+
+  <!-- Overlay para fechar Gaveta Mobile -->
+  <div class="drawer-overlay" id="drawer-overlay" onclick="toggleMobileDrawer(false)"></div>
+
+  <!-- Menu Lateral da Campanha (Drawer Mobile) -->
+  <nav class="campaign-sidebar" id="campaign-sidebar">
     <!-- 1. Geral -->
     <button class="nav-btn active" onclick="changeTab('geral')" title="Visão Geral">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1042,6 +1663,41 @@
     </button>
   </nav>
 
+  <!-- Barra de Navegação Rápida Inferior (Mobile Bottom Nav) -->
+  <nav class="mobile-bottom-nav">
+    <button class="bottom-nav-btn active" id="cnav-geral" onclick="changeTab('geral')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+      </svg>
+      <span>Mesa</span>
+    </button>
+    <button class="bottom-nav-btn" id="cnav-chat" onclick="changeTab('chat')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>Chat</span>
+    </button>
+    <button class="bottom-nav-btn" id="cnav-cenas" onclick="changeTab('cenas')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      </svg>
+      <span>Cenas</span>
+    </button>
+    <button class="bottom-nav-btn" id="cnav-diario" onclick="changeTab('diario')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+      </svg>
+      <span>Diário</span>
+    </button>
+    <button class="bottom-nav-btn" id="cnav-config" onclick="changeTab('config')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      <span>Ajustes</span>
+    </button>
+  </nav>
+
   <!-- Container de Conteúdo -->
   <main class="campaign-content">
 
@@ -1097,28 +1753,118 @@
       </div>
     </section>
 
-    <!-- ABA 2: CHAT -->
+    <!-- ABA 2: CHAT & CRÔNICA EM TEMPO REAL -->
     <section id="view-chat" class="view-section">
       <div class="chat-container">
-        <div class="chat-messages" id="chat-messages">
-          <div class="msg-box mestre">
-            <strong>Mestre:</strong> Bem vindos a Phandalin. O sol está se pondo e a taverna local parece bem
-            movimentada.
+        <!-- TOP BAR DO CHAT -->
+        <div class="chat-header-bar">
+          <div class="chat-header-title-box">
+            <h2 class="chat-header-title">
+              <span>📜</span> Crônica da Campanha
+            </h2>
+            <div class="chat-live-pill">
+              <span class="live-dot"></span>
+              <span id="chat-connection-status">Ao Vivo</span>
+            </div>
           </div>
-          <div class="msg-box">
-            <strong>Thorek:</strong> "Vou até o balcão pedir uma caneca do melhor hidromel deles!"
-          </div>
-          <div class="msg-box roll">
-            <strong>Sistema:</strong> Thorek rolou Carisma (Persuasão): <strong>[ 14 ]</strong> + 2 = 16
+
+          <div class="chat-header-actions">
+            <button type="button" class="chat-tool-btn" id="btn-toggle-quick-dice" onclick="toggleQuickDiceDrawer()" title="Abrir/Fechar Atalhos de Rolagem de Dados">
+              🎲 Dados Rápidos
+            </button>
+            <button type="button" class="chat-tool-btn" id="btn-chat-clear-history" onclick="abrirModalLimparChat()" style="color: #f87171; display: none;" title="Limpar Histórico de Mensagens (Apenas Mestre)">
+              🗑️ Limpar
+            </button>
           </div>
         </div>
+
+        <!-- GAVETA DE DADOS RÁPIDOS (QUICK DICE DRAWER) -->
+        <div class="chat-quick-dice-drawer" id="chat-quick-dice-drawer">
+          <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--gold-light); margin-right: 4px;">Atalhos:</span>
+          <button type="button" class="quick-die-btn attr-btn" onclick="executarAtalhoRolagem('corpo')">🛡️ Corpo</button>
+          <button type="button" class="quick-die-btn attr-btn" onclick="executarAtalhoRolagem('mente')">🧠 Mente</button>
+          <button type="button" class="quick-die-btn attr-btn" onclick="executarAtalhoRolagem('social')">🗣️ Social</button>
+          <button type="button" class="quick-die-btn attr-btn" onclick="executarAtalhoRolagem('espirito')">✨ Espírito</button>
+          <span style="color: var(--border-subtle); margin: 0 4px;">|</span>
+          <button type="button" class="quick-die-btn" onclick="executarAtalhoRolagem('1d6')">🎲 1d6</button>
+          <button type="button" class="quick-die-btn" onclick="executarAtalhoRolagem('2d6')">🎲 2d6</button>
+          <button type="button" class="quick-die-btn" onclick="executarAtalhoRolagem('1d20')">⚔️ 1d20</button>
+          <button type="button" class="quick-die-btn" onclick="executarAtalhoRolagem('iniciativa')">⚡ Iniciativa</button>
+          <button type="button" class="quick-die-btn" onclick="executarAtalhoRolagem('descanso_curto')">🛌 Descanso Curto</button>
+          <button type="button" class="quick-die-btn" onclick="executarAtalhoRolagem('descanso_longo')">⛺ Descanso Longo</button>
+        </div>
+
+        <!-- LISTA DE MENSAGENS -->
+        <div class="chat-messages" id="chat-messages">
+          <div style="text-align: center; color: var(--text-dim); font-size: 13px; padding: 32px 0;">
+            <div class="spinner" style="margin: 0 auto 12px auto;"></div>
+            Carregando crônicas e mensagens da mesa...
+          </div>
+        </div>
+
+        <!-- BANNER DE RESPOSTA ATIVA -->
+        <div class="chat-reply-banner" id="chat-reply-banner">
+          <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            <span>💬 Respondendo a <strong id="reply-author-name">Autor</strong>:</span>
+            <span id="reply-text-preview" style="color: var(--text-muted); font-style: italic;">"Trecho da mensagem..."</span>
+          </div>
+          <button type="button" onclick="cancelarRespostaMensagem()" style="background: transparent; border: none; color: var(--gold-light); cursor: pointer; font-size: 14px; font-weight: 700; padding: 2px 6px;">✕</button>
+        </div>
+
+        <!-- ÁREA DE ENTRADA INFERIOR -->
         <div class="chat-input-area">
           <!-- DROPDOWN AUTOCOMPLETE DE COMANDOS -->
           <div class="chat-autocomplete" id="chat-autocomplete"></div>
 
+          <!-- SELETOR "FALAR COMO..." -->
+          <div class="persona-dropdown-container">
+            <button type="button" class="persona-select-btn" id="btn-persona-select" onclick="togglePersonaMenu()" title="Escolha como falar no chat">
+              <div class="persona-btn-avatar" id="persona-btn-avatar">🗡️</div>
+              <span class="persona-btn-label" id="persona-btn-label">Personagem</span>
+              <span style="font-size: 9px; color: var(--gold-light);">▼</span>
+            </button>
+
+            <div class="persona-menu" id="persona-menu">
+              <div class="persona-menu-header">Falar Como...</div>
+              <div class="persona-menu-item active" id="opt-persona-char" onclick="selecionarPersona('ic')">
+                <span style="font-size: 14px;">🛡️</span>
+                <div>
+                  <div style="font-weight: 700;" id="persona-menu-char-name">Meu Personagem</div>
+                  <div style="font-size: 10.5px; color: var(--text-dim);">Fala em personagem (IC)</div>
+                </div>
+              </div>
+              <div class="persona-menu-item" id="opt-persona-ooc" onclick="selecionarPersona('ooc')">
+                <span style="font-size: 14px;">💬</span>
+                <div>
+                  <div style="font-weight: 700;">Fora do Jogo (OOC)</div>
+                  <div style="font-size: 10.5px; color: var(--text-dim);">Conversa de jogador</div>
+                </div>
+              </div>
+              <div class="persona-menu-item" id="opt-persona-gm" onclick="selecionarPersona('narracao')" style="display: none;">
+                <span style="font-size: 14px;">👑</span>
+                <div>
+                  <div style="font-weight: 700;">Mestre / Narrador</div>
+                  <div style="font-size: 10.5px; color: var(--text-dim);">Narração solene dourada</div>
+                </div>
+              </div>
+              <div class="persona-menu-item" id="opt-persona-npc" onclick="abrirModalQuickNPC()" style="display: none;">
+                <span style="font-size: 14px;">🎭</span>
+                <div>
+                  <div style="font-weight: 700;">Falar como NPC...</div>
+                  <div style="font-size: 10.5px; color: var(--text-dim);">Criar/escolher fala de NPC</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- INPUT DE TEXTO -->
           <input type="text" class="chat-input" id="chat-input"
-            placeholder="Digite sua ação ou comando (ex: /roll 1d20)..." autocomplete="off" spellcheck="false">
-          <button class="chat-btn" onclick="sendMessage()">Enviar</button>
+            placeholder="Digite sua fala, ação ou comando (ex: /roll 2d6+3, /w elion segredo, /me)..." autocomplete="off" spellcheck="false">
+          
+          <button class="chat-send-btn" id="btn-chat-send" onclick="sendMessage()">
+            <span>Enviar</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
         </div>
       </div>
     </section>
@@ -1129,6 +1875,7 @@
         [ Renderizador de Grid VTT e Imagens da Cena ]
       </div>
     </section>
+
 
     <!-- ABA 4: OFICINA -->
     <section id="view-oficina" class="view-section">
@@ -1479,7 +2226,50 @@
     </div>
   </div>
 
+  <!-- MODAL DE CRIAR/SELECIONAR NPC RÁPIDO DO MESTRE -->
+  <div class="modal-overlay" id="modal-quick-npc" onclick="if(event.target === this) fecharModalQuickNPC()">
+    <div class="modal-content" style="max-width: 440px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+        <h2 class="modal-title" style="margin: 0; color: #c084fc; display: flex; align-items: center; gap: 8px; font-size: 18px;">
+          <span>🎭</span> Falar como NPC da Cena
+        </h2>
+        <button type="button" class="btn-secondary" onclick="fecharModalQuickNPC()" style="padding: 4px 10px; font-size: 12px;">✕</button>
+      </div>
+      <form onsubmit="salvarQuickNPC(event)">
+        <div class="form-group">
+          <label>Nome do NPC / Monstro / Aliado</label>
+          <input type="text" class="form-control" id="input-npc-name" placeholder="Ex: Taberneiro Barliman, Guarda Real, Goblin Líder" required>
+        </div>
+        <div class="form-group">
+          <label>Avatar / Emoji do NPC (Opcional)</label>
+          <input type="text" class="form-control" id="input-npc-avatar" placeholder="Ex: 🧙‍♂️, 👹, 🧝‍♀️ ou URL de imagem">
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn-secondary" onclick="fecharModalQuickNPC()">Cancelar</button>
+          <button type="submit" class="btn-primary" style="background: #a855f7; border-color: #a855f7; color: #fff;">Ativar Persona NPC</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMAÇÃO DE LIMPEZA DO CHAT -->
+  <div class="modal-overlay" id="modal-clear-chat" onclick="if(event.target === this) fecharModalLimparChat()">
+    <div class="modal-content" style="max-width: 440px;">
+      <h2 class="modal-title" style="color: #f87171; font-size: 20px;">🗑️ Limpar Chat da Campanha</h2>
+      <p style="color: var(--text-muted); font-size: 13.5px; line-height: 1.5; margin-bottom: 20px;">
+        Tem certeza que deseja apagar todo o histórico de mensagens desta campanha? Todas as conversas e rolagens anteriores serão limpas para todos os participantes.
+      </p>
+      <div class="btn-group">
+        <button type="button" class="btn-secondary" onclick="fecharModalLimparChat()">Cancelar</button>
+        <button type="button" class="btn-action-sm btn-action-ban" onclick="confirmarLimpezaChat()" style="padding: 10px 20px; font-size: 13px;">
+          Sim, Limpar Todo o Chat
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Client API & Script da Campanha -->
+
   <script type="module" src="js/api/client.js"></script>
   <script type="module" src="js/campanha.js"></script>
 </body>

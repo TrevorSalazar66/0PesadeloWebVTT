@@ -1307,7 +1307,17 @@
       opacity: 1;
     }
 
-    /* Responsividade */
+    /* Responsividade e Otimização Mobile (Gaveta & Barra Inferior) */
+    .mobile-header-bar {
+      display: none;
+    }
+    .drawer-overlay {
+      display: none;
+    }
+    .mobile-bottom-nav {
+      display: none;
+    }
+
     @media (max-width: 900px) {
       .action-grid {
         grid-template-columns: 1fr;
@@ -1318,21 +1328,161 @@
       }
     }
 
-    @media (max-width: 720px) {
+    @media (max-width: 768px) {
+      /* Cabeçalho Fixo Mobile */
+      .mobile-header-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: rgba(16, 16, 29, 0.95);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 0 16px;
+        z-index: 90;
+      }
+
+      .mobile-header-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .mobile-header-title {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 16px;
+        color: var(--gold-light);
+      }
+
+      .mobile-hamburger-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-card);
+        border-radius: var(--radius-md);
+        color: var(--gold-primary);
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      /* Sidebar transformada em Gaveta (Drawer Off-Canvas) */
       .sidebar {
-        width: 68px;
-        padding: 16px 8px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 280px !important;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 100;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8);
+      }
+
+      .sidebar.mobile-open {
+        transform: translateX(0);
+      }
+
+      .drawer-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 95;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      .drawer-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
       }
 
       .brand-text-wrapper,
       .nav-item-btn span,
       .btn-logout span {
-        display: none;
+        display: inline-block !important;
       }
 
+      /* Área de Conteúdo Ajustada para Mobile */
       .main-content {
-        margin-left: 68px;
-        width: calc(100% - 68px);
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 76px 14px 100px 14px !important;
+      }
+
+      /* Barra de Navegação Rápida Inferior (Bottom Nav Bar) */
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: rgba(16, 16, 29, 0.96);
+        backdrop-filter: blur(14px);
+        border-top: 1px solid var(--border-gold-glow);
+        z-index: 85;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0 4px;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+      }
+
+      .bottom-nav-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 6px 0;
+        transition: all var(--transition-fast);
+      }
+
+      .bottom-nav-btn svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .bottom-nav-btn.active {
+        color: var(--gold-light);
+      }
+
+      .bottom-nav-btn.active svg {
+        stroke: var(--gold-light);
+        filter: drop-shadow(0 0 6px rgba(212, 163, 75, 0.5));
+      }
+
+      /* Ajustes Minimalistas de Grid e Layouts em Mobile */
+      .welcome-card {
+        padding: 20px 18px;
+      }
+
+      .welcome-title {
+        font-size: 22px;
+      }
+
+      .dashboard-grid, .campaign-details-layout {
+        grid-template-columns: 1fr !important;
+      }
+
+      .login-card {
+        padding: 24px 18px;
       }
     }
 
@@ -3124,7 +3274,30 @@
        ========================================================================== -->
   <div id="app-container" style="display: none;">
 
-    <!-- Barra Lateral Fixa (Sidebar) -->
+    <!-- Cabeçalho Exclusivo Mobile -->
+    <header class="mobile-header-bar">
+      <div class="mobile-header-brand">
+        <div class="brand-icon" style="width: 32px; height: 32px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="12" height="12" x="2" y="10" rx="2" />
+            <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3.16l-4.76-4.76a2.24 2.24 0 0 0-3.16 0L10 6.08" />
+          </svg>
+        </div>
+        <span class="mobile-header-title">Arcana VTT</span>
+      </div>
+      <button class="mobile-hamburger-btn" onclick="toggleMobileDrawer()" title="Abrir Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Overlay para fechar Gaveta Mobile -->
+    <div class="drawer-overlay" id="drawer-overlay" onclick="toggleMobileDrawer(false)"></div>
+
+    <!-- Barra Lateral Fixa / Gaveta Mobile (Sidebar) -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
         <div class="brand-icon">
@@ -3244,6 +3417,42 @@
         </button>
       </div>
     </aside>
+
+    <!-- Barra de Navegação Rápida Inferior (Mobile Bottom Nav) -->
+    <nav class="mobile-bottom-nav">
+      <button class="bottom-nav-btn active" id="bnav-inicio" onclick="navegarPara('inicio')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        </svg>
+        <span>Início</span>
+      </button>
+      <button class="bottom-nav-btn" id="bnav-campanhas" onclick="navegarPara('campanhas')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+        </svg>
+        <span>Campanhas</span>
+      </button>
+      <button class="bottom-nav-btn" id="bnav-sistemas" onclick="navegarPara('sistemas')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+        </svg>
+        <span>Sistemas</span>
+      </button>
+      <button class="bottom-nav-btn" id="bnav-personagens" onclick="navegarPara('personagens')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+        </svg>
+        <span>Heróis</span>
+      </button>
+      <button class="bottom-nav-btn" id="bnav-perfil" onclick="navegarPara('perfil')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span>Perfil</span>
+      </button>
+    </nav>
 
     <!-- Área Principal de Conteúdo das Telas -->
     <main class="main-content">
@@ -5242,9 +5451,30 @@
     }
 
     /**
-     * Alterna a visibilidade das seções da SPA e atualiza o estado visual do menu lateral
+     * Alterna o menu gaveta em dispositivos móveis
+     */
+    function toggleMobileDrawer(forceState) {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('drawer-overlay');
+      if (!sidebar) return;
+
+      const shouldOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('mobile-open');
+      if (shouldOpen) {
+        sidebar.classList.add('mobile-open');
+        if (overlay) overlay.classList.add('active');
+      } else {
+        sidebar.classList.remove('mobile-open');
+        if (overlay) overlay.classList.remove('active');
+      }
+    }
+
+    /**
+     * Alterna a visibilidade das seções da SPA e atualiza o estado visual do menu lateral e bottom nav
      */
     function navegarPara(telaId) {
+      // Fecha a gaveta mobile se estiver aberta
+      toggleMobileDrawer(false);
+
       // 1. Atualizar visibilidade das seções
       const secoes = document.querySelectorAll('.view-section');
       secoes.forEach(secao => secao.classList.remove('active'));
@@ -5261,6 +5491,15 @@
       const botaoAlvo = document.getElementById(`nav-${telaId}`);
       if (botaoAlvo) {
         botaoAlvo.classList.add('active');
+      }
+
+      // 3. Atualizar estado dos botões da bottom nav mobile
+      const bottomBotoes = document.querySelectorAll('.bottom-nav-btn');
+      bottomBotoes.forEach(btn => btn.classList.remove('active'));
+
+      const bottomAlvo = document.getElementById(`bnav-${telaId}`);
+      if (bottomAlvo) {
+        bottomAlvo.classList.add('active');
       }
 
       // Se for a tela de campanhas, carrega lista dinâmica

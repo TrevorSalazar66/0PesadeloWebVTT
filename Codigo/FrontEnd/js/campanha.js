@@ -23,8 +23,27 @@ function obterUsuarioAtual() {
   return null;
 }
 
+// Alterna o menu gaveta da campanha em dispositivos móveis
+window.toggleMobileDrawer = function(forceState) {
+  const sidebar = document.getElementById('campaign-sidebar');
+  const overlay = document.getElementById('drawer-overlay');
+  if (!sidebar) return;
+
+  const shouldOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('mobile-open');
+  if (shouldOpen) {
+    sidebar.classList.add('mobile-open');
+    if (overlay) overlay.classList.add('active');
+  } else {
+    sidebar.classList.remove('mobile-open');
+    if (overlay) overlay.classList.remove('active');
+  }
+};
+
 // Alterna entre as abas principais da campanha
 window.changeTab = function(tabId) {
+  // Fecha a gaveta mobile se aberta
+  window.toggleMobileDrawer(false);
+
   // 1. Esconde todas as seções de visualização
   const sections = document.querySelectorAll('.view-section');
   sections.forEach(sec => sec.classList.remove('active'));
@@ -39,14 +58,24 @@ window.changeTab = function(tabId) {
     targetSection.classList.add('active');
   }
 
-  // 4. Marca o botão de navegação como ativo
+  // 4. Marca o botão de navegação como ativo na sidebar
   const activeBtn = document.querySelector(`.nav-btn[onclick="changeTab('${tabId}')"]`);
   if (activeBtn) {
     activeBtn.classList.add('active');
   }
 
+  // 5. Marca o botão de navegação ativo na bottom nav mobile
+  const bottomBtns = document.querySelectorAll('.bottom-nav-btn');
+  bottomBtns.forEach(btn => btn.classList.remove('active'));
+  const activeBottomBtn = document.getElementById(`cnav-${tabId}`);
+  if (activeBottomBtn) {
+    activeBottomBtn.classList.add('active');
+  }
+
   // Ações específicas por aba
-  if (tabId === 'diario') {
+  if (tabId === 'chat') {
+    loadChatHistory(true);
+  } else if (tabId === 'diario') {
     loadDiarioData();
   } else if (tabId === 'config') {
     loadConfigData();
@@ -60,20 +89,34 @@ window.sairCampanha = function() {
   }
 };
 
-// === Comandos e Motor de Chat RPG ===
+// === Estado e Configurações do Chat da Campanha ===
+
+let userCampaignRole = 'jogador';
+let chatMessagesCache = [];
+let chatPollingTimer = null;
+let currentPersona = { type: 'ic', name: '', avatar: '🗡️' };
+let currentReplyTo = null;
 
 const RPG_CHAT_COMMANDS = [
-  { cmd: '/roll', alias: '/r', syntax: '/roll [1d20 | 2d6+3 | atributo]', desc: 'Rola dados livres ou teste AlphaD6', template: '/roll ' },
-  { cmd: '/r', alias: '/roll', syntax: '/r [1d20 | 2d6+3 | atributo]', desc: 'Atalho rápido para rolagem de dados', template: '/r ' },
+  { cmd: '/roll', alias: '/r', syntax: '/roll [1d20 | 2d6+3 | corpo | mente]', desc: 'Rola dados livres ou teste AlphaD6', template: '/roll ' },
+  { cmd: '/r', alias: '/roll', syntax: '/r [1d20 | 2d6+3 | atributo]', desc: 'Atalho rápido de rolagem de dados', template: '/r ' },
+  { cmd: '/gmroll', alias: '/gr', syntax: '/gmroll [1d20 | 2d6+3 | atributo]', desc: 'Rolagem secreta visível apenas ao Mestre', template: '/gmroll ' },
+  { cmd: '/gr', alias: '/gmroll', syntax: '/gr [expressão]', desc: 'Atalho rápido para rolagem secreta ao Mestre', template: '/gr ' },
+  { cmd: '/w', alias: '/whisper', syntax: '/w [nome ou @nick] [mensagem]', desc: 'Sussurra uma mensagem privada a um participante', template: '/w ' },
+  { cmd: '/whisper', alias: '/w', syntax: '/whisper [nome ou @nick] [mensagem]', desc: 'Sussurro privado a um jogador ou Mestre', template: '/whisper ' },
+  { cmd: '/me', alias: null, syntax: '/me [ação do personagem]', desc: 'Ação narrativa ou emote de personagem', template: '/me ' },
+  { cmd: '/ooc', alias: '/b', syntax: '/ooc [mensagem]', desc: 'Fala fora do personagem (Out Of Character)', template: '/ooc ' },
+  { cmd: '/b', alias: '/ooc', syntax: '/b [mensagem]', desc: 'Atalho de fala fora do jogo (OOC)', template: '/b ' },
+  { cmd: '/gm', alias: null, syntax: '/gm [narração solene]', desc: 'Narração de cena solene do Mestre', template: '/gm ' },
+  { cmd: '/npc', alias: null, syntax: '/npc [Nome] [fala]', desc: 'Fala ou ação através de um NPC da cena', template: '/npc ' },
   { cmd: '/descanso', alias: '/rest', syntax: '/descanso [curto|longo]', desc: 'Recupera Anima e avança relógio da mesa', template: '/descanso curto' },
   { cmd: '/rest', alias: '/descanso', syntax: '/rest [curto|longo]', desc: 'Atalho de descanso de personagem', template: '/rest curto' },
   { cmd: '/iniciativa', alias: '/init', syntax: '/iniciativa', desc: 'Rola iniciativa na cena de combate', template: '/iniciativa' },
   { cmd: '/init', alias: '/iniciativa', syntax: '/init', desc: 'Atalho rápido de iniciativa', template: '/init' },
-  { cmd: '/me', alias: null, syntax: '/me [ação do personagem]', desc: 'Ação narrativa ou emote de personagem', template: '/me ' },
-  { cmd: '/limpar', alias: '/clear', syntax: '/limpar', desc: 'Limpa mensagens visíveis da tela', template: '/limpar' },
-  { cmd: '/clear', alias: '/limpar', syntax: '/clear', desc: 'Atalho para limpar a tela de mensagens', template: '/clear' },
-  { cmd: '/ajuda', alias: '/help', syntax: '/ajuda', desc: 'Exibe guia de comandos disponíveis', template: '/ajuda' },
-  { cmd: '/help', alias: '/ajuda', syntax: '/help', desc: 'Exibe guia de comandos disponíveis', template: '/help' }
+  { cmd: '/limpar', alias: '/clear', syntax: '/limpar', desc: 'Limpa o histórico de mensagens da mesa', template: '/limpar' },
+  { cmd: '/clear', alias: '/limpar', syntax: '/clear', desc: 'Atalho para limpar histórico de mensagens', template: '/clear' },
+  { cmd: '/ajuda', alias: '/help', syntax: '/ajuda', desc: 'Exibe guia de comandos disponíveis no chat', template: '/ajuda' },
+  { cmd: '/help', alias: '/ajuda', syntax: '/help', desc: 'Exibe guia de comandos disponíveis no chat', template: '/help' }
 ];
 
 let autocompleteFiltered = [];
@@ -87,13 +130,11 @@ function setupChatAutocomplete() {
   input.addEventListener('input', () => {
     const val = input.value;
 
-    // Regra estrita: Só abre se o campo COMEÇAR com '/' (ex: "oi /" não dispara)
     if (!val.startsWith('/')) {
       fecharAutocomplete();
       return;
     }
 
-    // Se já tiver espaço, o usuário já escolheu o comando e está digitando argumentos (ex: "/roll 1d20")
     if (val.includes(' ')) {
       fecharAutocomplete();
       return;
@@ -124,7 +165,6 @@ function setupChatAutocomplete() {
 
     if (e.key === 'Tab') {
       e.preventDefault();
-      // Se houver apenas 1 comando ou o usuário navegou, autocompleta
       aplicarComandoSelecionado();
       return;
     }
@@ -145,7 +185,6 @@ function setupChatAutocomplete() {
 
     if (e.key === 'Enter') {
       e.preventDefault();
-      // Se o comando atual no input ainda não for idêntico ao selecionado, autocompleta primeiro
       const itemAtual = autocompleteFiltered[autocompleteIndex];
       if (input.value.trim() !== itemAtual.cmd && input.value.trim() !== itemAtual.alias) {
         aplicarComandoSelecionado();
@@ -176,8 +215,8 @@ function renderizarAutocomplete() {
   const total = autocompleteFiltered.length;
   dropdown.innerHTML = `
     <div class="autocomplete-header">
-      <span>Comandos Disponíveis (${total})</span>
-      <span class="autocomplete-hint">Pressione [Tab] para autocompletar</span>
+      <span>Comandos do RPG (${total})</span>
+      <span class="autocomplete-hint">[Tab] autocompleta</span>
     </div>
     ${autocompleteFiltered.map((c, idx) => `
       <div class="autocomplete-item ${idx === autocompleteIndex ? 'selected' : ''}" data-idx="${idx}">
@@ -194,7 +233,6 @@ function renderizarAutocomplete() {
 
   dropdown.classList.add('active');
 
-  // Adiciona cliques nos itens
   dropdown.querySelectorAll('.autocomplete-item').forEach(el => {
     el.addEventListener('click', () => {
       const idx = parseInt(el.getAttribute('data-idx'), 10);
@@ -227,123 +265,623 @@ function aplicarComandoSelecionado() {
   input.focus();
 }
 
+// === Carregamento e Polling do Histórico do Chat ===
+
+window.loadChatHistory = async function(forceScroll = false) {
+  const chatMessages = document.getElementById('chat-messages');
+  if (!chatMessages || !currentCampaignId) return;
+
+  try {
+    const res = await apiClient.sync('chat.getHistory', { campaignId: currentCampaignId });
+    if (res && res.sucesso && Array.isArray(res.dados)) {
+      const messages = res.dados;
+      userCampaignRole = res.userRole || userCampaignRole || 'jogador';
+
+      // Atualiza visibilidade de ferramentas exclusivas de Mestre
+      atualizarControlesMestreChat();
+
+      // Checa se o cache mudou para evitar repinturas desnecessárias
+      const hasChanged = JSON.stringify(messages) !== JSON.stringify(chatMessagesCache);
+      if (hasChanged || forceScroll) {
+        const wasAtBottom = (chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight) < 60;
+        chatMessagesCache = messages;
+        renderizarListaMensagensChat(messages);
+
+        if (wasAtBottom || forceScroll) {
+          setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          }, 40);
+        }
+      }
+
+      // Atualiza status de conexão
+      const statusEl = document.getElementById('chat-connection-status');
+      if (statusEl) statusEl.textContent = 'Ao Vivo';
+    } else {
+      console.warn("Falha ao carregar histórico do chat:", res?.erro);
+    }
+  } catch (err) {
+    console.error("Erro ao sincronizar mensagens do chat:", err);
+    const statusEl = document.getElementById('chat-connection-status');
+    if (statusEl) statusEl.textContent = 'Reconectando...';
+  }
+};
+
+function iniciarChatPolling() {
+  if (chatPollingTimer) clearInterval(chatPollingTimer);
+  chatPollingTimer = setInterval(() => {
+    const chatView = document.getElementById('view-chat');
+    if (chatView && chatView.classList.contains('active')) {
+      loadChatHistory(false);
+    }
+  }, 3500);
+}
+
+function atualizarControlesMestreChat() {
+  const user = obterUsuarioAtual();
+  const isGM = (userCampaignRole === 'mestre' || userCampaignRole === 'assistente de mestre' || user?.userId === currentCampaignData?.owner_id);
+
+  const btnClearHistory = document.getElementById('btn-chat-clear-history');
+  if (btnClearHistory) {
+    btnClearHistory.style.display = isGM ? 'inline-flex' : 'none';
+  }
+
+  const optGm = document.getElementById('opt-persona-gm');
+  const optNpc = document.getElementById('opt-persona-npc');
+  if (optGm) optGm.style.display = isGM ? 'flex' : 'none';
+  if (optNpc) optNpc.style.display = isGM ? 'flex' : 'none';
+
+  // Configura o nome do personagem do jogador se disponível
+  const charOptName = document.getElementById('persona-menu-char-name');
+  if (charOptName) {
+    const userChar = currentPartyCharacters.find(c => c.userId === user?.userId);
+    if (userChar && userChar.nome) {
+      charOptName.textContent = userChar.nome;
+      if (!currentPersona.name && currentPersona.type === 'ic') {
+        currentPersona.name = userChar.nome;
+      }
+    } else {
+      charOptName.textContent = user?.displayName || 'Meu Personagem';
+      if (!currentPersona.name && currentPersona.type === 'ic') {
+        currentPersona.name = user?.displayName || 'Meu Personagem';
+      }
+    }
+  }
+}
+
+function renderizarListaMensagensChat(messages) {
+  const container = document.getElementById('chat-messages');
+  if (!container) return;
+
+  if (messages.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; color: var(--text-dim); padding: 48px 16px;">
+        <div style="font-size: 32px; margin-bottom: 12px;">📜</div>
+        <div style="font-family: var(--font-title); font-size: 16px; color: var(--gold-light); margin-bottom: 6px;">
+          A Crônica Começa Aqui
+        </div>
+        <p style="font-size: 13px; max-width: 400px; margin: 0 auto; line-height: 1.5;">
+          Nenhuma mensagem registrada nesta mesa ainda. Lance dados com <code>/roll</code>, descreva ações com <code>/me</code> ou converse com o grupo!
+        </p>
+      </div>
+    `;
+    return;
+  }
+
+  const user = obterUsuarioAtual();
+  const isGM = (userCampaignRole === 'mestre' || userCampaignRole === 'assistente de mestre' || user?.userId === currentCampaignData?.owner_id);
+
+  container.innerHTML = messages.map(msg => renderChatMessageHTML(msg, user, isGM)).join('');
+}
+
+function renderChatMessageHTML(msg, currentUser, isGM) {
+  const isMine = currentUser && (msg.user_id === currentUser.userId);
+  const canDelete = isMine || isGM;
+  const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+  
+  const typeClass = `msg-card-${msg.msg_type || 'ic'}`;
+  const roleBadge = formatarBadgePapel(msg.author_role, msg.msg_type, msg.is_secret);
+
+  // Avatar do autor
+  const initial = (msg.author_name || 'A')[0].toUpperCase();
+  const avatarContent = msg.author_avatar && msg.author_avatar.startsWith('http')
+    ? `<img src="${escapeHtml(msg.author_avatar)}" alt="avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;">`
+    : (msg.author_avatar || initial);
+
+  // Bloco de citação (Reply To)
+  let replyHTML = '';
+  let meta = null;
+  try {
+    meta = typeof msg.metadata === 'string' ? JSON.parse(msg.metadata) : msg.metadata;
+  } catch (e) {}
+
+  if (meta && meta.reply_to) {
+    const rep = meta.reply_to;
+    replyHTML = `
+      <div class="chat-msg-quote">
+        <span class="quote-author">💬 ${escapeHtml(rep.author || 'Alguém')}:</span>
+        <span>${escapeHtml(rep.text || '')}</span>
+      </div>
+    `;
+  }
+
+  // Corpo principal por tipo
+  let bodyHTML = '';
+  if (msg.msg_type === 'roll') {
+    bodyHTML = renderRollCardBody(msg, meta);
+  } else if (msg.msg_type === 'action_card') {
+    bodyHTML = renderActionCardBody(msg, meta, isGM);
+  } else if (msg.msg_type === 'whisper') {
+    const target = msg.whisper_target_name ? ` (para @${escapeHtml(msg.whisper_target_name)})` : '';
+    bodyHTML = `<div class="chat-msg-text" style="color: #c4b5fd;">🔒 <em>${escapeHtml(msg.content)}${target}</em></div>`;
+  } else if (msg.msg_type === 'acao') {
+    bodyHTML = `<div class="chat-msg-text" style="color: #c084fc; font-style: italic;">* ${escapeHtml(msg.content)} *</div>`;
+  } else if (msg.msg_type === 'narracao') {
+    bodyHTML = `<div class="chat-msg-text" style="color: #fef08a; font-family: Georgia, serif; font-size: 14.5px; line-height: 1.6;">${escapeHtml(msg.content)}</div>`;
+  } else if (msg.msg_type === 'ooc') {
+    bodyHTML = `<div class="chat-msg-text" style="color: #94a3b8; font-style: italic;">(( ${escapeHtml(msg.content)} ))</div>`;
+  } else {
+    // 'ic' padrão
+    bodyHTML = `<div class="chat-msg-text">${escapeHtml(msg.content)}</div>`;
+  }
+
+  const safeAuthor = (msg.author_name || 'Personagem').replace(/'/g, "\\'");
+  const safeContent = (msg.content || '').replace(/'/g, "\\'").replace(/\n/g, ' ').substring(0, 50);
+
+  return `
+    <div class="chat-msg-card ${typeClass}" id="chat-msg-${msg.id}">
+      <div class="chat-msg-header">
+        <div class="chat-msg-author-info">
+          <div class="chat-msg-avatar">${avatarContent}</div>
+          <span class="chat-msg-name">${escapeHtml(msg.author_name || 'Desconhecido')}</span>
+          ${roleBadge}
+        </div>
+        <div class="chat-msg-meta">
+          <span class="chat-msg-time">${timeStr}</span>
+          <div class="chat-msg-actions-hover">
+            <button type="button" class="btn-msg-action" onclick="iniciarRespostaMensagem(${msg.id}, '${safeAuthor}', '${safeContent}')" title="Responder esta mensagem">
+              💬
+            </button>
+            ${canDelete ? `
+              <button type="button" class="btn-msg-action btn-msg-delete" onclick="excluirMensagem(${msg.id})" title="Excluir mensagem">
+                🗑️
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="chat-msg-body">
+        ${replyHTML}
+        ${bodyHTML}
+      </div>
+    </div>
+  `;
+}
+
+function formatarBadgePapel(role, msgType, isSecret) {
+  if (isSecret) {
+    return `<span class="chat-msg-badge badge-secret">🔒 Rolagem Secreta</span>`;
+  }
+  if (msgType === 'whisper') {
+    return `<span class="chat-msg-badge badge-whisper">🔒 Sussurro</span>`;
+  }
+  if (msgType === 'narracao') {
+    return `<span class="chat-msg-badge badge-narracao">👑 Narração</span>`;
+  }
+  if (msgType === 'ooc') {
+    return `<span class="chat-msg-badge badge-ooc">OOC</span>`;
+  }
+  if (msgType === 'acao') {
+    return `<span class="chat-msg-badge badge-acao">Ação</span>`;
+  }
+  if (role === 'npc') {
+    return `<span class="chat-msg-badge badge-npc">🎭 NPC</span>`;
+  }
+  if (role === 'mestre') {
+    return `<span class="chat-msg-badge badge-gm">Mestre</span>`;
+  }
+  if (role === 'assistente de mestre') {
+    return `<span class="chat-msg-badge badge-gm">Assistente</span>`;
+  }
+  if (role === 'sistema') {
+    return `<span class="chat-msg-badge badge-system">Arcana VTT</span>`;
+  }
+  return `<span class="chat-msg-badge badge-player">Jogador</span>`;
+}
+
+function renderRollCardBody(msg, meta) {
+  if (!meta || !meta.tipo) {
+    return `<div class="chat-msg-text">${escapeHtml(msg.content)}</div>`;
+  }
+
+  // Rolagem AlphaD6
+  if (meta.tipo === 'alphad6') {
+    const dados = meta.dados || [];
+    const sucessos = meta.sucessos || 0;
+    const dano = meta.danoTotal || 0;
+    const isSuccess = sucessos > 0;
+
+    return `
+      <div class="roll-result-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 12px; color: var(--gold-light); font-weight: 600;">
+            ${meta.nomeAtributo ? `Teste de ${meta.nomeAtributo.toUpperCase()}` : 'Rolagem AlphaD6'}
+          </span>
+          <span style="font-size: 11px; color: var(--text-dim);">Fórmula: ${escapeHtml(meta.expressaoOriginal || '')}</span>
+        </div>
+        <div class="roll-dice-pool">
+          ${dados.map(d => `<div class="die-face ${d >= 4 ? 'success' : ''}">${d}</div>`).join('')}
+        </div>
+        <div class="roll-total-pill ${isSuccess ? 'roll-success' : 'roll-fail'}">
+          ${isSuccess ? `✨ ${sucessos} Sucesso(s) • Dano: ${dano}` : `💀 Falha (0 Sucessos)`}
+        </div>
+      </div>
+    `;
+  }
+
+  // Rolagem Livre D20 / D6
+  if (meta.tipo === 'livre') {
+    const dados = meta.dados || [];
+    const total = meta.total !== undefined ? meta.total : (dados.reduce((a, b) => a + b, 0) + (meta.modificador || 0));
+    return `
+      <div class="roll-result-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 12px; color: var(--gold-light); font-weight: 600;">
+            Rolagem de Dados
+          </span>
+          <span style="font-size: 11px; color: var(--text-dim);">Expressão: ${escapeHtml(meta.expressaoOriginal || '')}</span>
+        </div>
+        <div class="roll-dice-pool">
+          ${dados.map(d => `<div class="die-face">${d}</div>`).join('')}
+        </div>
+        <div class="roll-total-pill roll-success">
+          🎯 Total: <strong>${total}</strong> ${meta.modificador ? `(Mod: ${meta.modificador > 0 ? '+' : ''}${meta.modificador})` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  return `<div class="chat-msg-text">${escapeHtml(msg.content)}</div>`;
+}
+
+function renderActionCardBody(msg, meta, isGM) {
+  const status = meta?.status || 'pendente';
+  const tipoDescanso = meta?.tipoDescanso || 'curto';
+
+  return `
+    <div class="action-card-box">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <span style="font-size: 18px;">🛌</span>
+        <div>
+          <div style="font-size: 13.5px; font-weight: 700; color: #fff;">Solicitação de Descanso ${tipoDescanso.toUpperCase()}</div>
+          <div style="font-size: 11.5px; color: var(--text-muted);">
+            ${escapeHtml(msg.author_name)} solicitou avanço de tempo e recuperação de Anima.
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          ${status === 'pendente' ? `
+            <span style="font-size: 11.5px; color: #f59e0b; font-weight: 600;">⏳ Aguardando aprovação do Mestre</span>
+          ` : status === 'aprovado' ? `
+            <span style="font-size: 11.5px; color: #4ade80; font-weight: 600;">✅ Aprovado pelo Mestre</span>
+          ` : `
+            <span style="font-size: 11.5px; color: #f87171; font-weight: 600;">❌ Recusado pelo Mestre</span>
+          `}
+        </div>
+
+        ${(isGM && status === 'pendente') ? `
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn-action-sm btn-action-accept" onclick="responderCardAcao(${msg.id}, 'aprovar')">
+              Aprovar
+            </button>
+            <button type="button" class="btn-action-sm btn-action-kick" onclick="responderCardAcao(${msg.id}, 'recusar')">
+              Recusar
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// === Envio de Mensagens e Comandos ===
+
 window.sendMessage = async function() {
   const input = document.getElementById('chat-input');
-  const message = input.value.trim();
+  if (!input) return;
 
+  const message = input.value.trim();
   if (!message) return;
 
   fecharAutocomplete();
-  const chatMessages = document.getElementById('chat-messages');
-  const user = obterUsuarioAtual();
-  const isMestre = user && (user.role?.toLowerCase() === 'mestre' || user.userId === currentCampaignData?.owner_id);
-  const nomeAutor = user?.displayName || 'Aventureiro';
 
-  // COMANDO /roll ou /r
-  if (message.startsWith('/roll') || message.startsWith('/r ') || message === '/r') {
-    try {
-      const res = await apiClient.sync('rpg.chatCommand', {
-        comando: message,
-        campaignId: currentCampaignId
-      });
+  // Tratamento de comandos de interface local
+  if (message === '/ajuda' || message === '/help') {
+    exibirGuiaAjudaLocal();
+    input.value = '';
+    return;
+  }
 
-      if (res && res.sucesso && res.dados) {
-        addMessageToChat(nomeAutor, res.dados.texto || 'Rolagem realizada com sucesso', 'roll');
-      } else {
-        addMessageToChat('Sistema RPG', `⚠️ Falha ao rolar: ${(res && res.erro) || 'Comando inválido.'}`, 'roll');
-      }
-    } catch (err) {
-      addMessageToChat('Sistema RPG', `⚠️ Erro de conexão com o motor RPG: ${err.message}`, 'roll');
+  const payload = {
+    campaignId: currentCampaignId,
+    content: message,
+    persona: {
+      type: currentPersona.type || 'ic',
+      name: currentPersona.name || '',
+      avatar: currentPersona.avatar || '🗡️'
+    },
+    replyTo: currentReplyTo ? {
+      id: currentReplyTo.id,
+      author: currentReplyTo.author,
+      text: currentReplyTo.text
+    } : null
+  };
+
+  try {
+    input.disabled = true;
+    const res = await apiClient.sync('chat.send', payload);
+    input.disabled = false;
+
+    if (res && res.sucesso) {
+      input.value = '';
+      cancelarRespostaMensagem();
+      await loadChatHistory(true);
+      input.focus();
+    } else {
+      alert(`⚠️ Erro ao enviar mensagem: ${res?.erro || 'Falha na requisição'}`);
+      input.focus();
     }
-  } 
-  // COMANDO /descanso ou /rest
-  else if (message.startsWith('/descanso') || message.startsWith('/rest')) {
-    const tipo = message.toLowerCase().includes('longo') ? 'longo' : 'curto';
-    try {
-      const res = await apiClient.sync('rpg.rest', {
-        tipo,
-        campaignId: currentCampaignId
-      });
+  } catch (err) {
+    input.disabled = false;
+    console.error("Erro ao enviar mensagem:", err);
+    alert(`⚠️ Erro de conexão com o servidor: ${err.message}`);
+  }
+};
 
-      if (res && res.sucesso) {
-        if (res.aprovacaoPendente) {
-          addMessageToChat('Sistema RPG', `⏳ Solicitação de descanso (${tipo}) enviada ao Mestre para aprovação.`, 'roll');
-        } else {
-          addMessageToChat('Sistema RPG', `🛌 <strong>Descanso ${tipo.toUpperCase()} realizado!</strong> Anima recuperada: +${res.curaAnima}. Relógio da mesa: Dia ${res.relogio?.dia || 1}, ${String(res.relogio?.hora || 8).padStart(2, '0')}:${String(res.relogio?.minuto || 0).padStart(2, '0')} (${res.relogio?.periodo || 'Dia'}).`, 'roll');
-        }
-      } else {
-        addMessageToChat('Sistema RPG', `⚠️ Erro no descanso: ${res.erro || 'Falha na requisição.'}`, 'roll');
-      }
-    } catch (err) {
-      addMessageToChat('Sistema RPG', `⚠️ Erro ao registrar descanso: ${err.message}`, 'roll');
-    }
-  }
-  // COMANDO /iniciativa ou /init
-  else if (message.startsWith('/iniciativa') || message.startsWith('/init')) {
-    try {
-      const res = await apiClient.sync('rpg.combat.initiative', {
-        combatentes: [{
-          id: user?.userId || 'hero',
-          nome: nomeAutor,
-          corpo: 2,
-          mente: 2,
-          modIniciativa: 0
-        }]
-      });
+function exibirGuiaAjudaLocal() {
+  const container = document.getElementById('chat-messages');
+  if (!container) return;
 
-      if (res && res.sucesso && Array.isArray(res.ordemIniciativa)) {
-        const item = res.ordemIniciativa[0];
-        addMessageToChat('Iniciativa de Combate', `⚔️ <strong>${nomeAutor}</strong> rolou iniciativa: <strong>${item.iniciativaTotal}</strong> (Dados: [${item.dados.join(', ')}])`, 'roll');
-      }
-    } catch (err) {
-      addMessageToChat('Sistema RPG', `⚠️ Erro ao calcular iniciativa: ${err.message}`, 'roll');
-    }
-  }
-  // COMANDO /me
-  else if (message.startsWith('/me ')) {
-    const acao = message.substring(4).trim();
-    addMessageToChat('Narrativa', `<em>* ${nomeAutor} ${acao} *</em>`, 'me');
-  }
-  // COMANDO /limpar ou /clear
-  else if (message === '/limpar' || message === '/clear') {
-    chatMessages.innerHTML = '';
-    addMessageToChat('Sistema VTT', 'Histórico de mensagens da sessão limpo.', 'roll');
-  }
-  // COMANDO /ajuda ou /help
-  else if (message === '/ajuda' || message === '/help') {
-    addMessageToChat('Guia de Comandos', `
-      <div style="font-size: 12px; line-height: 1.6;">
-        <div><strong>/roll [expressão]</strong> ou <strong>/r</strong>: Rola dados (ex: <code>/roll 1d20</code>, <code>/r 2d6+3</code>, <code>/roll corpo</code>)</div>
-        <div><strong>/descanso [curto|longo]</strong>: Recupera Anima e avança o relógio da mesa</div>
-        <div><strong>/iniciativa</strong> ou <strong>/init</strong>: Rola iniciativa de combate</div>
-        <div><strong>/me [ação]</strong>: Ação interpretativa / emote</div>
-        <div><strong>/limpar</strong> ou <strong>/clear</strong>: Limpa o chat local</div>
+  const helpCard = document.createElement('div');
+  helpCard.className = 'chat-msg-card msg-card-roll';
+  helpCard.innerHTML = `
+    <div class="chat-msg-header">
+      <div class="chat-msg-author-info">
+        <div class="chat-msg-avatar">📜</div>
+        <span class="chat-msg-name">Guia de Comandos da Mesa</span>
+        <span class="chat-msg-badge badge-system">Ajuda</span>
       </div>
-    `, 'roll');
-  }
-  // MENSAGEM DE CHAT COMUM
-  else {
-    addMessageToChat(nomeAutor, message, isMestre ? 'mestre' : 'player');
-  }
+    </div>
+    <div class="chat-msg-body">
+      <div style="font-size: 12.5px; line-height: 1.7; color: var(--text-muted);">
+        <div><strong style="color: var(--gold-light);">/roll [expr]</strong> ou <strong style="color: var(--gold-light);">/r</strong>: Rola dados ou atributos (ex: <code>/roll 2d6+3</code>, <code>/roll corpo</code>)</div>
+        <div><strong style="color: var(--gold-light);">/gmroll [expr]</strong> ou <strong style="color: var(--gold-light);">/gr</strong>: Rolagem secreta cujo resultado só é visto pelo Mestre</div>
+        <div><strong style="color: var(--gold-light);">/w [jogador] [texto]</strong>: Envia um sussurro privado</div>
+        <div><strong style="color: var(--gold-light);">/me [ação]</strong>: Emite uma ação interpretativa do personagem</div>
+        <div><strong style="color: var(--gold-light);">/ooc [texto]</strong>: Mensagem fora do jogo (Out Of Character)</div>
+        <div><strong style="color: var(--gold-light);">/gm [narração]</strong>: Narração solene da mesa (Exclusivo Mestre)</div>
+        <div><strong style="color: var(--gold-light);">/npc [Nome] [fala]</strong>: Fala no chat como um NPC específico</div>
+        <div><strong style="color: var(--gold-light);">/descanso [curto|longo]</strong>: Recupera Anima e avança o relógio da campanha</div>
+        <div><strong style="color: var(--gold-light);">/iniciativa</strong>: Rola e calcula iniciativa de combate</div>
+      </div>
+    </div>
+  `;
+  container.appendChild(helpCard);
+  container.scrollTop = container.scrollHeight;
+}
 
-  input.value = '';
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+// === Atalhos de Rolagem Rápida e Gaveta ===
+
+window.toggleQuickDiceDrawer = function() {
+  const drawer = document.getElementById('chat-quick-dice-drawer');
+  const btn = document.getElementById('btn-toggle-quick-dice');
+  if (!drawer) return;
+
+  drawer.classList.toggle('active');
+  if (btn) {
+    btn.classList.toggle('active', drawer.classList.contains('active'));
+  }
 };
 
-window.addMessageToChat = function(author, text, type) {
-  const chatMessages = document.getElementById('chat-messages');
-  if (!chatMessages) return;
+window.executarAtalhoRolagem = function(tipo) {
+  const input = document.getElementById('chat-input');
+  if (!input) return;
 
-  const msgBox = document.createElement('div');
-  msgBox.className = 'msg-box';
-  
-  if (type === 'mestre') msgBox.classList.add('mestre');
-  if (type === 'roll') msgBox.classList.add('roll');
-  if (type === 'me') msgBox.style.borderLeftColor = 'var(--accent-purple)';
-
-  msgBox.innerHTML = `<strong>${author}:</strong> ${text}`;
-  chatMessages.appendChild(msgBox);
+  if (tipo === 'corpo' || tipo === 'mente' || tipo === 'social' || tipo === 'espirito') {
+    input.value = `/roll ${tipo}`;
+    sendMessage();
+  } else if (tipo === '1d6' || tipo === '2d6' || tipo === '1d20') {
+    input.value = `/roll ${tipo}`;
+    sendMessage();
+  } else if (tipo === 'iniciativa') {
+    input.value = `/iniciativa`;
+    sendMessage();
+  } else if (tipo === 'descanso_curto') {
+    input.value = `/descanso curto`;
+    sendMessage();
+  } else if (tipo === 'descanso_longo') {
+    input.value = `/descanso longo`;
+    sendMessage();
+  }
 };
+
+// === Seletor "Falar Como..." (Personas) ===
+
+window.togglePersonaMenu = function() {
+  const menu = document.getElementById('persona-menu');
+  if (menu) menu.classList.toggle('active');
+};
+
+window.selecionarPersona = function(tipo, customName = '', customAvatar = '') {
+  const menu = document.getElementById('persona-menu');
+  if (menu) menu.classList.remove('active');
+
+  const btnAvatar = document.getElementById('persona-btn-avatar');
+  const btnLabel = document.getElementById('persona-btn-label');
+  const user = obterUsuarioAtual();
+
+  currentPersona.type = tipo;
+
+  if (tipo === 'ic') {
+    const userChar = currentPartyCharacters.find(c => c.userId === user?.userId);
+    currentPersona.name = customName || userChar?.nome || user?.displayName || 'Personagem';
+    currentPersona.avatar = customAvatar || '🗡️';
+    if (btnAvatar) btnAvatar.textContent = '🗡️';
+    if (btnLabel) btnLabel.textContent = currentPersona.name;
+  } else if (tipo === 'ooc') {
+    currentPersona.name = user?.displayName || 'Jogador';
+    currentPersona.avatar = '💬';
+    if (btnAvatar) btnAvatar.textContent = '💬';
+    if (btnLabel) btnLabel.textContent = 'OOC (Fora)';
+  } else if (tipo === 'narracao') {
+    currentPersona.name = 'Mestre';
+    currentPersona.avatar = '👑';
+    if (btnAvatar) btnAvatar.textContent = '👑';
+    if (btnLabel) btnLabel.textContent = 'Narrador';
+  } else if (tipo === 'npc') {
+    currentPersona.name = customName || 'NPC';
+    currentPersona.avatar = customAvatar || '🎭';
+    if (btnAvatar) btnAvatar.textContent = currentPersona.avatar;
+    if (btnLabel) btnLabel.textContent = currentPersona.name;
+  }
+};
+
+// === Resposta a Mensagens (Citação) ===
+
+window.iniciarRespostaMensagem = function(msgId, authorName, textSnippet) {
+  currentReplyTo = {
+    id: msgId,
+    author: authorName,
+    text: textSnippet
+  };
+
+  const banner = document.getElementById('chat-reply-banner');
+  const authorEl = document.getElementById('reply-author-name');
+  const textEl = document.getElementById('reply-text-preview');
+  const input = document.getElementById('chat-input');
+
+  if (banner && authorEl && textEl) {
+    authorEl.textContent = authorName;
+    textEl.textContent = `"${textSnippet}"`;
+    banner.classList.add('active');
+  }
+
+  if (input) input.focus();
+};
+
+window.cancelarRespostaMensagem = function() {
+  currentReplyTo = null;
+  const banner = document.getElementById('chat-reply-banner');
+  if (banner) banner.classList.remove('active');
+};
+
+// === Moderação e Limpeza do Chat ===
+
+window.excluirMensagem = async function(messageId) {
+  if (!confirm("Deseja realmente apagar esta mensagem da crônica da mesa?")) {
+    return;
+  }
+
+  try {
+    const res = await apiClient.sync('chat.deleteMessage', {
+      campaignId: currentCampaignId,
+      messageId: messageId
+    });
+
+    if (res && res.sucesso) {
+      await loadChatHistory(false);
+    } else {
+      alert(`Falha ao excluir mensagem: ${res?.erro || 'Permissão negada'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao excluir mensagem: ${err.message}`);
+  }
+};
+
+window.abrirModalLimparChat = function() {
+  const modal = document.getElementById('modal-clear-chat');
+  if (modal) modal.classList.add('active');
+};
+
+window.fecharModalLimparChat = function() {
+  const modal = document.getElementById('modal-clear-chat');
+  if (modal) modal.classList.remove('active');
+};
+
+window.confirmarLimpezaChat = async function() {
+  try {
+    const res = await apiClient.sync('chat.clearHistory', { campaignId: currentCampaignId });
+    fecharModalLimparChat();
+    if (res && res.sucesso) {
+      await loadChatHistory(true);
+    } else {
+      alert(`Falha ao limpar histórico: ${res?.erro || 'Permissão negada'}`);
+    }
+  } catch (err) {
+    fecharModalLimparChat();
+    alert(`Erro de conexão: ${err.message}`);
+  }
+};
+
+// === Modal de Quick NPC do Mestre ===
+
+window.abrirModalQuickNPC = function() {
+  const menu = document.getElementById('persona-menu');
+  if (menu) menu.classList.remove('active');
+
+  const modal = document.getElementById('modal-quick-npc');
+  if (modal) modal.classList.add('active');
+};
+
+window.fecharModalQuickNPC = function() {
+  const modal = document.getElementById('modal-quick-npc');
+  if (modal) modal.classList.remove('active');
+};
+
+window.salvarQuickNPC = function(e) {
+  e.preventDefault();
+  const nameInput = document.getElementById('input-npc-name');
+  const avatarInput = document.getElementById('input-npc-avatar');
+
+  const name = nameInput ? nameInput.value.trim() : 'NPC';
+  const avatar = avatarInput && avatarInput.value.trim() ? avatarInput.value.trim() : '🎭';
+
+  selecionarPersona('npc', name, avatar);
+  fecharModalQuickNPC();
+};
+
+// === Resposta a Card de Ação (Aprovar / Recusar) ===
+
+window.responderCardAcao = async function(messageId, acao) {
+  try {
+    const res = await apiClient.sync('chat.respondActionCard', {
+      campaignId: currentCampaignId,
+      messageId: messageId,
+      acao: acao
+    });
+
+    if (res && res.sucesso) {
+      await loadChatHistory(false);
+    } else {
+      alert(`Falha ao responder card: ${res?.erro || 'Erro'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao processar ação: ${err.message}`);
+  }
+};
+
 
 // === Lógica de Inicialização e Dados da Campanha ===
 
@@ -1205,5 +1743,7 @@ window.executarExclusaoCampanha = async function() {
 document.addEventListener('DOMContentLoaded', () => {
   loadCampaignData();
   setupChatAutocomplete();
+  loadChatHistory(false);
+  iniciarChatPolling();
 });
 
