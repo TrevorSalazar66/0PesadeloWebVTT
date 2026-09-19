@@ -58,13 +58,172 @@ window.sairCampanha = function() {
   }
 };
 
-// === Funcionalidades do Chat ===
+// === Comandos e Motor de Chat RPG ===
 
-window.handleChatEnter = function(event) {
-  if (event.key === 'Enter') {
-    sendMessage();
-  }
-};
+const RPG_CHAT_COMMANDS = [
+  { cmd: '/roll', alias: '/r', syntax: '/roll [1d20 | 2d6+3 | atributo]', desc: 'Rola dados livres ou teste AlphaD6', template: '/roll ' },
+  { cmd: '/r', alias: '/roll', syntax: '/r [1d20 | 2d6+3 | atributo]', desc: 'Atalho rápido para rolagem de dados', template: '/r ' },
+  { cmd: '/descanso', alias: '/rest', syntax: '/descanso [curto|longo]', desc: 'Recupera Anima e avança relógio da mesa', template: '/descanso curto' },
+  { cmd: '/rest', alias: '/descanso', syntax: '/rest [curto|longo]', desc: 'Atalho de descanso de personagem', template: '/rest curto' },
+  { cmd: '/iniciativa', alias: '/init', syntax: '/iniciativa', desc: 'Rola iniciativa na cena de combate', template: '/iniciativa' },
+  { cmd: '/init', alias: '/iniciativa', syntax: '/init', desc: 'Atalho rápido de iniciativa', template: '/init' },
+  { cmd: '/me', alias: null, syntax: '/me [ação do personagem]', desc: 'Ação narrativa ou emote de personagem', template: '/me ' },
+  { cmd: '/limpar', alias: '/clear', syntax: '/limpar', desc: 'Limpa mensagens visíveis da tela', template: '/limpar' },
+  { cmd: '/clear', alias: '/limpar', syntax: '/clear', desc: 'Atalho para limpar a tela de mensagens', template: '/clear' },
+  { cmd: '/ajuda', alias: '/help', syntax: '/ajuda', desc: 'Exibe guia de comandos disponíveis', template: '/ajuda' },
+  { cmd: '/help', alias: '/ajuda', syntax: '/help', desc: 'Exibe guia de comandos disponíveis', template: '/help' }
+];
+
+let autocompleteFiltered = [];
+let autocompleteIndex = 0;
+
+function setupChatAutocomplete() {
+  const input = document.getElementById('chat-input');
+  const dropdown = document.getElementById('chat-autocomplete');
+  if (!input || !dropdown) return;
+
+  input.addEventListener('input', () => {
+    const val = input.value;
+
+    // Regra estrita: Só abre se o campo COMEÇAR com '/' (ex: "oi /" não dispara)
+    if (!val.startsWith('/')) {
+      fecharAutocomplete();
+      return;
+    }
+
+    // Se já tiver espaço, o usuário já escolheu o comando e está digitando argumentos (ex: "/roll 1d20")
+    if (val.includes(' ')) {
+      fecharAutocomplete();
+      return;
+    }
+
+    const termo = val.toLowerCase();
+    autocompleteFiltered = RPG_CHAT_COMMANDS.filter(c => 
+      c.cmd.toLowerCase().startsWith(termo) || (c.alias && c.alias.toLowerCase().startsWith(termo))
+    );
+
+    if (autocompleteFiltered.length === 0) {
+      fecharAutocomplete();
+      return;
+    }
+
+    autocompleteIndex = 0;
+    renderizarAutocomplete();
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (!dropdown.classList.contains('active') || autocompleteFiltered.length === 0) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendMessage();
+      }
+      return;
+    }
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      // Se houver apenas 1 comando ou o usuário navegou, autocompleta
+      aplicarComandoSelecionado();
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      autocompleteIndex = (autocompleteIndex + 1) % autocompleteFiltered.length;
+      atualizarSelecaoVisualAutocomplete();
+      return;
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      autocompleteIndex = (autocompleteIndex - 1 + autocompleteFiltered.length) % autocompleteFiltered.length;
+      atualizarSelecaoVisualAutocomplete();
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // Se o comando atual no input ainda não for idêntico ao selecionado, autocompleta primeiro
+      const itemAtual = autocompleteFiltered[autocompleteIndex];
+      if (input.value.trim() !== itemAtual.cmd && input.value.trim() !== itemAtual.alias) {
+        aplicarComandoSelecionado();
+      } else {
+        fecharAutocomplete();
+        sendMessage();
+      }
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      fecharAutocomplete();
+      return;
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target) && e.target !== input) {
+      fecharAutocomplete();
+    }
+  });
+}
+
+function renderizarAutocomplete() {
+  const dropdown = document.getElementById('chat-autocomplete');
+  if (!dropdown) return;
+
+  const total = autocompleteFiltered.length;
+  dropdown.innerHTML = `
+    <div class="autocomplete-header">
+      <span>Comandos Disponíveis (${total})</span>
+      <span class="autocomplete-hint">Pressione [Tab] para autocompletar</span>
+    </div>
+    ${autocompleteFiltered.map((c, idx) => `
+      <div class="autocomplete-item ${idx === autocompleteIndex ? 'selected' : ''}" data-idx="${idx}">
+        <div class="autocomplete-cmd-box">
+          <div class="autocomplete-cmd-name">
+            ${c.cmd} ${idx === 0 ? '<span class="autocomplete-tab-badge">Tab</span>' : ''}
+          </div>
+          <div class="autocomplete-cmd-syntax">${c.syntax}</div>
+        </div>
+        <div class="autocomplete-cmd-desc">${c.desc}</div>
+      </div>
+    `).join('')}
+  `;
+
+  dropdown.classList.add('active');
+
+  // Adiciona cliques nos itens
+  dropdown.querySelectorAll('.autocomplete-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.getAttribute('data-idx'), 10);
+      autocompleteIndex = idx;
+      aplicarComandoSelecionado();
+    });
+  });
+}
+
+function atualizarSelecaoVisualAutocomplete() {
+  const dropdown = document.getElementById('chat-autocomplete');
+  if (!dropdown) return;
+  dropdown.querySelectorAll('.autocomplete-item').forEach((el, idx) => {
+    el.classList.toggle('selected', idx === autocompleteIndex);
+  });
+}
+
+function fecharAutocomplete() {
+  const dropdown = document.getElementById('chat-autocomplete');
+  if (dropdown) dropdown.classList.remove('active');
+}
+
+function aplicarComandoSelecionado() {
+  const input = document.getElementById('chat-input');
+  if (!input || autocompleteFiltered.length === 0) return;
+
+  const selecionado = autocompleteFiltered[autocompleteIndex] || autocompleteFiltered[0];
+  input.value = selecionado.template;
+  fecharAutocomplete();
+  input.focus();
+}
 
 window.sendMessage = async function() {
   const input = document.getElementById('chat-input');
@@ -72,26 +231,97 @@ window.sendMessage = async function() {
 
   if (!message) return;
 
+  fecharAutocomplete();
   const chatMessages = document.getElementById('chat-messages');
+  const user = obterUsuarioAtual();
+  const isMestre = user && (user.role?.toLowerCase() === 'mestre' || user.userId === currentCampaignData?.owner_id);
+  const nomeAutor = user?.displayName || 'Aventureiro';
 
-  if (message.startsWith('/roll')) {
-    const expr = message.replace('/roll', '').trim() || '1d6';
+  // COMANDO /roll ou /r
+  if (message.startsWith('/roll') || message.startsWith('/r ') || message === '/r') {
     try {
       const res = await apiClient.sync('rpg.chatCommand', {
-        command: `/roll ${expr}`
+        comando: message,
+        campaignId: currentCampaignId
       });
+
       if (res && res.sucesso && res.dados) {
-        addMessageToChat('Sistema RPG', `${res.dados.texto || 'Rolagem realizada'}`, 'roll');
+        addMessageToChat(nomeAutor, res.dados.texto || 'Rolagem realizada com sucesso', 'roll');
       } else {
-        addMessageToChat('Sistema', `Rolou ${expr}: [ Resultado do Motor D6 ]`, 'roll');
+        addMessageToChat('Sistema RPG', `⚠️ Falha ao rolar: ${(res && res.erro) || 'Comando inválido.'}`, 'roll');
       }
-    } catch (_) {
-      addMessageToChat('Sistema', `Rolou ${expr}: [ Rolagem Local ]`, 'roll');
+    } catch (err) {
+      addMessageToChat('Sistema RPG', `⚠️ Erro de conexão com o motor RPG: ${err.message}`, 'roll');
     }
-  } else {
-    const user = obterUsuarioAtual();
-    const nomeAutor = user?.displayName || 'Você';
-    addMessageToChat(nomeAutor, message, 'player');
+  } 
+  // COMANDO /descanso ou /rest
+  else if (message.startsWith('/descanso') || message.startsWith('/rest')) {
+    const tipo = message.toLowerCase().includes('longo') ? 'longo' : 'curto';
+    try {
+      const res = await apiClient.sync('rpg.rest', {
+        tipo,
+        campaignId: currentCampaignId
+      });
+
+      if (res && res.sucesso) {
+        if (res.aprovacaoPendente) {
+          addMessageToChat('Sistema RPG', `⏳ Solicitação de descanso (${tipo}) enviada ao Mestre para aprovação.`, 'roll');
+        } else {
+          addMessageToChat('Sistema RPG', `🛌 <strong>Descanso ${tipo.toUpperCase()} realizado!</strong> Anima recuperada: +${res.curaAnima}. Relógio da mesa: Dia ${res.relogio?.dia || 1}, ${String(res.relogio?.hora || 8).padStart(2, '0')}:${String(res.relogio?.minuto || 0).padStart(2, '0')} (${res.relogio?.periodo || 'Dia'}).`, 'roll');
+        }
+      } else {
+        addMessageToChat('Sistema RPG', `⚠️ Erro no descanso: ${res.erro || 'Falha na requisição.'}`, 'roll');
+      }
+    } catch (err) {
+      addMessageToChat('Sistema RPG', `⚠️ Erro ao registrar descanso: ${err.message}`, 'roll');
+    }
+  }
+  // COMANDO /iniciativa ou /init
+  else if (message.startsWith('/iniciativa') || message.startsWith('/init')) {
+    try {
+      const res = await apiClient.sync('rpg.combat.initiative', {
+        combatentes: [{
+          id: user?.userId || 'hero',
+          nome: nomeAutor,
+          corpo: 2,
+          mente: 2,
+          modIniciativa: 0
+        }]
+      });
+
+      if (res && res.sucesso && Array.isArray(res.ordemIniciativa)) {
+        const item = res.ordemIniciativa[0];
+        addMessageToChat('Iniciativa de Combate', `⚔️ <strong>${nomeAutor}</strong> rolou iniciativa: <strong>${item.iniciativaTotal}</strong> (Dados: [${item.dados.join(', ')}])`, 'roll');
+      }
+    } catch (err) {
+      addMessageToChat('Sistema RPG', `⚠️ Erro ao calcular iniciativa: ${err.message}`, 'roll');
+    }
+  }
+  // COMANDO /me
+  else if (message.startsWith('/me ')) {
+    const acao = message.substring(4).trim();
+    addMessageToChat('Narrativa', `<em>* ${nomeAutor} ${acao} *</em>`, 'me');
+  }
+  // COMANDO /limpar ou /clear
+  else if (message === '/limpar' || message === '/clear') {
+    chatMessages.innerHTML = '';
+    addMessageToChat('Sistema VTT', 'Histórico de mensagens da sessão limpo.', 'roll');
+  }
+  // COMANDO /ajuda ou /help
+  else if (message === '/ajuda' || message === '/help') {
+    addMessageToChat('Guia de Comandos', `
+      <div style="font-size: 12px; line-height: 1.6;">
+        <div><strong>/roll [expressão]</strong> ou <strong>/r</strong>: Rola dados (ex: <code>/roll 1d20</code>, <code>/r 2d6+3</code>, <code>/roll corpo</code>)</div>
+        <div><strong>/descanso [curto|longo]</strong>: Recupera Anima e avança o relógio da mesa</div>
+        <div><strong>/iniciativa</strong> ou <strong>/init</strong>: Rola iniciativa de combate</div>
+        <div><strong>/me [ação]</strong>: Ação interpretativa / emote</div>
+        <div><strong>/limpar</strong> ou <strong>/clear</strong>: Limpa o chat local</div>
+      </div>
+    `, 'roll');
+  }
+  // MENSAGEM DE CHAT COMUM
+  else {
+    addMessageToChat(nomeAutor, message, isMestre ? 'mestre' : 'player');
   }
 
   input.value = '';
@@ -100,11 +330,14 @@ window.sendMessage = async function() {
 
 window.addMessageToChat = function(author, text, type) {
   const chatMessages = document.getElementById('chat-messages');
+  if (!chatMessages) return;
+
   const msgBox = document.createElement('div');
   msgBox.className = 'msg-box';
   
   if (type === 'mestre') msgBox.classList.add('mestre');
   if (type === 'roll') msgBox.classList.add('roll');
+  if (type === 'me') msgBox.style.borderLeftColor = 'var(--accent-purple)';
 
   msgBox.innerHTML = `<strong>${author}:</strong> ${text}`;
   chatMessages.appendChild(msgBox);
@@ -380,5 +613,8 @@ window.saveCampaignDetails = async function(event) {
   }
 };
 
-document.addEventListener('DOMContentLoaded', loadCampaignData);
+document.addEventListener('DOMContentLoaded', () => {
+  loadCampaignData();
+  setupChatAutocomplete();
+});
 

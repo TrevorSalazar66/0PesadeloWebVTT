@@ -489,14 +489,26 @@ export async function handleSyncRequest(request, env, clientIp) {
       }
 
       case 'rpg.chatCommand': {
-        const { comando, characterId } = data;
-        if (!comando || typeof comando !== 'string') {
+        const { comando, command, characterId, campaignId } = data;
+        const cmd = comando || command;
+        if (!cmd || typeof cmd !== 'string') {
           return new Response(JSON.stringify({ sucesso: false, erro: 'Comando não fornecido' }), { status: 400, headers });
         }
 
         let characterSheet = null;
-        if (characterId) {
-          const char = await dbQueries.getCharacterById(db, characterId);
+        let charId = characterId;
+
+        // Se não foi passado characterId mas veio campaignId, busca o personagem do jogador na campanha
+        if (!charId && campaignId) {
+          const char = await dbQueries.getCharacterByUserAndCampaign(db, user.userId, campaignId);
+          if (char) {
+            charId = char.id;
+            try {
+              characterSheet = typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data) : char.sheet_data;
+            } catch (_) {}
+          }
+        } else if (charId) {
+          const char = await dbQueries.getCharacterById(db, charId);
           if (char && char.sheet_data) {
             try {
               characterSheet = typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data) : char.sheet_data;
@@ -505,15 +517,31 @@ export async function handleSyncRequest(request, env, clientIp) {
         }
 
         try {
-          const result = rpgEngineService.parseChatRollCommand(comando, characterSheet);
+          const result = rpgEngineService.parseChatRollCommand(cmd, characterSheet);
           if (!result) {
             return new Response(JSON.stringify({ sucesso: false, erro: 'Comando de rolagem não reconhecido' }), { status: 400, headers });
           }
+
+          // Gera mensagem de texto humanizada para o chat
+          let textoFormatado = '';
+          if (result.tipo === 'rolagem_livre') {
+            const modStr = result.modificador !== 0 ? (result.modificador > 0 ? ` + ${result.modificador}` : ` - ${Math.abs(result.modificador)}`) : '';
+            textoFormatado = `🎲 Rolou ${result.expressaoOriginal}: <strong>[ ${result.dados.join(', ')} ]</strong>${modStr} = <strong>${result.total}</strong>`;
+          } else if (result.tipo === 'pool_d6') {
+            const vereditoLabel = result.veredicto === 'SUCESSO_TOTAL' ? 'SUCESSO TOTAL' : (result.veredicto === 'SUCESSO_PARCIAL' ? 'SUCESSO PARCIAL' : 'FALHA TOTAL');
+            const attrLabel = result.atributo ? ` (${result.atributo.toUpperCase()})` : '';
+            textoFormatado = `🎲 Teste AlphaD6${attrLabel} [${result.dadosCount}d6]: <strong>[ ${result.dados.join(', ')} ]</strong> ➔ <strong>${result.sucessos} Sucesso(s)</strong> (${vereditoLabel})`;
+          }
+
           return new Response(JSON.stringify({
             sucesso: true,
             autor: user.displayName || user.email,
             userId: user.userId,
-            dados: result
+            characterId: charId || null,
+            dados: {
+              ...result,
+              texto: textoFormatado
+            }
           }), { status: 200, headers });
         } catch (err) {
           return new Response(JSON.stringify({ sucesso: false, erro: err.message }), { status: 400, headers });
