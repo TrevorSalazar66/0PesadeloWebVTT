@@ -472,7 +472,8 @@ async function loadDiarioData() {
       }
 
       partyContainer.innerHTML = currentPartyCharacters.map(char => {
-        const isMine = user && char.userId === user.userId;
+        const isMine = user && (char.userId === user.userId || String(char.userId) === String(user.userId));
+        const isGM = user && (currentCampaignData?.owner_id === user.userId || currentCampaignData?.gm_id === user.userId || String(currentCampaignData?.owner_id) === String(user.userId));
         const sheet = char.sheet || {};
         const ident = sheet.identidade || {};
         const attrs = sheet.atributos || { corpo: 1, mente: 1, social: 1, espirito: 1 };
@@ -534,6 +535,15 @@ async function loadDiarioData() {
                 <em>"${sheet.lore.historia_origem}"</em>
               </p>
             ` : ''}
+
+            ${(isMine || isGM) ? `
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+                <span style="font-size: 11px; color: var(--text-dim);">${isMine ? 'Sua Ficha Vinculada' : 'Ficha Gerenciada'}</span>
+                <button type="button" class="btn-delete-char-party" onclick="deletarPersonagemCampanha(${char.id}, '${(char.name || 'Herói').replace(/'/g, "\\'")}')" title="Excluir ou desvincular personagem">
+                  🗑️ Excluir Ficha
+                </button>
+              </div>
+            ` : ''}
           </div>
         `;
       }).join('');
@@ -546,6 +556,26 @@ async function loadDiarioData() {
     `;
   }
 }
+
+/**
+ * Exclui a ficha de um personagem na campanha
+ */
+window.deletarPersonagemCampanha = async function(characterId, characterName) {
+  if (!confirm(`Tem certeza que deseja excluir o personagem "${characterName}" desta campanha? Esta ação removerá a ficha permanentemente e liberará o slot para forjar um novo herói.`)) {
+    return;
+  }
+  try {
+    const res = await apiClient.sync('characters.delete', { characterId });
+    if (res && res.sucesso) {
+      alert(`Personagem "${characterName}" excluído com sucesso.`);
+      await loadDiarioData();
+    } else {
+      alert(`Erro ao excluir personagem: ${res?.erro || 'Falha na exclusão.'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao conectar ao servidor: ${err.message}`);
+  }
+};
 
 window.salvarDiarioCronicas = function() {
   const txt = document.getElementById('campaign-journal-text')?.value;

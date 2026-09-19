@@ -363,62 +363,364 @@
       color: var(--gold-light);
     }
 
-    /* SILHUETA DE EQUIPAMENTO (PAPERDOLL) */
-    .paperdoll-container {
+    /* SILHUETA DE EQUIPAMENTO (PAPERDOLL / HUD BIOMÉTRICO) */
+    .hud-paperdoll-wrapper {
       display: grid;
-      grid-template-columns: 1fr 280px 1fr;
+      grid-template-columns: 1fr 340px 1fr;
       gap: 1.5rem;
       align-items: center;
-      margin-top: 1rem;
+      margin-top: 1.5rem;
+      position: relative;
     }
 
-    .paperdoll-silhouette {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-card);
+    .hud-silhouette-box {
+      background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.06) 0%, rgba(16, 16, 29, 0.95) 75%);
+      border: 1px solid rgba(56, 189, 248, 0.3);
       border-radius: var(--radius-lg);
-      height: 380px;
+      height: 480px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       position: relative;
-      background-image: radial-gradient(circle, rgba(212, 163, 75, 0.05) 0%, transparent 70%);
+      overflow: hidden;
+      box-shadow: inset 0 0 30px rgba(56, 189, 248, 0.08), 0 8px 24px rgba(0, 0, 0, 0.5);
     }
 
-    .silhouette-svg {
-      width: 140px;
-      height: 300px;
-      opacity: 0.35;
-      fill: var(--text-muted);
+    /* Grade Holográfica de Fundo */
+    .hud-silhouette-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
     }
 
-    .slot-card {
+    .silhouette-realistic-svg {
+      width: 220px;
+      height: 410px;
+      z-index: 2;
+      filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.25));
+    }
+
+    /* PONTOS DE ANCORAGEM BIOMÉTRICA (HOTSPOTS PULSANTES) */
+    .biometric-node {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: var(--accent-cyan);
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      z-index: 10;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 8px var(--accent-cyan);
+    }
+
+    .biometric-node::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 1px solid var(--accent-cyan);
+      animation: sonarPulse 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
+
+    @keyframes sonarPulse {
+      0% {
+        transform: scale(0.6);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(2.2);
+        opacity: 0;
+      }
+    }
+
+    /* Coordenadas dos nós anatômicos na silhueta */
+    .node-cabeca { top: 12%; left: 50%; }
+    .node-tronco { top: 29%; left: 50%; }
+    .node-costas { top: 22%; left: 42%; }
+    .node-pernas { top: 62%; left: 50%; }
+    .node-mao-dir { top: 46%; left: 24%; }
+    .node-mao-esq { top: 46%; left: 76%; }
+    .node-pes    { top: 90%; left: 50%; }
+    .node-acess  { top: 20%; left: 58%; }
+
+    .slot-card-hud {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      padding: 0.75rem;
+      border-radius: var(--radius-md);
+      padding: 0.85rem;
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.35rem;
+      position: relative;
       transition: var(--transition-fast);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
-    .slot-card:hover {
-      border-color: var(--border-gold);
+    .slot-card-hud:hover {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 14px rgba(212, 163, 75, 0.25);
     }
 
-    .slot-label {
+    .slot-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .slot-label-hud {
       font-size: 0.75rem;
-      color: var(--gold-primary);
+      color: var(--gold-light);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .slot-stat-tag {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: var(--radius-pill);
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
       font-weight: 600;
     }
 
-    .slot-value {
+    /* Linhas Conectoras Pontilhadas Tecnológicas */
+    .connector-line-left {
+      position: absolute;
+      right: -24px;
+      top: 50%;
+      width: 24px;
+      height: 2px;
+      border-top: 2px dashed rgba(56, 189, 248, 0.4);
+      pointer-events: none;
+    }
+
+    .connector-line-right {
+      position: absolute;
+      left: -24px;
+      top: 50%;
+      width: 24px;
+      height: 2px;
+      border-top: 2px dashed rgba(56, 189, 248, 0.4);
+      pointer-events: none;
+    }
+
+    /* PAINEL DE DEFESA HUD */
+    .hud-defense-banner {
+      position: absolute;
+      bottom: 0.75rem;
+      background: rgba(16, 16, 29, 0.9);
+      border: 1px solid var(--border-gold);
+      padding: 0.45rem 1.25rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.85rem;
+      color: var(--gold-light);
+      font-weight: 700;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    /* COMPÊNDIO & MOCHILA (PASSO 5) */
+    .compendium-container {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .compendium-catalog-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+    }
+
+    .compendium-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .compendium-filter-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      color: var(--text-muted);
+      padding: 0.35rem 0.85rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .compendium-filter-btn.active, .compendium-filter-btn:hover {
+      border-color: var(--gold-primary);
+      background: var(--gold-dark);
+      color: var(--gold-light);
+    }
+
+    .compendium-items-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.85rem;
+      max-height: 440px;
+      overflow-y: auto;
+      padding-right: 0.4rem;
+    }
+
+    .compendium-item-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.5rem;
+      transition: var(--transition-fast);
+    }
+
+    .compendium-item-card:hover {
+      border-color: var(--border-gold);
+      transform: translateY(-2px);
+    }
+
+    .compendium-item-name {
+      font-weight: 700;
       font-size: 0.9rem;
       color: var(--text-main);
-      font-weight: 500;
+    }
+
+    .compendium-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .item-badge-slot {
+      background: rgba(212, 163, 75, 0.15);
+      color: var(--gold-light);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+    }
+
+    .item-badge-load {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+    }
+
+    .btn-add-item {
+      background: var(--gold-dark);
+      border: 1px solid var(--gold-border-dark);
+      color: var(--gold-light);
+      padding: 0.4rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      transition: var(--transition-fast);
+    }
+
+    .btn-add-item:hover {
+      border-color: var(--gold-primary);
+      background: var(--gold-primary);
+      color: var(--text-dark);
+    }
+
+    /* PAINEL DA MOCHILA */
+    .backpack-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .backpack-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.5rem;
+    }
+
+    .backpack-load-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-deep);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+      margin-top: 0.35rem;
+    }
+
+    .backpack-load-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-emerald), var(--gold-light));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .backpack-load-bar-fill.overload {
+      background: var(--accent-crimson);
+    }
+
+    .backpack-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 0.3rem;
+    }
+
+    .backpack-entry {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    .btn-remove-item {
+      background: transparent;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      padding: 0.2rem;
+      font-size: 0.9rem;
+      transition: var(--transition-fast);
+    }
+
+    .btn-remove-item:hover {
+      transform: scale(1.15);
     }
 
     /* TAGS DE SUGESTÕES */
@@ -444,6 +746,186 @@
       border-color: var(--gold-primary);
       color: var(--gold-light);
       background: var(--gold-dark);
+    }
+
+    /* ESPECIALIZAÇÕES (PASSO 3) */
+    .specialization-container {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .spec-catalog-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+    }
+
+    .spec-search-bar {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-card);
+      color: var(--text-main);
+      padding: 0.6rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .spec-search-bar:focus {
+      border-color: var(--gold-primary);
+      outline: none;
+    }
+
+    .spec-items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 0.85rem;
+      max-height: 460px;
+      overflow-y: auto;
+      padding-right: 0.4rem;
+    }
+
+    .spec-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.6rem;
+      transition: var(--transition-fast);
+      position: relative;
+    }
+
+    .spec-card:hover {
+      border-color: var(--border-gold);
+    }
+
+    .spec-card.allocated {
+      border-color: var(--gold-primary);
+      background: rgba(212, 163, 75, 0.08);
+      box-shadow: 0 0 12px rgba(212, 163, 75, 0.2);
+    }
+
+    .spec-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .spec-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-main);
+    }
+
+    .spec-attr-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: var(--radius-pill);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .spec-attr-corpo { background: rgba(239, 68, 68, 0.18); color: #f87171; }
+    .spec-attr-mente { background: rgba(56, 189, 248, 0.18); color: #38bdf8; }
+    .spec-attr-social { background: rgba(234, 179, 8, 0.18); color: #facc15; }
+    .spec-attr-espirito { background: rgba(168, 85, 247, 0.18); color: #c084fc; }
+
+    .spec-desc {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    .spec-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .spec-rank-badge {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--gold-light);
+    }
+
+    .spec-rank-badge.maxed {
+      color: var(--accent-emerald);
+    }
+
+    .btn-spec-rank {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border-card);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+    }
+
+    .btn-spec-rank:hover:not(:disabled) {
+      border-color: var(--gold-primary);
+      background: var(--gold-dark);
+      color: var(--gold-light);
+    }
+
+    .btn-spec-rank:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .spec-selected-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .spec-selected-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.5rem;
+    }
+
+    .spec-selected-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 360px;
+      overflow-y: auto;
+      padding-right: 0.3rem;
+    }
+
+    .spec-selected-entry {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
     }
 
     /* FOOTER DO WIZARD */
@@ -543,11 +1025,17 @@
       font-weight: 600;
     }
 
-    @media (max-width: 768px) {
-      .grid-4, .grid-3, .grid-2 {
+    @media (max-width: 860px) {
+      .hud-paperdoll-wrapper {
         grid-template-columns: 1fr;
       }
-      .paperdoll-container {
+      .compendium-container {
+        grid-template-columns: 1fr;
+      }
+      .connector-line-left, .connector-line-right {
+        display: none;
+      }
+      .grid-4, .grid-3, .grid-2 {
         grid-template-columns: 1fr;
       }
       .wizard-container {
@@ -572,14 +1060,15 @@
   <main>
     <div class="wizard-container">
       
-      <!-- INDICADORES DE PASSOS -->
+      <!-- INDICADORES DE PASSOS (1 A 7) -->
       <div class="steps-nav">
-        <div class="step-node active" id="node-1">1</div>
-        <div class="step-node" id="node-2">2</div>
-        <div class="step-node" id="node-3">3</div>
-        <div class="step-node" id="node-4">4</div>
-        <div class="step-node" id="node-5">5</div>
-        <div class="step-node" id="node-6">6</div>
+        <div class="step-node active" id="node-1" title="Identidade">1</div>
+        <div class="step-node" id="node-2" title="Atributos">2</div>
+        <div class="step-node" id="node-3" title="Especializações">3</div>
+        <div class="step-node" id="node-4" title="Contatos">4</div>
+        <div class="step-node" id="node-5" title="Mochila & Compêndio">5</div>
+        <div class="step-node" id="node-6" title="Silhueta HUD">6</div>
+        <div class="step-node" id="node-7" title="Lore & Revisão">7</div>
       </div>
 
       <!-- FORMULÁRIO WIZARD -->
@@ -617,10 +1106,13 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="input-campanha">Vincular a uma Campanha (Opcional)</label>
-            <select id="input-campanha" class="form-control">
-              <option value="">Personagem Avulso (Sem campanha)</option>
+            <label class="form-label" for="input-campanha">Vincular a uma Campanha * (Obrigatório)</label>
+            <select id="input-campanha" class="form-control" required>
+              <option value="" disabled selected>Selecione a campanha para o seu personagem...</option>
             </select>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem;">
+              ⚠️ Todo personagem deve pertencer a uma campanha. Limite estrito de 1 personagem por jogador por campanha.
+            </div>
           </div>
         </div>
 
@@ -684,26 +1176,65 @@
           </div>
         </div>
 
-        <!-- PASSO 3: ESPECIALIZAÇÕES -->
+        <!-- PASSO 3: ESPECIALIZAÇÕES RANQUEADAS (NÍVEL 1 A 3) -->
         <div class="wizard-step" id="step-3">
-          <div class="step-title-badge">Passo 3: Especializações</div>
-          <div class="step-desc">Seu personagem ganha exatamente 1 Especialização para cada ponto no atributo Mente. Especializações adicionam +1d6 em testes específicos.</div>
-
-          <div id="container-especializacoes" class="grid-2">
-            <!-- Gerado dinamicamente com base no valor de Mente -->
+          <div class="step-title-badge">Passo 3: Especializações & Perícias (AlphaD6)</div>
+          <div class="step-desc">
+            Seu personagem possui pontos de especialização iguais ao seu atributo <strong>Mente</strong> (<span id="spec-mente-total">1</span> pontos).
+            Você pode escolher até <strong>3 vezes a mesma perícia</strong> para evoluí-la: <strong>Nível 1 (+1d6)</strong>, <strong>Nível 2 (+2d6)</strong> ou <strong>Nível 3 (+3d6)</strong>.
           </div>
 
-          <div style="margin-top: 1.5rem;">
-            <div class="form-label">Sugestões de Especializações Populares (Clique para preencher)</div>
-            <div class="tags-container">
-              <span class="tag-chip" onclick="aplicarSugestaoEsp('Luta Armada')">Luta Armada</span>
-              <span class="tag-chip" onclick="aplicarSugestaoEsp('Investigação')">Investigação</span>
-              <span class="tag-chip" onclick="aplicarSugestaoEsp('Medicina de Campo')">Medicina de Campo</span>
-              <span class="tag-chip" onclick="aplicarSugestaoEsp('Furtividade')">Furtividade</span>
-              <span class="tag-chip" onclick="aplicarSugestaoEsp('Conhecimento Oculto')">Conhecimento Oculto</span>
-              <span class="tag-chip" onclick="aplicarSugestaoEsp('Persuasão & Lábia')">Persuasão & Lábia</span>
-              <span class="tag-chip" onclick="aplicarSugestaoEsp('Mecânica & Armadilhas')">Mecânica & Armadilhas</span>
-              <span class="tag-chip" onclick="aplicarSugestaoEsp('Sobrevivência Selvagem')">Sobrevivência Selvagem</span>
+          <div class="pool-counter-banner" style="margin-bottom: 1.5rem;">
+            <div>
+              <div style="font-size: 0.85rem; color: var(--text-muted);">Pontos de Especialização Disponíveis para Distribuir</div>
+              <div style="font-size: 0.8rem; color: var(--text-dim);">Total = Valor de Mente (Distribuir exatamente todos os pontos)</div>
+            </div>
+            <div class="pool-number" id="pontos-especializacao-banner">1</div>
+          </div>
+
+          <div class="specialization-container">
+            <!-- COLUNA ESQUERDA: CATÁLOGO DE 40 ESPECIALIZAÇÕES -->
+            <div class="spec-catalog-box">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h3 style="font-size: 1rem; color: var(--gold-light); font-family: var(--font-title);">📜 Catálogo de Perícias</h3>
+                <span id="spec-catalog-count" style="font-size: 0.8rem; color: var(--text-dim);">40 perícias disponíveis</span>
+              </div>
+
+              <!-- Busca Rápida -->
+              <input type="text" id="spec-search-input" class="spec-search-bar" placeholder="🔍 Buscar perícia por nome (ex: armas, medicina, furtividade...)" oninput="filtrarEspecializacoes()">
+
+              <!-- Filtros de Categoria -->
+              <div class="compendium-filters" id="spec-filters-container">
+                <button type="button" class="compendium-filter-btn active" onclick="filtrarEspecializacoesCategoria('todos')">Todas (40)</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarEspecializacoesCategoria('Combate & Táticas Marciais')">⚔️ Combate</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarEspecializacoesCategoria('Físicas, Exploração & Sobrevivência')">🏕️ Exploração</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarEspecializacoesCategoria('Ofícios & Engenharia')">🔨 Ofícios</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarEspecializacoesCategoria('Investigação, Percepção & Ladinagem')">🔎 Investigação</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarEspecializacoesCategoria('Conhecimento Intelectual & Erudição')">📚 Erudição</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarEspecializacoesCategoria('Expressão Cultural & Social')">🎭 Social</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarEspecializacoesCategoria('Artes Místicas, Ocultismo & Magia')">✨ Místicas</button>
+              </div>
+
+              <!-- Grid de Perícias -->
+              <div class="spec-items-grid" id="spec-items-grid">
+                <!-- Gerado dinamicamente via JS -->
+              </div>
+            </div>
+
+            <!-- COLUNA DIREITA: ESPECIALIZAÇÕES SELECIONADAS -->
+            <div class="spec-selected-panel">
+              <div class="spec-selected-header">
+                <div>
+                  <h3 style="font-size: 1rem; color: var(--gold-light); font-family: var(--font-title);">🎯 Perícias Escolhidas</h3>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);" id="spec-selected-summary">0 / 1 ponto alocado</div>
+                </div>
+              </div>
+
+              <div class="spec-selected-list" id="spec-selected-list">
+                <div style="text-align: center; color: var(--text-dim); padding: 2rem 0; font-size: 0.85rem;">
+                  Nenhuma perícia selecionada.<br>Clique nos botões <strong>[+]</strong> no catálogo ao lado para alocar seus pontos.
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -786,80 +1317,238 @@
           </div>
         </div>
 
-        <!-- PASSO 5: SILHUETA DE EQUIPAMENTO & MOCHILA -->
+        <!-- PASSO 5: MOCHILA & COMPÊNDIO DE ITENS -->
         <div class="wizard-step" id="step-5">
-          <div class="step-title-badge">Passo 5: Equipamentos na Silhueta & Mochila</div>
-          <div class="step-desc">Selecione os equipamentos vestidos no corpo e itens na sua mochila. As proteções fornecem bônus direto na sua Defesa.</div>
+          <div class="step-title-badge">Passo 5: Compêndio & Mochila de Itens</div>
+          <div class="step-desc">Selecione os itens do compêndio oficial do sistema para carregar na sua mochila. Sua capacidade de carga máxima é <strong>2d6 + Corpo</strong> slots. Apenas itens presentes na sua mochila poderão ser equipados na silhueta a seguir.</div>
 
-          <div class="paperdoll-container">
-            <!-- COLUNA ESQUERDA -->
-            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-              <div class="slot-card">
-                <div class="slot-label">👑 Cabeça</div>
-                <input type="text" id="slot-cabeca" class="form-control" placeholder="Capuz, Elmo, Óculos...">
+          <div class="compendium-container">
+            <!-- COLUNA ESQUERDA: CATÁLOGO DO COMPÊNDIO -->
+            <div class="compendium-catalog-box">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h3 style="font-size: 1rem; color: var(--gold-light); font-family: var(--font-title);">📖 Catálogo de Equipamentos</h3>
+                <span id="compendium-count" style="font-size: 0.8rem; color: var(--text-dim);">Carregando catálogo...</span>
               </div>
-              <div class="slot-card">
-                <div class="slot-label">🛡️ Tronco / Armadura</div>
-                <select id="slot-tronco" class="form-control" onchange="atualizarPreviewDefesa()">
-                  <option value="">Roupas Comuns (+0 Defesa)</option>
-                  <option value="defesa_leve">Defesa Básica (+1 Defesa)</option>
-                  <option value="defesa_media">Defesa Reforçada (+2 Defesa)</option>
-                  <option value="defesa_pesada">Defesa Mestra (+4 Defesa)</option>
-                </select>
+
+              <!-- Filtros de Categoria -->
+              <div class="compendium-filters">
+                <button type="button" class="compendium-filter-btn active" onclick="filtrarCompendio('todos')">Todos</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarCompendio('armas_focos')">⚔️ Armas & Focos</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarCompendio('protecoes')">🛡️ Proteções & Escudos</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarCompendio('saude_mente')">🧪 Saúde & Foco Mental</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarCompendio('utilitarios_ferramentas')">🔧 Ferramentas & Carga</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarCompendio('descanso_abrigo')">⛺ Descanso & Abrigo</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarCompendio('comunicacao_sensores')">📡 Sensores & Comunicação</button>
+                <button type="button" class="compendium-filter-btn" onclick="filtrarCompendio('social_arte')">🎭 Arte, Social & Veículos</button>
               </div>
-              <div class="slot-card">
-                <div class="slot-label">🧥 Costas</div>
-                <input type="text" id="slot-costas" class="form-control" placeholder="Capa de Viagem, Aljava...">
-              </div>
-              <div class="slot-card">
-                <div class="slot-label">👖 Pernas</div>
-                <input type="text" id="slot-pernas" class="form-control" placeholder="Calças de Couro...">
+
+              <!-- Lista de Itens do Compêndio -->
+              <div class="compendium-items-list" id="compendium-items-list">
+                <!-- Gerado dinamicamente via JS -->
               </div>
             </div>
 
-            <!-- CENTRO: SILHUETA -->
-            <div class="paperdoll-silhouette">
-              <svg class="silhouette-svg" viewBox="0 0 24 24">
-                <path d="M12 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-7 8c-1.1 0-2 .9-2 2v7h2v5h4v-5h2v5h4v-5h2v-7c0-1.1-.9-2-2-2h-10z"/>
-              </svg>
-              <div style="position: absolute; bottom: 1rem; font-size: 0.85rem; color: var(--gold-light); font-weight: 600;">
-                Defesa Total: <span id="preview-defesa-total">1</span>
+            <!-- COLUNA DIREITA: MOCHILA DO PERSONAGEM -->
+            <div class="backpack-box">
+              <div class="backpack-header">
+                <div>
+                  <h3 style="font-size: 1rem; color: var(--gold-light); font-family: var(--font-title);">🎒 Sua Mochila</h3>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);" id="backpack-wealth-tier">Poder de Compra: Calculando...</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 0.9rem; font-weight: 700; color: var(--gold-light);" id="backpack-load-counter">0 / 0 Slots</div>
+                  <div style="font-size: 0.7rem; color: var(--text-dim);" id="backpack-load-formula">2d6 + Corpo</div>
+                </div>
               </div>
-            </div>
 
-            <!-- COLUNA DIREITA -->
-            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-              <div class="slot-card">
-                <div class="slot-label">⚔️ Mão Principal (Arma)</div>
-                <select id="slot-mao-primaria" class="form-control">
-                  <option value="arma_cortante_pequena">Arma Cortante Pequena (1d4+1)</option>
-                  <option value="arma_cortante_grande">Arma Cortante Grande (1d6+2)</option>
-                  <option value="arma_impactante_pequena">Arma Impactante Pequena (1d6+2)</option>
-                  <option value="arma_perfurante_pequena">Arma Perfurante Pequena (1d4+3)</option>
-                  <option value="arco_e_flecha">Arco e Flecha (1d6+3)</option>
-                  <option value="fogo_pequena_fraca">Arma de Fogo Pequena (2d4)</option>
-                </select>
+              <!-- Barra de Capacidade de Carga -->
+              <div>
+                <div class="backpack-load-bar-bg">
+                  <div class="backpack-load-bar-fill" id="backpack-load-bar"></div>
+                </div>
               </div>
-              <div class="slot-card">
-                <div class="slot-label">🛡️ Mão Secundária</div>
-                <input type="text" id="slot-mao-secundaria" class="form-control" placeholder="Escudo Leve, Tocha, Foco...">
-              </div>
-              <div class="slot-card">
-                <div class="slot-label">👢 Pés</div>
-                <input type="text" id="slot-pes" class="form-control" placeholder="Botas de Couro...">
-              </div>
-              <div class="slot-card">
-                <div class="slot-label">💍 Acessórios</div>
-                <input type="text" id="slot-acessorios" class="form-control" placeholder="Anel, Amuleto, Relógio...">
+
+              <!-- Lista de Itens Carregados -->
+              <div class="backpack-list" id="backpack-items-list">
+                <div style="text-align: center; color: var(--text-dim); padding: 1.5rem 0; font-size: 0.85rem;">
+                  Sua mochila está vazia.<br>Escolha itens do catálogo ao lado.
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- PASSO 6: LORE, BIOGRAFIA & REVISÃO -->
+        <!-- PASSO 6: SILHUETA HUD ANATÔMICA & EQUIPAMENTOS -->
         <div class="wizard-step" id="step-6">
-          <div class="step-title-badge">Passo 6: Lore & Revisão Final</div>
-          <div class="step-desc">Adicione a história e motivações do seu personagem antes de concluir a criação.</div>
+          <div class="step-title-badge">Passo 6: Silhueta HUD Anatômica & Equipamentos</div>
+          <div class="step-desc">Vincule os itens da sua mochila aos slots corporais do HUD biométrico. Apenas itens compatíveis na sua mochila estão disponíveis para equipar.</div>
+
+          <div class="hud-paperdoll-wrapper">
+            <!-- COLUNA ESQUERDA: SLOTS CABEÇA, TRONCO, COSTAS, PERNAS -->
+            <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+              
+              <!-- CABEÇA -->
+              <div class="slot-card-hud">
+                <div class="connector-line-left"></div>
+                <div class="slot-header-row">
+                  <div class="slot-label-hud">👑 Cabeça</div>
+                  <span class="slot-stat-tag">Capuz / Elmo</span>
+                </div>
+                <select id="slot-cabeca" class="form-control" onchange="aoEquiparItem('cabeca')">
+                  <option value="">(Nenhum item equipado)</option>
+                </select>
+              </div>
+
+              <!-- TRONCO / ARMADURA -->
+              <div class="slot-card-hud">
+                <div class="connector-line-left"></div>
+                <div class="slot-header-row">
+                  <div class="slot-label-hud">🛡️ Tronco / Armadura</div>
+                  <span class="slot-stat-tag" id="tag-tronco-defesa">+0 Defesa</span>
+                </div>
+                <select id="slot-tronco" class="form-control" onchange="aoEquiparItem('tronco')">
+                  <option value="">(Roupas Comuns - +0 Defesa)</option>
+                </select>
+              </div>
+
+              <!-- COSTAS -->
+              <div class="slot-card-hud">
+                <div class="connector-line-left"></div>
+                <div class="slot-header-row">
+                  <div class="slot-label-hud">🧥 Costas</div>
+                  <span class="slot-stat-tag">Capa / Manto</span>
+                </div>
+                <select id="slot-costas" class="form-control" onchange="aoEquiparItem('costas')">
+                  <option value="">(Nenhum item equipado)</option>
+                </select>
+              </div>
+
+              <!-- PERNAS -->
+              <div class="slot-card-hud">
+                <div class="connector-line-left"></div>
+                <div class="slot-header-row">
+                  <div class="slot-label-hud">👖 Pernas</div>
+                  <span class="slot-stat-tag">Calças / Grevas</span>
+                </div>
+                <select id="slot-pernas" class="form-control" onchange="aoEquiparItem('pernas')">
+                  <option value="">(Nenhum item equipado)</option>
+                </select>
+              </div>
+
+            </div>
+
+            <!-- CENTRO: SILHUETA BIOMÉTRICA TECNOLÓGICA COM NÓS ANATÔMICOS -->
+            <div class="hud-silhouette-box">
+              <!-- NÓS BIOMÉTRICOS PULSANTES -->
+              <div class="biometric-node node-cabeca" title="Nó Anatômico: Cabeça"></div>
+              <div class="biometric-node node-tronco" title="Nó Anatômico: Tórax / Coração"></div>
+              <div class="biometric-node node-costas" title="Nó Anatômico: Dorsal"></div>
+              <div class="biometric-node node-mao-dir" title="Nó Anatômico: Mão Primária"></div>
+              <div class="biometric-node node-mao-esq" title="Nó Anatômico: Mão Secundária"></div>
+              <div class="biometric-node node-pernas" title="Nó Anatômico: Pernas"></div>
+              <div class="biometric-node node-pes" title="Nó Anatômico: Pés"></div>
+              <div class="biometric-node node-acess" title="Nó Anatômico: Acessórios"></div>
+
+              <!-- SILHUETA VETORIAL ANATÔMICA REALISTA -->
+              <svg class="silhouette-realistic-svg" viewBox="0 0 200 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Efeito de aura / contorno luminoso -->
+                <defs>
+                  <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
+                    <stop offset="50%" stop-color="#818cf8" stop-opacity="0.2"/>
+                    <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.35"/>
+                  </linearGradient>
+                  <linearGradient id="circGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+                    <stop offset="100%" stop-color="#a855f7" stop-opacity="0.2"/>
+                  </linearGradient>
+                </defs>
+
+                <!-- Anéis de Escaneamento Holográfico -->
+                <ellipse cx="100" cy="50" rx="45" ry="12" stroke="rgba(56, 189, 248, 0.2)" stroke-dasharray="3 3"/>
+                <ellipse cx="100" cy="120" rx="60" ry="15" stroke="rgba(56, 189, 248, 0.2)" stroke-dasharray="4 4"/>
+                <ellipse cx="100" cy="220" rx="50" ry="12" stroke="rgba(56, 189, 248, 0.2)" stroke-dasharray="3 3"/>
+                <ellipse cx="100" cy="350" rx="55" ry="14" stroke="rgba(56, 189, 248, 0.25)"/>
+
+                <!-- Silhueta Humanoide Realista e Proporcional -->
+                <!-- Cabeça & Pescoço -->
+                <path d="M100 15 C88 15 80 25 80 40 C80 54 87 63 93 67 L93 78 L107 78 L107 67 C113 63 120 54 120 40 C120 25 112 15 100 15 Z" fill="url(#bodyGrad)" stroke="#38bdf8" stroke-width="1.5"/>
+                
+                <!-- Tronco, Ombros e Peito -->
+                <path d="M72 85 C60 90 55 102 54 118 L48 165 C46 175 42 188 40 200 C38 208 45 212 50 206 L60 175 L62 135 L68 135 L68 185 C68 200 74 212 84 216 L86 216 L86 230 L80 320 L75 350 L68 355 C63 358 68 365 76 365 L94 365 C97 365 98 358 97 350 L95 240 L100 230 L105 240 L103 350 C102 358 103 365 106 365 L124 365 C132 365 137 358 132 355 L125 350 L120 320 L114 230 L114 216 L116 216 C126 212 132 200 132 185 L132 135 L138 135 L140 175 L150 206 C155 212 162 208 160 200 C158 188 154 175 152 165 L146 118 C145 102 140 90 128 85 L107 80 L93 80 Z" fill="url(#bodyGrad)" stroke="#38bdf8" stroke-width="1.5"/>
+
+                <!-- Linhas Vitais / Circuito Interno (Canal de Anima) -->
+                <path d="M100 78 L100 180 M100 115 L78 135 M100 115 L122 135 M100 180 L88 230 M100 180 L112 230" stroke="url(#circGrad)" stroke-width="1.2" stroke-dasharray="2 2"/>
+                <circle cx="100" cy="115" r="4" fill="#38bdf8"/>
+                <circle cx="100" cy="180" r="3.5" fill="#a855f7"/>
+              </svg>
+
+              <!-- Painel Flutuante de Defesa -->
+              <div class="hud-defense-banner">
+                <span>🛡️ Defesa Total:</span>
+                <span id="preview-defesa-total" style="font-size: 1.1rem; color: #38bdf8;">1</span>
+              </div>
+            </div>
+
+            <!-- COLUNA DIREITA: SLOTS MÃO PRIMÁRIA, MÃO SECUNDÁRIA, PÉS, ACESSÓRIOS -->
+            <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+              
+              <!-- MÃO PRINCIPAL -->
+              <div class="slot-card-hud">
+                <div class="connector-line-right"></div>
+                <div class="slot-header-row">
+                  <div class="slot-label-hud">⚔️ Mão Principal (Arma)</div>
+                  <span class="slot-stat-tag" id="tag-arma-dano">Dano: 1d6</span>
+                </div>
+                <select id="slot-mao-primaria" class="form-control" onchange="aoEquiparItem('mao_primaria')">
+                  <option value="">(Desarmado - 1d6 Desarmado)</option>
+                </select>
+              </div>
+
+              <!-- MÃO SECUNDÁRIA -->
+              <div class="slot-card-hud">
+                <div class="connector-line-right"></div>
+                <div class="slot-header-row">
+                  <div class="slot-label-hud">🛡️ Mão Secundária</div>
+                  <span class="slot-stat-tag">Escudo / Foco</span>
+                </div>
+                <select id="slot-mao-secundaria" class="form-control" onchange="aoEquiparItem('mao_secundaria')">
+                  <option value="">(Mão Livre / Vazia)</option>
+                </select>
+              </div>
+
+              <!-- PÉS -->
+              <div class="slot-card-hud">
+                <div class="connector-line-right"></div>
+                <div class="slot-header-row">
+                  <div class="slot-label-hud">👢 Pés</div>
+                  <span class="slot-stat-tag">Botas / Calçados</span>
+                </div>
+                <select id="slot-pes" class="form-control" onchange="aoEquiparItem('pes')">
+                  <option value="">(Nenhum item equipado)</option>
+                </select>
+              </div>
+
+              <!-- ACESSÓRIOS -->
+              <div class="slot-card-hud">
+                <div class="connector-line-right"></div>
+                <div class="slot-header-row">
+                  <div class="slot-label-hud">💍 Acessórios & Relíquias</div>
+                  <span class="slot-stat-tag">Anéis / Amuletos</span>
+                </div>
+                <select id="slot-acessorios" class="form-control" onchange="aoEquiparItem('acessorios')">
+                  <option value="">(Nenhum item equipado)</option>
+                </select>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- PASSO 7: LORE, BIOGRAFIA & REVISÃO FINAL -->
+        <div class="wizard-step" id="step-7">
+          <div class="step-title-badge">Passo 7: Lore & Revisão Final</div>
+          <div class="step-desc">Adicione a história e motivações do seu herói antes de registrar sua ficha na crônica da mesa.</div>
 
           <div class="grid-2">
             <div class="form-group">
@@ -884,16 +1573,24 @@
                 <div class="summary-name" id="rev-nome">Nome do Personagem</div>
                 <div style="font-size: 0.85rem; color: var(--text-muted);" id="rev-subtitulo">Arquétipo • Raça</div>
               </div>
-              <div style="display: flex; gap: 0.5rem;">
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <span class="badge-wealth" id="rev-riqueza">Riqueza: Calculando...</span>
                 <span class="badge-anima" id="rev-anima">Anima: 2d6 + 10</span>
+                <span class="badge-wealth" id="rev-defesa" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">Defesa: 1</span>
               </div>
             </div>
-            <div class="grid-4" style="text-align: center;">
-              <div><strong>Corpo:</strong> <span id="rev-corpo">1</span></div>
-              <div><strong>Mente:</strong> <span id="rev-mente">1</span></div>
-              <div><strong>Social:</strong> <span id="rev-social">1</span></div>
-              <div><strong>Espírito:</strong> <span id="rev-espirito">1</span></div>
+            
+            <div class="grid-4" style="text-align: center; margin-bottom: 0.5rem;">
+              <div><strong>Corpo:</strong> <span id="rev-corpo">1d6</span></div>
+              <div><strong>Mente:</strong> <span id="rev-mente">1d6</span></div>
+              <div><strong>Social:</strong> <span id="rev-social">1d6</span></div>
+              <div><strong>Espírito:</strong> <span id="rev-espirito">1d6</span></div>
+            </div>
+
+            <!-- Resumo dos Equipamentos e Mochila -->
+            <div style="border-top: 1px solid var(--border-subtle); padding-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
+              <div style="font-weight: 600; color: var(--gold-light); margin-bottom: 0.35rem;">🛡️ Equipamento Vestido & Mochila:</div>
+              <div id="rev-equipamentos-lista" style="line-height: 1.5;">Nenhum item equipado ainda.</div>
             </div>
           </div>
         </div>

@@ -728,4 +728,150 @@ describe('RetroForge VTT - Motor de Regras RPG D6', () => {
     });
   });
 
+  describe('22. Compêndio Geral de Itens Canônicos (AlphaD6)', () => {
+    it('deve conter todos os 67 itens canônicos adaptados no catálogo', () => {
+      const todos = rpgEngineService.getCompendiumItems();
+      assert.ok(todos.length >= 67, `Compêndio deve conter no mínimo 67 itens, mas contém ${todos.length}`);
+
+      // Verifica itens chave de categorias variadas
+      const curaRapida = todos.find(i => i.id === 'cura_rapida');
+      assert.ok(curaRapida, 'Cura Rápida deve estar presente');
+      assert.equal(curaRapida.custo, 50);
+
+      const armaduraCompleta = todos.find(i => i.id === 'armadura_completa');
+      assert.ok(armaduraCompleta, 'Armadura Completa deve estar presente');
+      assert.equal(armaduraCompleta.bonusDefesa, 4);
+
+      const cajadoArcano = todos.find(i => i.id === 'cajado_arcano');
+      assert.ok(cajadoArcano, 'Cajado Arcano deve estar presente');
+      assert.equal(cajadoArcano.custo, 1000);
+
+      const kitEsp = todos.find(i => i.id === 'kit_especializacao');
+      assert.ok(kitEsp, 'Kit de Especialização deve estar presente');
+    });
+
+    it('deve filtrar itens por slot e riqueza corretamente', () => {
+      const escudos = rpgEngineService.getCompendiumItems({ slot: 'mao_secundaria' });
+      assert.ok(escudos.length > 0, 'Deve retornar itens de mão secundária');
+      assert.ok(escudos.every(i => i.slot === 'mao_secundaria'), 'Todos os itens devem ter slot mao_secundaria');
+
+      const acessiveisPobre = rpgEngineService.getCompendiumItems({ riquezaMax: 'pobre' });
+      assert.ok(acessiveisPobre.length > 0, 'Deve retornar itens acessíveis para nível pobre');
+      assert.ok(acessiveisPobre.every(i => i.riquezaMinima === 'miseravel' || i.riquezaMinima === 'pobre'), 'Não pode incluir itens caros');
+    });
+  });
+
+  describe('23. Catálogo Oficial de Especializações & Perícias (AlphaD6)', () => {
+    it('deve conter exatamente 40 especializações canônicas organizadas por atributo e categoria', () => {
+      const todos = rpgEngineService.getCompendiumSpecializations();
+      assert.equal(todos.length, 40, `Deve conter exatamente 40 especializações, encontrado: ${todos.length}`);
+
+      // Verifica presença de especializações chave das 7 categorias
+      const acrobacia = todos.find(s => s.id === 'acrobacia');
+      assert.ok(acrobacia, 'Acrobacia deve estar presente');
+      assert.equal(acrobacia.atributo, 'corpo');
+
+      const armasFogo = todos.find(s => s.id === 'armas_fogo');
+      assert.ok(armasFogo, 'Armas de Fogo deve estar presente');
+      assert.equal(armasFogo.atributo, 'mente');
+
+      const medicina = todos.find(s => s.id === 'medicina_campo_cirurgia');
+      assert.ok(medicina, 'Medicina de Campo deve estar presente');
+
+      const ocultismo = todos.find(s => s.id === 'ocultismo_teoria_arcana');
+      assert.ok(ocultismo, 'Ocultismo deve estar presente');
+      assert.equal(ocultismo.atributo, 'espirito');
+
+      const diplomacia = todos.find(s => s.id === 'diplomacia_negociacao');
+      assert.ok(diplomacia, 'Diplomacia deve estar presente');
+      assert.equal(diplomacia.atributo, 'social');
+    });
+
+    it('deve filtrar especializações por categoria e atributo corretamente', () => {
+      const combate = rpgEngineService.getCompendiumSpecializations({ categoria: 'Combate & Táticas Marciais' });
+      assert.equal(combate.length, 9, 'Deve conter 9 perícias de combate');
+
+      const oficios = rpgEngineService.getCompendiumSpecializations({ categoria: 'Ofícios & Engenharia' });
+      assert.equal(oficios.length, 6, 'Deve conter 6 perícias de ofícios');
+
+      const espiritoSpecs = rpgEngineService.getCompendiumSpecializations({ atributo: 'espirito' });
+      assert.ok(espiritoSpecs.length >= 7, 'Deve conter perícias vinculadas ao atributo Espírito');
+    });
+
+    it('deve consolidar ranking de perícias permitindo escolher até 3 vezes a mesma perícia (+1, +2, +3 dados)', () => {
+      // Mente 4: 1 perícia Nível 3 (+3d6) + 1 perícia Nível 1 (+1d6)
+      const raw = [
+        { id: 'armas_fogo', nivel: 3 },
+        { id: 'investigacao_deducao', nivel: 1 }
+      ];
+      const consolidado = rpgEngineService.consolidateSpecializations(raw, 4);
+
+      assert.equal(consolidado.length, 2);
+      const fogo = consolidado.find(s => s.id === 'armas_fogo');
+      assert.ok(fogo);
+      assert.equal(fogo.nivel, 3);
+      assert.equal(fogo.bonusDados, 3);
+      assert.equal(fogo.label, 'Armas de Fogo (Nível 3 — +3d6)');
+
+      const inv = consolidado.find(s => s.id === 'investigacao_deducao');
+      assert.ok(inv);
+      assert.equal(inv.nivel, 1);
+      assert.equal(inv.bonusDados, 1);
+      assert.equal(inv.label, 'Investigação & Dedução (Nível 1 — +1d6)');
+    });
+
+    it('deve rejeitar se tentar ultrapassar o nível 3 (+3 dados) na mesma perícia', () => {
+      const raw = [
+        { id: 'armas_fogo', nivel: 4 } // Limite é 3
+      ];
+
+      assert.throws(() => {
+        rpgEngineService.consolidateSpecializations(raw, 4);
+      }, /não pode ultrapassar o nível 3/);
+    });
+
+    it('deve rejeitar se a soma de pontos de especialização for diferente do valor de Mente', () => {
+      // Mente 3, forneceu apenas 2 pontos
+      const rawInsuficiente = [
+        { id: 'acrobacia', nivel: 2 }
+      ];
+      assert.throws(() => {
+        rpgEngineService.consolidateSpecializations(rawInsuficiente, 3);
+      }, /Especializações insuficientes/);
+
+      // Mente 2, forneceu 3 pontos
+      const rawExcesso = [
+        { id: 'acrobacia', nivel: 3 }
+      ];
+      assert.throws(() => {
+        rpgEngineService.consolidateSpecializations(rawExcesso, 2);
+      }, /Excesso de especializações/);
+    });
+
+    it('deve criar personagem AlphaD6 com perícias ranqueadas integradas na ficha', () => {
+      const input = {
+        name: 'Damon Vance',
+        arquetipo: 'Caçador de Sombras',
+        atributos: { corpo: 3, mente: 3, social: 2, espirito: 2 }, // soma 10
+        especializacoes: [
+          { id: 'armas_fogo', nivel: 2 },
+          { id: 'furtividade', nivel: 1 }
+        ], // soma 3 pontos = Mente 3
+        contatos: [
+          { nome: 'Informante', vinculo: 'divida', ocupacao: 'Espião' },
+          { nome: 'Armeiro', vinculo: 'amizade', ocupacao: 'Ferreiro' },
+          { nome: 'Médico', vinculo: 'favor', ocupacao: 'Cirurgião' }
+        ]
+      };
+
+      const res = rpgEngineService.validateCharacterCreationAlphaD6(input);
+      assert.equal(res.sucesso, true);
+      assert.equal(res.sheet.especializacoes.length, 2);
+      
+      const armasFogo = res.sheet.especializacoes.find(s => s.id === 'armas_fogo');
+      assert.equal(armasFogo.nivel, 2);
+      assert.equal(armasFogo.bonusDados, 2);
+    });
+  });
+
 });

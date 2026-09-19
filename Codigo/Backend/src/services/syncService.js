@@ -1005,6 +1005,24 @@ export async function handleSyncRequest(request, env, clientIp) {
         }), { status: 200, headers });
       }
 
+      case 'rpg.compendium.specializations': {
+        const { categoria, atributo } = data;
+        const result = rpgEngineService.getCompendiumSpecializations({ categoria, atributo });
+        return new Response(JSON.stringify({
+          sucesso: true,
+          dados: result
+        }), { status: 200, headers });
+      }
+
+      case 'rpg.compendium.items': {
+        const { slot, categoria, riquezaMax } = data;
+        const result = rpgEngineService.getCompendiumItems({ slot, categoria, riquezaMax });
+        return new Response(JSON.stringify({
+          sucesso: true,
+          dados: result
+        }), { status: 200, headers });
+      }
+
       // ==========================================
       // EVOLUÇÃO, XP & GATILHOS DE CENA (ALPHAD6)
       // ==========================================
@@ -1286,16 +1304,35 @@ export async function handleSyncRequest(request, env, clientIp) {
           customInventoryRoll
         } = data;
 
+        // Validação obrigatória de Campanha (Não é permitido criar personagens desvinculados de campanha)
+        if (!campaignId || typeof campaignId !== 'string' || campaignId.trim() === '') {
+          return new Response(JSON.stringify({
+            sucesso: false,
+            codigo: 'CAMPAIGN_REQUIRED',
+            erro: 'É obrigatório vincular o personagem a uma campanha. Não é permitido criar personagens avulsos/desvinculados.'
+          }), { status: 400, headers });
+        }
+
+        const cleanCampaignId = campaignId.trim();
+
+        // Validação da existência da campanha
+        const campaign = await dbQueries.getCampaignById(db, cleanCampaignId);
+        if (!campaign) {
+          return new Response(JSON.stringify({
+            sucesso: false,
+            codigo: 'CAMPAIGN_NOT_FOUND',
+            erro: 'A campanha informada não foi encontrada ou não existe.'
+          }), { status: 404, headers });
+        }
+
         // Trava de Integridade: Limite de 1 Personagem por Jogador por Campanha
-        if (campaignId) {
-          const existingChar = await dbQueries.getCharacterByUserAndCampaign(db, user.userId, campaignId);
-          if (existingChar) {
-            return new Response(JSON.stringify({
-              sucesso: false,
-              codigo: 'LIMIT_REACHED',
-              erro: `Limite atingido: Você já possui o personagem "${existingChar.name}" vinculado a esta campanha. Cada jogador pode possuir apenas 1 personagem por campanha.`
-            }), { status: 400, headers });
-          }
+        const existingChar = await dbQueries.getCharacterByUserAndCampaign(db, user.userId, cleanCampaignId);
+        if (existingChar) {
+          return new Response(JSON.stringify({
+            sucesso: false,
+            codigo: 'LIMIT_REACHED',
+            erro: `Limite atingido: Você já possui o personagem "${existingChar.name}" vinculado a esta campanha. Cada jogador pode possuir apenas 1 personagem por campanha.`
+          }), { status: 400, headers });
         }
 
         // Suporte a payload genérico com sheetData pré-formatado
@@ -1304,14 +1341,14 @@ export async function handleSyncRequest(request, env, clientIp) {
           await dbQueries.createCharacter(db, {
             id: charId,
             userId: user.userId,
-            campaignId,
+            campaignId: cleanCampaignId,
             name,
             sheetData: data.sheetData
           });
           return new Response(JSON.stringify({
             sucesso: true,
             mensagem: 'Personagem criado com sucesso!',
-            dados: { id: charId, name, userId: user.userId, campaignId, sheet: data.sheetData }
+            dados: { id: charId, name, userId: user.userId, campaignId: cleanCampaignId, sheet: data.sheetData }
           }), { status: 201, headers });
         }
 
@@ -1338,7 +1375,7 @@ export async function handleSyncRequest(request, env, clientIp) {
           await dbQueries.createCharacter(db, {
             id: charId,
             userId: user.userId, // RLS: Dono injetado pelo token
-            campaignId,
+            campaignId: cleanCampaignId,
             name: validated.name,
             sheetData: validated.sheet
           });
@@ -1350,7 +1387,7 @@ export async function handleSyncRequest(request, env, clientIp) {
               id: charId,
               name: validated.name,
               userId: user.userId,
-              campaignId,
+              campaignId: cleanCampaignId,
               sheet: validated.sheet
             }
           }), { status: 201, headers });
@@ -1458,6 +1495,48 @@ export async function handleSyncRequest(request, env, clientIp) {
             sheet: typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data || '{}') : (char.sheet_data || {})
           }
         }), { status: 200, headers });
+      }
+
+      case 'characters.delete':
+      case 'rpg.character.delete': {
+        const { characterId } = data;
+        if (!characterId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID do personagem obrigatório.' }), { status: 400, headers });
+        }
+
+        const char = await dbQueries.getCharacterById(db, characterId);
+        if (!char) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Personagem não encontrado.' }), { status: 404, headers });
+        }
+
+        // RLS: O Dono da ficha pode deletar, o Mestre da Campanha vinculada pode deletar, ou Administradores
+        let isOwner = char.user_id === user.userId;
+        let isGM = false;
+
+        if (char.campaign_id) {
+          const camp = await dbQueries.getCampaignById(db, char.campaign_id);
+          if (camp && camp.owner_id === user.userId) {
+            isGM = true;
+          }
+        }
+
+        const isAdmin = ['admin', 'superadmin'].includes(user.role);
+
+        if (!isOwner && !isGM && !isAdmin) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Acesso negado: Você não possui permissão para excluir este personagem.' }), { status: 403, headers });
+        }
+
+        await dbQueries.deleteCharacter(db, characterId);
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: `Personagem "${char.name}" excluído com sucesso.`
+        }), { status: 200, headers });
+      }
+
+      case 'rpg.compendium.items': {
+        const { slot, categoria, riquezaMax } = data || {};
+        const items = rpgEngineService.getCompendiumItems({ slot, categoria, riquezaMax });
+        return new Response(JSON.stringify({ sucesso: true, dados: items }), { status: 200, headers });
       }
 
       case 'rpg.character.equipSlot': {

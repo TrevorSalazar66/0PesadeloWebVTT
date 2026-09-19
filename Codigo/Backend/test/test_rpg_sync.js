@@ -732,12 +732,51 @@ async function runRPGSyncTests() {
   assert.equal(jsonParty.dados.length, 1);
   assert.equal(jsonParty.dados[0].name, 'Rowan O Rastreador');
   assert.equal(jsonParty.dados[0].playerName, 'Jogador Simples');
-  console.log('   ✅ campaigns.characters.list retornou os personagens e dados dos jogadores da mesa');
+  // ----------------------------------------------------
+  // TESTE 23: Consulta do Compêndio Oficial de Itens (rpg.compendium.items)
+  // ----------------------------------------------------
+  console.log('\n23. Testando consulta ao Compêndio Oficial de Itens (rpg.compendium.items)...');
+  const resCompItems = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookiePlayer },
+    body: JSON.stringify({
+      action: 'rpg.compendium.items',
+      data: { slot: 'cabeca' }
+    })
+  }), env);
+  const jsonCompItems = await resCompItems.json();
+  assert.equal(jsonCompItems.sucesso, true);
+  assert.ok(Array.isArray(jsonCompItems.dados));
+  assert.ok(jsonCompItems.dados.length >= 2);
+  assert.ok(jsonCompItems.dados.some(i => i.id === 'capuz_couro'));
+  console.log('   ✅ rpg.compendium.items retornou os itens categorizados por slot');
 
-  console.log('\n🎉 TODOS OS TESTES DO MOTOR DE COMBATE, EVOLUÇÃO, CRIAÇÃO DE PERSONAGENS, HIERARQUIA E GATEWAY RPG PASSARAM COM SUCESSO!\n');
+  // ----------------------------------------------------
+  // TESTE 24: Exclusão de Ficha de Personagem (characters.delete)
+  // ----------------------------------------------------
+  console.log('\n24. Testando exclusão de personagem (characters.delete)...');
+  const resDel = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookiePlayer },
+    body: JSON.stringify({
+      action: 'characters.delete',
+      data: { characterId: newAlphaCharId }
+    })
+  }), env);
+  const jsonDel = await resDel.json();
+  assert.equal(jsonDel.sucesso, true);
+  assert.ok(jsonDel.mensagem.includes('excluído com sucesso'));
+
+  // Confirma que a ficha não existe mais no banco
+  const deletedChar = await db.prepare('SELECT * FROM characters WHERE id = ?').bind(newAlphaCharId).first();
+  assert.equal(deletedChar, null);
+  console.log('   ✅ characters.delete removeu o personagem do banco D1 com sucesso');
+
+  console.log('\n🎉 TODOS OS TESTES DO MOTOR DE COMBATE, EVOLUÇÃO, CRIAÇÃO DE PERSONAGENS, COMPÊNDIO, EXCLUSÃO E GATEWAY RPG PASSARAM COM SUCESSO!\n');
 }
 
 runRPGSyncTests().catch(err => {
   console.error('❌ FALHA NO TESTE:', err);
   process.exit(1);
 });
+

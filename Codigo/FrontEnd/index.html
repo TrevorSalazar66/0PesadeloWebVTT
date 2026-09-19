@@ -1749,6 +1749,28 @@
     .btn-enter-table:hover {
       filter: brightness(1.1);
     }
+
+    .btn-delete-char-tree {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+
+    .btn-delete-char-tree:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: #ef4444;
+      color: #fff;
+      transform: scale(1.04);
+    }
   </style>
 </head>
 
@@ -3614,8 +3636,11 @@
                                 ⚔️ Entrar na Mesa
                               </a>
                             ` : `
-                              <span style="font-size: 11px; color: var(--text-dim); text-align: center; width: 100%;">Personagem Avulso</span>
+                              <span style="font-size: 11px; color: var(--text-dim); text-align: center; flex: 1; display: flex; align-items: center; justify-content: center;">Personagem Avulso</span>
                             `}
+                            <button type="button" class="btn-delete-char-tree" onclick="deletarPersonagem(${char.id}, '${(char.name || 'Herói').replace(/'/g, "\\'")}')" title="Excluir Personagem">
+                              🗑️
+                            </button>
                           </div>
                         </div>
                       `;
@@ -3628,6 +3653,27 @@
         `;
       }).join('');
     }
+
+    /**
+     * Exclui um personagem com confirmação do jogador/mestre
+     */
+    window.deletarPersonagem = async function(characterId, characterName) {
+      if (!confirm(`Tem certeza que deseja excluir o personagem "${characterName}"? Esta ação removerá a ficha permanentemente e liberará o slot.`)) {
+        return;
+      }
+      try {
+        if (!window.apiClient) return;
+        const res = await window.apiClient.sync('characters.delete', { characterId });
+        if (res && res.sucesso) {
+          alert(`Personagem "${characterName}" excluído com sucesso.`);
+          carregarPersonagens();
+        } else {
+          alert(`Erro ao excluir personagem: ${res?.erro || 'Falha na exclusão.'}`);
+        }
+      } catch (err) {
+        alert(`Erro ao conectar ao servidor: ${err.message}`);
+      }
+    };
 
     function toggleTreeSection(headerEl) {
       const parent = headerEl.parentElement;

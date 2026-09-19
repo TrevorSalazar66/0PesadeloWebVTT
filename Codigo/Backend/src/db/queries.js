@@ -486,6 +486,11 @@ export const dbQueries = {
     return await stmt.bind(id, userId, campaignId, name.trim(), typeof sheetData === 'string' ? sheetData : JSON.stringify(sheetData)).run();
   },
 
+  async deleteCharacter(db, id) {
+    const stmt = db.prepare('DELETE FROM characters WHERE id = ?');
+    return await stmt.bind(id).run();
+  },
+
   async getCharactersByCampaign(db, campaignId) {
     const stmt = db.prepare('SELECT * FROM characters WHERE campaign_id = ? ORDER BY name ASC');
     const res = await stmt.bind(campaignId).all();
