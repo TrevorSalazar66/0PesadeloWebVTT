@@ -248,6 +248,16 @@ export async function handleAuthRequest(request, env, clientIp) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Credenciais inválidas' }), { status: 401, headers });
     }
 
+    // VERIFICAÇÃO DE CONTA BLOQUEADA/SUSPENSA PELA ADMINISTRAÇÃO
+    if (user.is_blocked === 1) {
+      return new Response(JSON.stringify({
+        sucesso: false,
+        bloqueado: true,
+        codigo: 'ACCOUNT_BLOCKED',
+        erro: 'Esta conta foi suspensa/bloqueada permanentemente pela administração. O acesso à taverna está proibido.'
+      }), { status: 403, headers });
+    }
+
     // BLOQUEIO RIGOROSO: Contas não ativadas são impedidas de entrar e redirecionadas para validação OTP
     if (!user.email_verified || user.email_verified === 0) {
       const existingVer = await dbQueries.getEmailVerification(db, user.email);

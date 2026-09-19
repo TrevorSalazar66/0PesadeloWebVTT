@@ -14,9 +14,12 @@ CREATE TABLE IF NOT EXISTS users (
     role TEXT NOT NULL DEFAULT 'jogador' CHECK (role IN ('jogador', 'mestre', 'admin', 'superadmin', 'Jogador', 'Mestre', 'Admin')),
     email_verified INTEGER NOT NULL DEFAULT 0,
     profile_completed INTEGER NOT NULL DEFAULT 0,
+    is_blocked INTEGER NOT NULL DEFAULT 0,
     auth_provider TEXT NOT NULL DEFAULT 'email' CHECK (auth_provider IN ('email', 'google', 'both')),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_users_is_blocked ON users(is_blocked);
 
 -- 1.1 Tabela de Perfis Públicos e Sociais dos Aventureiros (Onboarding Obrigatório)
 CREATE TABLE IF NOT EXISTS user_profiles (

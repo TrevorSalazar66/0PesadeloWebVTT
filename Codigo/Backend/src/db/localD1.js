@@ -17,6 +17,9 @@ export function createLocalD1(dbPath = ':memory:') {
       try {
         sqlite.exec(`ALTER TABLE users ADD COLUMN profile_completed INTEGER NOT NULL DEFAULT 0;`);
       } catch (_) {}
+      try {
+        sqlite.exec(`ALTER TABLE users ADD COLUMN is_blocked INTEGER NOT NULL DEFAULT 0;`);
+      } catch (_) {}
 
       if (!usersTableSql.includes('superadmin') || usersTableSql.includes('assistente de mestre')) {
         sqlite.exec(`

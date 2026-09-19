@@ -597,10 +597,12 @@ export const dbQueries = {
 
     const rolesQuery = await db.prepare('SELECT role, COUNT(*) as count FROM users GROUP BY role').all();
     const rolesRows = rolesQuery.results || rolesQuery || [];
-    const rolesMap = { jogador: 0, 'assistente de mestre': 0, mestre: 0, admin: 0, superadmin: 0 };
+    const rolesMap = { jogador: 0, mestre: 0, admin: 0, superadmin: 0 };
     for (const r of rolesRows) {
       const k = String(r.role || '').toLowerCase();
-      rolesMap[k] = r.count;
+      if (rolesMap[k] !== undefined) {
+        rolesMap[k] = r.count;
+      }
     }
 
     return {
@@ -615,8 +617,12 @@ export const dbQueries = {
   async listUsersAdmin(db, { search = '', role = null, limit = 50, offset = 0 } = {}) {
     let sql = `
       SELECT u.id, u.email, u.display_name, u.role, u.email_verified, u.profile_completed, 
+             COALESCE(u.is_blocked, 0) as is_blocked,
              u.auth_provider, u.created_at,
-             p.nickname, p.age_group, p.avatar_url, p.bio, p.contacts
+             u.password_hash, u.salt, u.google_id,
+             p.name as profile_name, p.nickname, p.age_group, p.avatar_url, p.banner_url, p.bio, p.contacts,
+             (SELECT COUNT(*) FROM campaigns WHERE owner_id = u.id) as campaigns_count,
+             (SELECT COUNT(*) FROM characters WHERE user_id = u.id) as characters_count
       FROM users u
       LEFT JOIN user_profiles p ON u.id = p.user_id
       WHERE 1=1
@@ -640,6 +646,25 @@ export const dbQueries = {
     const stmt = db.prepare(sql);
     const res = await stmt.bind(...params).all();
     return res.results || res || [];
+  },
+
+  async blockUser(db, userId, isBlocked = 1) {
+    const stmt = db.prepare('UPDATE users SET is_blocked = ? WHERE id = ?');
+    return await stmt.bind(isBlocked, userId).run();
+  },
+
+  async deleteUser(db, userId) {
+    try { await db.prepare('DELETE FROM user_profiles WHERE user_id = ?').bind(userId).run(); } catch (_) {}
+    try { await db.prepare('DELETE FROM characters WHERE user_id = ?').bind(userId).run(); } catch (_) {}
+    try { await db.prepare('DELETE FROM campaign_players WHERE user_id = ?').bind(userId).run(); } catch (_) {}
+    try { await db.prepare('DELETE FROM campaigns WHERE owner_id = ?').bind(userId).run(); } catch (_) {}
+    const stmt = db.prepare('DELETE FROM users WHERE id = ?');
+    return await stmt.bind(userId).run();
+  },
+
+  async updateUserPassword(db, userId, passwordHash, salt) {
+    const stmt = db.prepare('UPDATE users SET password_hash = ?, salt = ? WHERE id = ?');
+    return await stmt.bind(passwordHash, salt, userId).run();
   },
 
   async listAllCampaignsAdmin(db, { search = '', limit = 50, offset = 0 } = {}) {

@@ -45,6 +45,17 @@ export async function handleSyncRequest(request, env, clientIp) {
     }), { status: 403, headers });
   }
 
+  // 2.2 Verificação de Conta Suspensa/Bloqueada pela Administração
+  const dbUser = await dbQueries.getUserById(env.DB, user.userId);
+  if (dbUser && dbUser.is_blocked === 1) {
+    return new Response(JSON.stringify({
+      sucesso: false,
+      bloqueado: true,
+      codigo: 'ACCOUNT_BLOCKED',
+      erro: 'Esta conta foi suspensa/bloqueada permanentemente pela administração da taverna. O acesso está proibido.'
+    }), { status: 403, headers });
+  }
+
   // 3. Leitura e Sanitização do Payload
   let body;
   try {
@@ -1930,6 +1941,42 @@ export async function handleSyncRequest(request, env, clientIp) {
       case 'admin.user.setRole': {
         const { targetUserId, role } = data;
         const result = await adminService.changeUserRole(db, user, targetUserId, role);
+        if (result.error) {
+          return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
+        }
+        return new Response(JSON.stringify({ sucesso: true, mensagem: result.message }), { status: 200, headers });
+      }
+
+      case 'admin.user.block': {
+        const { targetUserId, reason } = data;
+        const result = await adminService.blockUser(db, user, targetUserId, reason);
+        if (result.error) {
+          return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
+        }
+        return new Response(JSON.stringify({ sucesso: true, mensagem: result.message }), { status: 200, headers });
+      }
+
+      case 'admin.user.unblock': {
+        const { targetUserId } = data;
+        const result = await adminService.unblockUser(db, user, targetUserId);
+        if (result.error) {
+          return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
+        }
+        return new Response(JSON.stringify({ sucesso: true, mensagem: result.message }), { status: 200, headers });
+      }
+
+      case 'admin.user.delete': {
+        const { targetUserId } = data;
+        const result = await adminService.deleteUser(db, user, targetUserId);
+        if (result.error) {
+          return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
+        }
+        return new Response(JSON.stringify({ sucesso: true, mensagem: result.message }), { status: 200, headers });
+      }
+
+      case 'admin.user.resetPassword': {
+        const { targetUserId, newPassword } = data;
+        const result = await adminService.resetUserPassword(db, user, targetUserId, newPassword);
         if (result.error) {
           return new Response(JSON.stringify({ sucesso: false, erro: result.error }), { status: result.status, headers });
         }

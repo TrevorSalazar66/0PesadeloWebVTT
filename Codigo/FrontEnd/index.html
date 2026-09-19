@@ -565,6 +565,141 @@
       font-style: italic;
     }
 
+    /* Barra de Pesquisa Dark Fantasy & Controles */
+    .admin-search-box-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .admin-search-box-wrap svg {
+      position: absolute;
+      left: 12px;
+      color: var(--text-dim);
+      pointer-events: none;
+      transition: color var(--transition-fast);
+    }
+
+    .admin-search-input {
+      background: rgba(11, 11, 20, 0.85);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      padding: 8px 14px 8px 36px;
+      font-size: 13px;
+      font-family: var(--font-body);
+      min-width: 260px;
+      outline: none;
+      transition: all var(--transition-fast);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .admin-search-input:focus {
+      border-color: var(--gold-primary);
+      background: #0d0d18;
+      box-shadow: 0 0 14px rgba(212, 163, 75, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .admin-search-input:focus + svg,
+    .admin-search-box-wrap:focus-within svg {
+      color: var(--gold-light);
+    }
+
+    /* Badges de Status da Conta */
+    .badge-status-active {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #10b981;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-status-blocked {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 600;
+      animation: pulseBlocked 2s infinite;
+    }
+
+    @keyframes pulseBlocked {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.65; }
+    }
+
+    /* Botões de Ação na Tabela de Usuários */
+    .btn-action-profile {
+      background: rgba(212, 163, 75, 0.1);
+      border: 1px solid rgba(212, 163, 75, 0.3);
+      color: var(--gold-light);
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-action-profile:hover {
+      background: var(--gold-dark);
+      border-color: var(--gold-primary);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(212, 163, 75, 0.2);
+    }
+
+    .btn-action-block {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-action-block:hover {
+      background: #dc2626;
+      border-color: #ef4444;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-action-delete {
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      color: #fb7185;
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-action-delete:hover {
+      background: #e11d48;
+      border-color: #f43f5e;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
+    }
+
     /* ==========================================================================
        3. ESTRUTURA DO APLICATIVO AUTENTICADO
        ========================================================================== */
@@ -3156,13 +3291,18 @@
                 <h3 class="admin-card-title">Diretório de Usuários & Controle de Acesso</h3>
                 <span class="badge-total-blocked" id="badge-total-users" style="background: rgba(96, 165, 250, 0.12); color: #60a5fa; border-color: rgba(96, 165, 250, 0.3);">0 usuários</span>
               </div>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                <input type="text" id="admin-users-search" placeholder="Buscar por nick ou e-mail..."
-                  class="form-control" style="max-width: 240px; padding: 6px 12px; font-size: 13px;" oninput="filtrarUsuariosAdmin()">
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <div class="admin-search-box-wrap">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input type="text" id="admin-users-search" placeholder="Buscar por nick, nome ou e-mail..."
+                    class="admin-search-input" oninput="filtrarUsuariosAdmin()">
+                </div>
                 <select id="admin-users-role-filter" class="role-select-dropdown" onchange="filtrarUsuariosAdmin()">
                   <option value="">Todos os Cargos</option>
                   <option value="jogador">Jogador</option>
-                  <option value="assistente">Assistente de Mestre</option>
                   <option value="mestre">Mestre</option>
                   <option value="admin">Administrador</option>
                   <option value="superadmin">Superadmin</option>
@@ -3175,10 +3315,10 @@
                 <thead>
                   <tr>
                     <th>Usuário / Aventureiro</th>
-                    <th>E-mail</th>
+                    <th>E-mail & Status</th>
                     <th>Cargo Atual</th>
                     <th>Membro Desde</th>
-                    <th style="text-align: right;">Ação / Alterar Cargo</th>
+                    <th style="text-align: right;">Ações & Governança</th>
                   </tr>
                 </thead>
                 <tbody id="admin-users-tbody">
@@ -3231,8 +3371,14 @@
                 <span class="badge-total-blocked" id="badge-total-campaigns" style="background: rgba(168, 85, 247, 0.12); color: #c084fc; border-color: rgba(168, 85, 247, 0.3);">0 campanhas</span>
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                <input type="text" id="admin-campaigns-search" placeholder="Buscar por título ou mestre..."
-                  class="form-control" style="max-width: 240px; padding: 6px 12px; font-size: 13px;" oninput="filtrarCampanhasAdmin()">
+                <div class="admin-search-box-wrap">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input type="text" id="admin-campaigns-search" placeholder="Buscar por título ou mestre..."
+                    class="admin-search-input" oninput="filtrarCampanhasAdmin()">
+                </div>
               </div>
             </div>
 
@@ -3270,6 +3416,10 @@
                 <select id="admin-audit-action-filter" class="role-select-dropdown" onchange="filtrarLogsAuditoriaAdmin()">
                   <option value="">Todas as Ações</option>
                   <option value="CHANGE_USER_ROLE">Alteração de Cargo</option>
+                  <option value="USER_BLOCK">Bloqueio de Conta</option>
+                  <option value="USER_UNBLOCK">Desbloqueio de Conta</option>
+                  <option value="USER_DELETE">Exclusão de Conta</option>
+                  <option value="PASSWORD_RESET">Redefinição de Senha</option>
                   <option value="UNBLOCK_DEVICE">Desbloqueio de Dispositivo</option>
                 </select>
               </div>
@@ -3296,6 +3446,122 @@
           </div>
         </div>
       </section>
+
+    </main>
+  </div>
+
+
+  <!-- ==========================================================================
+       MODAL DE PERFIL & MODERAÇÃO DE USUÁRIO (PAINEL ADMIN / SUPERADMIN)
+       ========================================================================== -->
+  <div class="modal-overlay" id="modal-admin-user-profile" onclick="if(event.target === this) fecharModalPerfilUsuarioAdmin()">
+    <div class="modal-card" style="max-width: 620px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div id="admin-modal-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: var(--gold-dark); border: 2px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; color: var(--gold-light); overflow: hidden;">
+            U
+          </div>
+          <div>
+            <h3 class="modal-title" id="admin-modal-user-name" style="margin: 0; font-size: 1.25rem;">Nome do Usuário</h3>
+            <p style="margin: 2px 0 0 0; font-size: 13px; color: var(--gold-light);" id="admin-modal-user-nick">@nickname</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="fecharModalPerfilUsuarioAdmin()">&times;</button>
+      </div>
+
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- Status e Badges -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+          <span id="admin-modal-role-badge" class="role-badge role-badge-jogador">Jogador</span>
+          <span id="admin-modal-status-badge" class="badge-status-active">Conta Ativa</span>
+          <span id="admin-modal-email-verified-badge" class="badge-status-active">E-mail Verificado</span>
+          <span id="admin-modal-provider-badge" class="role-badge" style="background: rgba(255,255,255,0.05); color: var(--text-muted); border-color: var(--border-subtle); font-size: 11px;">E-mail</span>
+        </div>
+
+        <!-- Grid de Metadados -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: rgba(0,0,0,0.25); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div>
+            <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">E-mail:</span>
+            <div id="admin-modal-email" style="font-size: 13px; color: var(--text-main); font-weight: 500; word-break: break-all;">-</div>
+          </div>
+          <div>
+            <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">ID do Usuário:</span>
+            <div id="admin-modal-user-id" style="font-size: 12px; color: var(--text-muted); font-family: monospace;">-</div>
+          </div>
+          <div>
+            <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Faixa Etária:</span>
+            <div id="admin-modal-age-group" style="font-size: 13px; color: var(--text-main);">-</div>
+          </div>
+          <div>
+            <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Membro Desde:</span>
+            <div id="admin-modal-created-at" style="font-size: 13px; color: var(--text-main);">-</div>
+          </div>
+          <div>
+            <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Mesas Forjadas:</span>
+            <div id="admin-modal-campaigns-count" style="font-size: 13px; color: var(--gold-light); font-weight: 600;">0 campanhas</div>
+          </div>
+          <div>
+            <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Fichas Criadas:</span>
+            <div id="admin-modal-characters-count" style="font-size: 13px; color: var(--gold-light); font-weight: 600;">0 fichas</div>
+          </div>
+        </div>
+
+        <!-- Biografia -->
+        <div>
+          <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; letter-spacing: 0.5px;">Biografia de Aventureiro</h4>
+          <div id="admin-modal-bio" style="font-size: 13px; color: var(--text-main); line-height: 1.5; background: rgba(0,0,0,0.15); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); max-height: 90px; overflow-y: auto;">
+            Nenhuma biografia informada.
+          </div>
+        </div>
+
+        <!-- Contatos Sociais -->
+        <div>
+          <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.5px;">Contatos do Jogador</h4>
+          <div id="admin-modal-contacts" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <!-- Renderizado via JS -->
+          </div>
+        </div>
+
+        <!-- SEÇÃO EXCLUSIVA PARA SUPERADMIN: CREDENCIAIS & REDEFINIÇÃO DE SENHA -->
+        <div id="admin-modal-superadmin-section" style="display: none; background: rgba(212, 163, 75, 0.05); border: 1px solid var(--border-gold); padding: 14px; border-radius: var(--radius-md);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <h4 style="font-size: 12.5px; font-weight: 700; color: var(--gold-light); margin: 0; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+              <span>🔑</span> Segurança & Credenciais (Exclusivo Superadmin)
+            </h4>
+          </div>
+          
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4;" id="admin-modal-cred-info">
+            <!-- Informações da senha / hash -->
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px;">
+            <input type="text" id="admin-modal-new-password" placeholder="Digitar nova senha para o usuário..." class="admin-search-input" style="flex: 1; padding: 6px 12px; font-size: 12.5px; min-width: unset;">
+            <button class="btn-primary" style="padding: 6px 14px; font-size: 12.5px; white-space: nowrap;" onclick="salvarNovaSenhaUsuarioAdmin()">
+              Redefinir Senha
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rodapé de Ações de Moderação -->
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+        <div style="display: flex; gap: 8px; align-items: center;" id="admin-modal-role-change-wrapper">
+          <!-- Dropdown de Alteração de Cargo para Superadmin -->
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button id="admin-modal-btn-block" class="btn-action-block" onclick="executarBloqueioModalUsuario()">
+            🚫 Bloquear Conta
+          </button>
+          <button id="admin-modal-btn-delete" class="btn-action-delete" style="display: none;" onclick="executarExclusaoModalUsuario()">
+            🗑️ Deletar Conta
+          </button>
+          <button class="btn-secondary" onclick="fecharModalPerfilUsuarioAdmin()">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
     </main>
   </div>
@@ -5177,6 +5443,11 @@
     }
 
     /**
+     * Estado do usuário atualmente inspecionado no modal de perfil
+     */
+    let adminActiveModalUser = null;
+
+    /**
      * Carrega a lista completa de usuários cadastrados
      */
     async function carregarUsuariosAdmin() {
@@ -5210,15 +5481,13 @@
         filtrados = filtrados.filter(u =>
           (u.display_name && u.display_name.toLowerCase().includes(busca)) ||
           (u.nickname && u.nickname.toLowerCase().includes(busca)) ||
-          (u.email && u.email.toLowerCase().includes(busca))
+          (u.email && u.email.toLowerCase().includes(busca)) ||
+          (u.id && u.id.toLowerCase().includes(busca))
         );
       }
       if (filtroRole) {
         filtrados = filtrados.filter(u => {
           const r = String(u.role || '').toLowerCase();
-          if (filtroRole === 'assistente') {
-            return r.includes('assistente');
-          }
           return r === filtroRole;
         });
       }
@@ -5227,7 +5496,7 @@
     }
 
     /**
-     * Renderiza as linhas da tabela de usuários com validação RBAC para alteração de cargo
+     * Renderiza as linhas da tabela de usuários com ações de perfil, bloqueio e governança
      */
     function renderizarUsuariosAdmin(usuarios) {
       const tbody = document.getElementById('admin-users-tbody');
@@ -5238,13 +5507,15 @@
         return;
       }
 
-      // Verificar se o usuário logado é Superadmin para liberar o seletor de cargo
+      // Obter cargo do operador logado
       let currentUserRole = '';
+      let currentUserId = '';
       try {
         const raw = localStorage.getItem('arcana_user_data');
         if (raw) {
           const u = JSON.parse(raw);
           currentUserRole = String(u.role || '').toLowerCase();
+          currentUserId = u.userId || u.id || '';
         }
       } catch (_) { }
 
@@ -5254,41 +5525,60 @@
         const roleKey = String(u.role || 'jogador').toLowerCase();
         const roleClass = roleKey === 'superadmin' ? 'role-badge-superadmin' :
                           roleKey === 'admin' ? 'role-badge-admin' :
-                          roleKey === 'mestre' ? 'role-badge-mestre' :
-                          (roleKey.includes('assistente')) ? 'role-badge-assistente' : 'role-badge-jogador';
+                          roleKey === 'mestre' ? 'role-badge-mestre' : 'role-badge-jogador';
 
         const roleLabels = {
           jogador: 'Jogador',
-          'assistente de mestre': 'Assistente de Mestre',
-          assistente: 'Assistente',
           mestre: 'Mestre',
           admin: 'Administrador',
           superadmin: 'Superadmin'
         };
 
+        const isBlocked = Number(u.is_blocked) === 1;
+        const statusBadge = isBlocked
+          ? `<span class="badge-status-blocked">🚫 Bloqueado</span>`
+          : `<span class="badge-status-active">✨ Ativo</span>`;
+
         const displayNick = u.nickname ? `${u.nickname} (${u.display_name})` : (u.display_name || 'Sem nome');
         const initial = (u.nickname || u.display_name || 'U').charAt(0).toUpperCase();
         const avatarImg = u.avatar_url
-          ? `<img src="${u.avatar_url}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-gold);" alt="Avatar">`
-          : `<div style="width: 30px; height: 30px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--border-gold); color: var(--gold-light); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">${initial}</div>`;
+          ? `<img src="${u.avatar_url}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-gold);" alt="Avatar">`
+          : `<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--border-gold); color: var(--gold-light); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">${initial}</div>`;
 
         const dataFormatada = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '-';
         const safeName = (u.nickname || u.display_name || u.email || 'Usuário').replace(/'/g, "\\'");
+        const isSelf = u.id === currentUserId;
 
-        let actionCell = '';
+        // Montar controles de ação
+        let roleDropdown = '';
         if (isSuperadmin) {
-          actionCell = `
-            <select class="role-select-dropdown" onchange="alterarCargoUsuario('${u.id}', this.value, '${safeName}')">
+          roleDropdown = `
+            <select class="role-select-dropdown" onchange="alterarCargoUsuario('${u.id}', this.value, '${safeName}')" ${isSelf ? 'disabled title="Você não pode alterar seu próprio cargo"' : ''}>
               <option value="jogador" ${roleKey === 'jogador' ? 'selected' : ''}>Jogador</option>
-              <option value="assistente de mestre" ${roleKey === 'assistente de mestre' || roleKey === 'assistente' ? 'selected' : ''}>Assistente de Mestre</option>
               <option value="mestre" ${roleKey === 'mestre' ? 'selected' : ''}>Mestre</option>
               <option value="admin" ${roleKey === 'admin' ? 'selected' : ''}>Administrador</option>
               <option value="superadmin" ${roleKey === 'superadmin' ? 'selected' : ''}>Superadmin</option>
             </select>
           `;
-        } else {
-          actionCell = `<span style="font-size: 11.5px; color: var(--text-dim);">Apenas Superadmin</span>`;
         }
+
+        const btnPerfil = `
+          <button class="btn-action-profile" onclick="abrirModalPerfilUsuarioAdmin('${u.id}')" title="Ver Perfil Detalhado">
+            👁️ Perfil
+          </button>
+        `;
+
+        const btnBloqueio = isSelf ? '' : `
+          <button class="btn-action-block ${isBlocked ? 'unblock' : ''}" onclick="bloquearUsuarioAdmin('${u.id}', '${safeName}', ${isBlocked})" title="${isBlocked ? 'Desbloquear Acesso' : 'Bloquear Acesso'}">
+            ${isBlocked ? '✅ Desbloquear' : '🚫 Bloquear'}
+          </button>
+        `;
+
+        const btnExclusao = (isSuperadmin && !isSelf) ? `
+          <button class="btn-action-delete" onclick="deletarUsuarioAdmin('${u.id}', '${safeName}')" title="Excluir Conta Permanentemente">
+            🗑️
+          </button>
+        ` : '';
 
         return `
           <tr>
@@ -5301,13 +5591,334 @@
                 </div>
               </div>
             </td>
-            <td style="color: var(--text-muted); font-size: 13px;">${u.email || '-'}</td>
+            <td>
+              <div style="color: var(--text-main); font-size: 13px;">${u.email || '-'}</div>
+              <div style="margin-top: 2px;">${statusBadge}</div>
+            </td>
             <td><span class="role-badge ${roleClass}">${roleLabels[roleKey] || roleKey}</span></td>
             <td style="color: var(--text-muted); font-size: 12.5px;">${dataFormatada}</td>
-            <td style="text-align: right;">${actionCell}</td>
+            <td style="text-align: right;">
+              <div style="display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
+                ${roleDropdown}
+                ${btnPerfil}
+                ${btnBloqueio}
+                ${btnExclusao}
+              </div>
+            </td>
           </tr>
         `;
       }).join('');
+    }
+
+    /**
+     * Abre o modal detalhado de perfil e governança do usuário
+     */
+    function abrirModalPerfilUsuarioAdmin(userId) {
+      const user = (adminState.users || []).find(u => u.id === userId);
+      if (!user) {
+        mostrarToast('Usuário não encontrado na lista atual.');
+        return;
+      }
+      adminActiveModalUser = user;
+
+      // Obter cargo do operador logado
+      let currentUserRole = '';
+      let currentUserId = '';
+      try {
+        const raw = localStorage.getItem('arcana_user_data');
+        if (raw) {
+          const u = JSON.parse(raw);
+          currentUserRole = String(u.role || '').toLowerCase();
+          currentUserId = u.userId || u.id || '';
+        }
+      } catch (_) { }
+
+      const isSuperadmin = currentUserRole === 'superadmin';
+      const isSelf = user.id === currentUserId;
+
+      // 1. Avatar e Identificação
+      const avatarEl = document.getElementById('admin-modal-avatar');
+      const nameEl = document.getElementById('admin-modal-user-name');
+      const nickEl = document.getElementById('admin-modal-user-nick');
+      const initial = (user.nickname || user.display_name || 'U').charAt(0).toUpperCase();
+
+      if (avatarEl) {
+        avatarEl.innerHTML = user.avatar_url
+          ? `<img src="${user.avatar_url}" style="width: 100%; height: 100%; object-fit: cover;" alt="Avatar">`
+          : initial;
+      }
+      if (nameEl) nameEl.textContent = user.display_name || user.name || 'Sem nome';
+      if (nickEl) nickEl.textContent = user.nickname ? `@${user.nickname}` : '@sem_nickname';
+
+      // 2. Badges de Status
+      const roleBadge = document.getElementById('admin-modal-role-badge');
+      const statusBadge = document.getElementById('admin-modal-status-badge');
+      const emailBadge = document.getElementById('admin-modal-email-verified-badge');
+      const providerBadge = document.getElementById('admin-modal-provider-badge');
+
+      const roleKey = String(user.role || 'jogador').toLowerCase();
+      const roleLabels = { jogador: 'Jogador', mestre: 'Mestre', admin: 'Administrador', superadmin: 'Superadmin' };
+      if (roleBadge) {
+        roleBadge.className = `role-badge ${roleKey === 'superadmin' ? 'role-badge-superadmin' : roleKey === 'admin' ? 'role-badge-admin' : roleKey === 'mestre' ? 'role-badge-mestre' : 'role-badge-jogador'}`;
+        roleBadge.textContent = roleLabels[roleKey] || roleKey;
+      }
+
+      const isBlocked = Number(user.is_blocked) === 1;
+      if (statusBadge) {
+        statusBadge.className = isBlocked ? 'badge-status-blocked' : 'badge-status-active';
+        statusBadge.textContent = isBlocked ? '🚫 Conta Bloqueada' : '✨ Conta Ativa';
+      }
+
+      const isVerified = Number(user.email_verified) === 1;
+      if (emailBadge) {
+        emailBadge.className = isVerified ? 'badge-status-active' : 'badge-status-blocked';
+        emailBadge.textContent = isVerified ? 'E-mail Verificado' : 'E-mail Não Verificado';
+      }
+
+      const isGoogle = !!user.google_id;
+      if (providerBadge) {
+        providerBadge.textContent = isGoogle ? '🌐 Google OAuth' : '🔑 Senha Própria';
+      }
+
+      // 3. Metadados do Grid
+      const elEmail = document.getElementById('admin-modal-email');
+      const elId = document.getElementById('admin-modal-user-id');
+      const elAge = document.getElementById('admin-modal-age-group');
+      const elCreated = document.getElementById('admin-modal-created-at');
+      const elCamps = document.getElementById('admin-modal-campaigns-count');
+      const elChars = document.getElementById('admin-modal-characters-count');
+
+      if (elEmail) elEmail.textContent = user.email || '-';
+      if (elId) elId.textContent = user.id;
+      if (elAge) elAge.textContent = user.age_group || 'Não informada';
+      if (elCreated) elCreated.textContent = user.created_at ? new Date(user.created_at).toLocaleString('pt-BR') : '-';
+      if (elCamps) elCamps.textContent = `${user.campaigns_count ?? 0} campanhas`;
+      if (elChars) elChars.textContent = `${user.characters_count ?? 0} fichas`;
+
+      // 4. Biografia
+      const elBio = document.getElementById('admin-modal-bio');
+      if (elBio) elBio.textContent = user.bio || 'Nenhuma biografia informada pelo aventureiro.';
+
+      // 5. Contatos
+      const contactsContainer = document.getElementById('admin-modal-contacts');
+      if (contactsContainer) {
+        let contacts = {};
+        try {
+          contacts = typeof user.contacts === 'string' ? JSON.parse(user.contacts) : (user.contacts || {});
+        } catch (_) { }
+
+        const wpp = contacts.whatsapp ? contacts.whatsapp.replace(/\D/g, '') : '';
+        const disc = contacts.discord || '';
+        const insta = contacts.instagram ? contacts.instagram.replace(/^@/, '') : '';
+
+        const pills = [];
+        if (wpp) {
+          pills.push(`
+            <a href="https://wa.me/${wpp}" target="_blank" rel="noopener noreferrer" class="pill-stat" style="background: rgba(37, 211, 102, 0.12); border-color: rgba(37, 211, 102, 0.4); color: #25d366; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+              💬 WhatsApp: ${contacts.whatsapp}
+            </a>
+          `);
+        }
+        if (disc) {
+          pills.push(`
+            <span class="pill-stat" style="background: rgba(88, 101, 242, 0.12); border-color: rgba(88, 101, 242, 0.4); color: #818cf8;">
+              🎮 Discord: ${disc}
+            </span>
+          `);
+        }
+        if (insta) {
+          pills.push(`
+            <a href="https://instagram.com/${insta}" target="_blank" rel="noopener noreferrer" class="pill-stat" style="background: rgba(225, 48, 108, 0.12); border-color: rgba(225, 48, 108, 0.4); color: #f472b6; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+              📸 Instagram: @${insta}
+            </a>
+          `);
+        }
+
+        contactsContainer.innerHTML = pills.length > 0
+          ? pills.join('')
+          : '<span style="font-size: 12px; color: var(--text-dim);">Nenhum meio de contato informado.</span>';
+      }
+
+      // 6. Seção de Segurança & Credenciais (Exclusivo Superadmin)
+      const credSection = document.getElementById('admin-modal-superadmin-section');
+      const credInfo = document.getElementById('admin-modal-cred-info');
+      const passInput = document.getElementById('admin-modal-new-password');
+      if (passInput) passInput.value = '';
+
+      if (credSection) {
+        if (isSuperadmin) {
+          credSection.style.display = 'block';
+          if (credInfo) {
+            if (isGoogle) {
+              credInfo.innerHTML = `
+                <div><strong>Provedor de Login:</strong> Conta vinculada via Google Identity (OAuth 2.0).</div>
+                <div style="font-family: monospace; font-size: 11px; margin-top: 4px; color: var(--gold-light);">Google Sub ID: ${user.google_id}</div>
+                <div style="margin-top: 4px; font-size: 11.5px; color: var(--text-dim);">O usuário autentica via Google. Você também pode definir uma senha direta abaixo para permitir login por e-mail e senha.</div>
+              `;
+            } else {
+              const hashPreview = user.password_hash ? `${user.password_hash.substring(0, 24)}...` : 'Não definido';
+              const saltPreview = user.salt ? `${user.salt.substring(0, 16)}...` : 'Não definido';
+              credInfo.innerHTML = `
+                <div><strong>Provedor de Login:</strong> E-mail e Senha Criptografada (PBKDF2/SHA-256).</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; font-family: monospace; font-size: 11px;">
+                  <div style="background: rgba(0,0,0,0.3); padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border-subtle);">
+                    <span style="color: var(--text-dim);">Hash (PBKDF2):</span><br>
+                    <span style="color: var(--gold-light); word-break: break-all;">${hashPreview}</span>
+                  </div>
+                  <div style="background: rgba(0,0,0,0.3); padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border-subtle);">
+                    <span style="color: var(--text-dim);">Salt Seguro:</span><br>
+                    <span style="color: var(--gold-light); word-break: break-all;">${saltPreview}</span>
+                  </div>
+                </div>
+              `;
+            }
+          }
+        } else {
+          credSection.style.display = 'none';
+        }
+      }
+
+      // 7. Configuração de Ações no Rodapé do Modal
+      const roleChangeWrapper = document.getElementById('admin-modal-role-change-wrapper');
+      if (roleChangeWrapper) {
+        if (isSuperadmin && !isSelf) {
+          roleChangeWrapper.innerHTML = `
+            <span style="font-size: 12px; color: var(--text-muted);">Cargo:</span>
+            <select class="role-select-dropdown" onchange="alterarCargoUsuario('${user.id}', this.value, '${(user.display_name || 'Usuário').replace(/'/g, "\\'")}')">
+              <option value="jogador" ${roleKey === 'jogador' ? 'selected' : ''}>Jogador</option>
+              <option value="mestre" ${roleKey === 'mestre' ? 'selected' : ''}>Mestre</option>
+              <option value="admin" ${roleKey === 'admin' ? 'selected' : ''}>Administrador</option>
+              <option value="superadmin" ${roleKey === 'superadmin' ? 'selected' : ''}>Superadmin</option>
+            </select>
+          `;
+        } else {
+          roleChangeWrapper.innerHTML = '';
+        }
+      }
+
+      const btnBlockModal = document.getElementById('admin-modal-btn-block');
+      if (btnBlockModal) {
+        if (isSelf) {
+          btnBlockModal.style.display = 'none';
+        } else {
+          btnBlockModal.style.display = 'inline-flex';
+          btnBlockModal.className = `btn-action-block ${isBlocked ? 'unblock' : ''}`;
+          btnBlockModal.textContent = isBlocked ? '✅ Desbloquear Conta' : '🚫 Bloquear Conta';
+        }
+      }
+
+      const btnDeleteModal = document.getElementById('admin-modal-btn-delete');
+      if (btnDeleteModal) {
+        btnDeleteModal.style.display = (isSuperadmin && !isSelf) ? 'inline-flex' : 'none';
+      }
+
+      // Exibir Modal
+      const modal = document.getElementById('modal-admin-user-profile');
+      if (modal) modal.classList.add('active');
+    }
+
+    /**
+     * Fecha o modal de perfil e governança
+     */
+    function fecharModalPerfilUsuarioAdmin() {
+      const modal = document.getElementById('modal-admin-user-profile');
+      if (modal) modal.classList.remove('active');
+      adminActiveModalUser = null;
+    }
+
+    /**
+     * Bloqueia ou desbloqueia um usuário
+     */
+    async function bloquearUsuarioAdmin(userId, userName, isCurrentlyBlocked) {
+      const acaoTexto = isCurrentlyBlocked ? 'DESBLOQUEAR' : 'BLOQUEAR';
+      const promptMsg = isCurrentlyBlocked
+        ? `Deseja realmente ${acaoTexto} o acesso do usuário "${userName}"? Ele poderá voltar a logar normalmente.`
+        : `Deseja realmente ${acaoTexto} o usuário "${userName}"?\n\nEle será desconectado e não conseguirá mais fazer login ou criar novas contas.`;
+
+      if (!confirm(promptMsg)) return;
+
+      try {
+        if (isCurrentlyBlocked) {
+          const res = await window.apiClient.adminUnblockUser(userId);
+          mostrarToast(res.mensagem || 'Usuário desbloqueado com sucesso!');
+        } else {
+          const res = await window.apiClient.adminBlockUser(userId, 'Bloqueio administrativo via painel');
+          mostrarToast(res.mensagem || 'Usuário bloqueado com sucesso!');
+        }
+        await carregarUsuariosAdmin();
+        if (adminActiveModalUser && adminActiveModalUser.id === userId) {
+          abrirModalPerfilUsuarioAdmin(userId);
+        }
+      } catch (err) {
+        mostrarToast(`Erro ao alterar status: ${err.message}`);
+      }
+    }
+
+    /**
+     * Executa ação de bloqueio a partir do botão dentro do modal
+     */
+    function executarBloqueioModalUsuario() {
+      if (!adminActiveModalUser) return;
+      const isBlocked = Number(adminActiveModalUser.is_blocked) === 1;
+      const safeName = adminActiveModalUser.nickname || adminActiveModalUser.display_name || adminActiveModalUser.email || 'Usuário';
+      bloquearUsuarioAdmin(adminActiveModalUser.id, safeName, isBlocked);
+    }
+
+    /**
+     * Deleta permanentemente um usuário (exclusivo para Superadmin)
+     */
+    async function deletarUsuarioAdmin(userId, userName) {
+      const confirm1 = confirm(`ATENÇÃO: Deseja realmente EXCLUIR permanentemente a conta de "${userName}"?\n\nTodas as sessões, fichas e associações do usuário serão removidas do banco de dados. Esta ação é IRREVERSÍVEL.`);
+      if (!confirm1) return;
+
+      const confirm2 = confirm(`Confirmação final: Digite OK para confirmar a deleção definitiva da conta de "${userName}".`);
+      if (!confirm2) return;
+
+      try {
+        const res = await window.apiClient.adminDeleteUser(userId);
+        mostrarToast(res.mensagem || 'Conta excluída com sucesso.');
+        fecharModalPerfilUsuarioAdmin();
+        await carregarUsuariosAdmin();
+        carregarAdminStats();
+      } catch (err) {
+        mostrarToast(`Erro ao excluir conta: ${err.message}`);
+      }
+    }
+
+    /**
+     * Executa ação de exclusão a partir do botão dentro do modal
+     */
+    function executarExclusaoModalUsuario() {
+      if (!adminActiveModalUser) return;
+      const safeName = adminActiveModalUser.nickname || adminActiveModalUser.display_name || adminActiveModalUser.email || 'Usuário';
+      deletarUsuarioAdmin(adminActiveModalUser.id, safeName);
+    }
+
+    /**
+     * Redefine a senha do usuário inspecionado no modal (exclusivo para Superadmin)
+     */
+    async function salvarNovaSenhaUsuarioAdmin() {
+      if (!adminActiveModalUser) return;
+      const passInput = document.getElementById('admin-modal-new-password');
+      const newPassword = passInput ? passInput.value.trim() : '';
+
+      if (!newPassword || newPassword.length < 6) {
+        mostrarToast('A nova senha deve possuir no mínimo 6 caracteres.');
+        return;
+      }
+
+      const safeName = adminActiveModalUser.nickname || adminActiveModalUser.display_name || adminActiveModalUser.email || 'Usuário';
+      if (!confirm(`Deseja realmente redefinir a senha do usuário "${safeName}"?`)) return;
+
+      try {
+        const res = await window.apiClient.adminResetUserPassword(adminActiveModalUser.id, newPassword);
+        mostrarToast(res.mensagem || 'Senha redefinida com sucesso!');
+        if (passInput) passInput.value = '';
+        await carregarUsuariosAdmin();
+        abrirModalPerfilUsuarioAdmin(adminActiveModalUser.id);
+      } catch (err) {
+        mostrarToast(`Erro ao redefinir senha: ${err.message}`);
+      }
     }
 
     /**
@@ -5322,7 +5933,10 @@
       try {
         const res = await window.apiClient.adminSetUserRole(targetUserId, newRole);
         mostrarToast(res.mensagem || `Cargo atualizado com sucesso!`);
-        carregarUsuariosAdmin();
+        await carregarUsuariosAdmin();
+        if (adminActiveModalUser && adminActiveModalUser.id === targetUserId) {
+          abrirModalPerfilUsuarioAdmin(targetUserId);
+        }
       } catch (err) {
         mostrarToast(`Erro ao alterar cargo: ${err.message}`);
         carregarUsuariosAdmin();

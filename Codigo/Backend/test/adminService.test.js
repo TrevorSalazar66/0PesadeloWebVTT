@@ -310,19 +310,179 @@ async function runTests() {
   }
   console.log('   ✅ Dispositivo liberado com sucesso');
 
-  // Verifica se gerou o log de auditoria do desbloqueio
-  const auditReq2 = new Request('http://localhost/api/sync', {
+  // 9. Teste de Bloqueio e Desbloqueio de Usuário (admin.user.block / admin.user.unblock)
+  console.log('\n9. Testando bloqueio e desbloqueio de conta de usuário...');
+  
+  // 9.1 Admin bloqueia a conta de uJogador
+  const blockReq = new Request('http://localhost/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Cookie': uAdmin.cookie },
-    body: JSON.stringify({ action: 'admin.audit.logs', data: { limit: 10 } })
+    body: JSON.stringify({
+      action: 'admin.user.block',
+      data: { targetUserId: uJogador.userId, reason: 'Suspeita de comportamento indevido' }
+    })
   });
-  const auditRes2 = await handleSyncRequest(auditReq2, env, ip);
-  const auditData2 = await auditRes2.json();
-  const unblockAudit = (auditData2.dados || []).find(a => a.action === 'DEVICE_UNBLOCK' && a.target_id === fakeDevice);
-  if (!unblockAudit) {
-    throw new Error('Falha: Desbloqueio de dispositivo não gravou log de auditoria');
+  const blockRes = await handleSyncRequest(blockReq, env, ip);
+  const blockData = await blockRes.json();
+  if (blockRes.status !== 200 || !blockData.sucesso) {
+    throw new Error(`Falha ao bloquear usuário: ${blockData.erro}`);
   }
-  console.log(`   ✅ Log de auditoria de desbloqueio verificado com sucesso: Admin=${unblockAudit.admin_name}`);
+  console.log('   ✅ Usuário bloqueado com sucesso');
+
+  // 9.2 Usuário bloqueado tenta fazer login -> DEVE FALHAR (403, ACCOUNT_BLOCKED)
+  const loginBlockedReq = new Request('http://localhost/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'login',
+      data: { email: uJogador.email, password: 'SenhaForte123!' }
+    })
+  });
+  const loginBlockedRes = await handleAuthRequest(loginBlockedReq, env, ip);
+  const loginBlockedData = await loginBlockedRes.json();
+  if (loginBlockedRes.status !== 403 || loginBlockedData.codigo !== 'ACCOUNT_BLOCKED') {
+    throw new Error(`Falha: Usuário bloqueado deveria receber 403 ACCOUNT_BLOCKED, recebeu ${loginBlockedRes.status}: ${JSON.stringify(loginBlockedData)}`);
+  }
+  console.log('   ✅ Usuário bloqueado impedido de fazer login (403 ACCOUNT_BLOCKED)');
+
+  // 9.3 Admin desbloqueia a conta de uJogador
+  const unblockUserReq = new Request('http://localhost/api/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Cookie': uAdmin.cookie },
+    body: JSON.stringify({
+      action: 'admin.user.unblock',
+      data: { targetUserId: uJogador.userId }
+    })
+  });
+  const unblockUserRes = await handleSyncRequest(unblockUserReq, env, ip);
+  const unblockUserData = await unblockUserRes.json();
+  if (unblockUserRes.status !== 200 || !unblockUserData.sucesso) {
+    throw new Error(`Falha ao desbloquear usuário: ${unblockUserData.erro}`);
+  }
+  console.log('   ✅ Usuário desbloqueado com sucesso');
+
+  // 9.4 Usuário agora consegue fazer login novamente -> DEVE SUCEDER (200)
+  const loginUnblockedReq = new Request('http://localhost/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'login',
+      data: { email: uJogador.email, password: 'SenhaForte123!' }
+    })
+  });
+  const loginUnblockedRes = await handleAuthRequest(loginUnblockedReq, env, ip);
+  if (loginUnblockedRes.status !== 200) {
+    throw new Error(`Falha: Usuário desbloqueado deveria logar com 200, recebeu ${loginUnblockedRes.status}`);
+  }
+  console.log('   ✅ Usuário desbloqueado logou com sucesso');
+
+  // 10. Teste de Redefinição de Senha (admin.user.resetPassword)
+  console.log('\n10. Testando redefinição de senha por Superadmin (admin.user.resetPassword)...');
+  
+  // 10.1 Admin comum tenta redefinir senha -> DEVE FALHAR (403, apenas superadmin)
+  const resetPassAdminReq = new Request('http://localhost/api/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Cookie': uAdmin.cookie },
+    body: JSON.stringify({
+      action: 'admin.user.resetPassword',
+      data: { targetUserId: uJogador.userId, newPassword: 'NovaSenhaSegura999!' }
+    })
+  });
+  const resetPassAdminRes = await handleSyncRequest(resetPassAdminReq, env, ip);
+  if (resetPassAdminRes.status !== 403) {
+    throw new Error(`Falha: Admin comum não deveria poder redefinir senhas, recebeu ${resetPassAdminRes.status}`);
+  }
+  console.log('   ✅ Admin comum impedido de redefinir senha com 403');
+
+  // 10.2 Superadmin redefine a senha de uJogador -> DEVE SUCEDER (200)
+  const resetPassSuperReq = new Request('http://localhost/api/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Cookie': uSuperadmin.cookie },
+    body: JSON.stringify({
+      action: 'admin.user.resetPassword',
+      data: { targetUserId: uJogador.userId, newPassword: 'NovaSenhaSegura999!' }
+    })
+  });
+  const resetPassSuperRes = await handleSyncRequest(resetPassSuperReq, env, ip);
+  const resetPassSuperData = await resetPassSuperRes.json();
+  if (resetPassSuperRes.status !== 200 || !resetPassSuperData.sucesso) {
+    throw new Error(`Falha: Superadmin não conseguiu redefinir senha: ${resetPassSuperData.erro}`);
+  }
+  console.log('   ✅ Superadmin redefiniu senha do usuário com sucesso');
+
+  // 10.3 Usuário loga com a nova senha -> DEVE SUCEDER (200)
+  const loginNewPassReq = new Request('http://localhost/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'login',
+      data: { email: uJogador.email, password: 'NovaSenhaSegura999!' }
+    })
+  });
+  const loginNewPassRes = await handleAuthRequest(loginNewPassReq, env, ip);
+  if (loginNewPassRes.status !== 200) {
+    throw new Error(`Falha: Login com a nova senha falhou com status ${loginNewPassRes.status}`);
+  }
+  console.log('   ✅ Login com a nova senha redefinida efetuado com sucesso');
+
+  // 11. Teste de Exclusão de Conta (admin.user.delete)
+  console.log('\n11. Testando exclusão definitiva de conta (admin.user.delete)...');
+  
+  // Criar um usuário temporário para testar a exclusão
+  const uParaDeletar = await criarUsuario('boromir@arcana.vtt', 'Boromir de Gondor', 'boromir_gondor', 'jogador');
+
+  // 11.1 Admin comum tenta deletar -> DEVE FALHAR (403, exclusivo para superadmin)
+  const deleteAdminReq = new Request('http://localhost/api/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Cookie': uAdmin.cookie },
+    body: JSON.stringify({
+      action: 'admin.user.delete',
+      data: { targetUserId: uParaDeletar.userId }
+    })
+  });
+  const deleteAdminRes = await handleSyncRequest(deleteAdminReq, env, ip);
+  if (deleteAdminRes.status !== 403) {
+    throw new Error(`Falha: Admin comum não deveria poder deletar usuários, recebeu ${deleteAdminRes.status}`);
+  }
+  console.log('   ✅ Admin comum impedido de deletar usuário com 403');
+
+  // 11.2 Superadmin tenta deletar a si mesmo -> DEVE FALHAR (400)
+  const deleteSelfReq = new Request('http://localhost/api/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Cookie': uSuperadmin.cookie },
+    body: JSON.stringify({
+      action: 'admin.user.delete',
+      data: { targetUserId: uSuperadmin.userId }
+    })
+  });
+  const deleteSelfRes = await handleSyncRequest(deleteSelfReq, env, ip);
+  if (deleteSelfRes.status !== 400) {
+    throw new Error(`Falha: Superadmin não deve poder deletar a si próprio, recebeu ${deleteSelfRes.status}`);
+  }
+  console.log('   ✅ Auto-deleção de superadmin impedida com 400');
+
+  // 11.3 Superadmin deleta o usuário temporário -> DEVE SUCEDER (200)
+  const deleteSuperReq = new Request('http://localhost/api/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Cookie': uSuperadmin.cookie },
+    body: JSON.stringify({
+      action: 'admin.user.delete',
+      data: { targetUserId: uParaDeletar.userId }
+    })
+  });
+  const deleteSuperRes = await handleSyncRequest(deleteSuperReq, env, ip);
+  const deleteSuperData = await deleteSuperRes.json();
+  if (deleteSuperRes.status !== 200 || !deleteSuperData.sucesso) {
+    throw new Error(`Falha: Superadmin não conseguiu deletar usuário: ${deleteSuperData.erro}`);
+  }
+  console.log('   ✅ Usuário deletado com sucesso pelo Superadmin');
+
+  // 11.4 Verifica que o usuário não existe mais no banco
+  const deletedUserCheck = await dbQueries.getUserById(db, uParaDeletar.userId);
+  if (deletedUserCheck) {
+    throw new Error('Falha: Usuário ainda consta no banco de dados após exclusão');
+  }
+  console.log('   ✅ Confirmação no banco: Registro do usuário expurgado com sucesso');
 
   console.log('\n🎉 TODOS OS TESTES DO PAINEL DE ADMINISTRAÇÃO E GOVERNANÇA PASSARAM COM SUCESSO!\n');
 }

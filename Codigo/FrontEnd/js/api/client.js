@@ -205,6 +205,22 @@ export const apiClient = {
     return this.sync('admin.user.setRole', { targetUserId, role });
   },
 
+  adminBlockUser(targetUserId, reason = '') {
+    return this.sync('admin.user.block', { targetUserId, reason });
+  },
+
+  adminUnblockUser(targetUserId) {
+    return this.sync('admin.user.unblock', { targetUserId });
+  },
+
+  adminDeleteUser(targetUserId) {
+    return this.sync('admin.user.delete', { targetUserId });
+  },
+
+  adminResetUserPassword(targetUserId, newPassword) {
+    return this.sync('admin.user.resetPassword', { targetUserId, newPassword });
+  },
+
   adminListCampaigns(params = {}) {
     return this.sync('admin.campaigns.list', params);
   },
