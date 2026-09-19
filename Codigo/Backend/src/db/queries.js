@@ -381,7 +381,7 @@ export const dbQueries = {
     return info;
   },
 
-  async updateCampaign(db, campaignId, { name, systemId, themeId, sessions, nextSession, loreDescription, notices }) {
+  async updateCampaign(db, campaignId, { name, systemId, themeId, sessions, nextSession, loreDescription, notices, maxPlayers }) {
     const stmt = db.prepare(`
       UPDATE campaigns 
       SET name = COALESCE(?, name),
@@ -390,7 +390,8 @@ export const dbQueries = {
           sessions = COALESCE(?, sessions),
           next_session = COALESCE(?, next_session),
           lore_description = COALESCE(?, lore_description),
-          notices = COALESCE(?, notices)
+          notices = COALESCE(?, notices),
+          max_players = COALESCE(?, max_players)
       WHERE id = ?
     `);
     return await stmt.bind(
@@ -401,6 +402,7 @@ export const dbQueries = {
       nextSession !== undefined && nextSession !== null ? String(nextSession).trim() : null,
       loreDescription !== undefined && loreDescription !== null ? String(loreDescription).trim() : null,
       notices !== undefined && notices !== null ? String(notices).trim() : null,
+      maxPlayers !== undefined && maxPlayers !== null ? Math.min(Math.max(Number(maxPlayers) || 5, 1), 12) : null,
       campaignId
     ).run();
   },

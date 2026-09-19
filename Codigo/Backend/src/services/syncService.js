@@ -1199,11 +1199,14 @@ export async function handleSyncRequest(request, env, clientIp) {
         if (clockTriggers !== undefined) {
           currentSettings.clock_triggers = clockTriggers;
         }
+        if (isPublic !== undefined) {
+          currentSettings.is_public = Number(isPublic) ? 1 : 0;
+        }
 
         await dbQueries.updateCampaignSettings(db, campaignId, currentSettings);
 
         // Se foram enviados campos de edição geral da campanha, atualiza também a tabela campaigns
-        if (name !== undefined || systemId !== undefined || themeId !== undefined || loreDescription !== undefined || notices !== undefined || sessions !== undefined || nextSession !== undefined || isPublic !== undefined || maxPlayers !== undefined) {
+        if (name !== undefined || systemId !== undefined || themeId !== undefined || loreDescription !== undefined || notices !== undefined || sessions !== undefined || nextSession !== undefined || maxPlayers !== undefined) {
           await dbQueries.updateCampaign(db, campaignId, {
             name: name !== undefined ? String(name).trim() : campaign.name,
             systemId: systemId !== undefined ? String(systemId).trim() : campaign.system_id,
@@ -1212,7 +1215,6 @@ export async function handleSyncRequest(request, env, clientIp) {
             notices: notices !== undefined ? String(notices).trim() : campaign.notices,
             sessions: sessions !== undefined ? parseInt(sessions, 10) || 0 : campaign.sessions,
             nextSession: nextSession !== undefined ? String(nextSession).trim() : campaign.next_session,
-            isPublic: isPublic !== undefined ? (Number(isPublic) ? 1 : 0) : campaign.is_public,
             maxPlayers: maxPlayers !== undefined ? Math.max(1, Math.min(12, parseInt(maxPlayers, 10) || 5)) : campaign.max_players
           });
         }
@@ -2352,9 +2354,10 @@ export async function handleSyncRequest(request, env, clientIp) {
         }), { status: 404, headers });
     }
   } catch (err) {
+    console.error('[SyncService Error]', action, err);
     return new Response(JSON.stringify({
       sucesso: false,
-      erro: 'Erro interno ao processar comando de sincronização',
+      erro: err.message || 'Erro interno ao processar comando de sincronização',
       detalhes: env?.ENVIRONMENT === 'development' ? err.message : undefined
     }), { status: 500, headers });
   }
