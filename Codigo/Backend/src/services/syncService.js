@@ -7,7 +7,7 @@ import { dbQueries } from '../db/queries.js';
 import { LIMITS } from '../config/limits.js';
 import { checkRateLimit } from '../middleware/rateLimiter.js';
 import { applySecurityHeaders } from '../config/securityHeaders.js';
-import { randomUUID, signJWT, createAuthCookie } from './cryptoService.js';
+import { randomUUID, signJWT, createAuthCookie, generateSalt, hashPassword, verifyPassword } from './cryptoService.js';
 import { adminService } from './adminService.js';
 import { generateUniqueSimpleId, OFFICIAL_SYSTEMS, OFFICIAL_THEMES, CAMPAIGN_LIMITS, sanitizeText } from './campaignService.js';
 import { rpgEngineService } from './rpgEngineService.js';
@@ -92,11 +92,13 @@ export async function handleSyncRequest(request, env, clientIp) {
       case 'profile.get': {
         const userBasic = await dbQueries.getUserById(db, user.userId);
         const profile = await dbQueries.getUserProfile(db, user.userId);
+        const stats = await dbQueries.getUserStats(db, user.userId);
         return new Response(JSON.stringify({
           sucesso: true,
           dados: {
             ...userBasic,
-            perfil: profile || null
+            perfil: profile || null,
+            stats: stats || { totalCampaigns: 0, totalCreatedCampaigns: 0, totalCharacters: 0 }
           }
         }), { status: 200, headers });
       }
@@ -193,12 +195,136 @@ export async function handleSyncRequest(request, env, clientIp) {
       }
 
       case 'profile.update': {
-        const { displayName } = data;
-        if (!displayName || !displayName.trim()) {
-          return new Response(JSON.stringify({ sucesso: false, erro: 'Nome de exibição inválido' }), { status: 400, headers });
+        const currentProfile = await dbQueries.getUserProfile(db, user.userId) || {};
+        const currentUser = await dbQueries.getUserById(db, user.userId) || {};
+
+        const name = (data.name !== undefined ? data.name : (data.displayName !== undefined ? data.displayName : (currentProfile.name || currentUser.display_name))) || '';
+        const nickname = (data.nickname !== undefined ? data.nickname : (currentProfile.nickname || '')).trim().replace(/^@+/, '');
+        const ageGroup = data.ageGroup !== undefined ? data.ageGroup : (currentProfile.age_group || '18-24');
+        const bio = data.bio !== undefined ? data.bio : (currentProfile.bio || '');
+        const contacts = data.contacts !== undefined ? data.contacts : (currentProfile.contacts || {});
+        const avatarUrl = data.avatarUrl !== undefined ? data.avatarUrl : (currentProfile.avatar_url || currentUser.avatar_url || '');
+        const bannerUrl = data.bannerUrl !== undefined ? data.bannerUrl : (currentProfile.banner_url || '');
+
+        // 1. Validação de Nome
+        if (!name || typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 60) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'O nome deve ter entre 2 e 60 caracteres' }), { status: 400, headers });
         }
-        await dbQueries.updateUserProfile(db, user.userId, { displayName });
-        return new Response(JSON.stringify({ sucesso: true, mensagem: 'Perfil atualizado com sucesso' }), { status: 200, headers });
+
+        // 2. Validação de Nickname
+        if (!nickname) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'O nickname é obrigatório' }), { status: 400, headers });
+        }
+        if (!/^[a-zA-Z0-9_]{3,25}$/.test(nickname)) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'O nickname deve ter entre 3 e 25 caracteres (apenas letras, números e underlines)' }), { status: 400, headers });
+        }
+
+        // Verifica unicidade de nickname se foi alterado
+        const existingNick = await dbQueries.getProfileByNickname(db, nickname);
+        if (existingNick && existingNick.user_id !== user.userId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: `O nickname @${nickname} já está sendo utilizado por outro aventureiro` }), { status: 409, headers });
+        }
+
+        // 3. Validação de Faixa Etária
+        const validAgeGroups = new Set(['-14', '14-17', '18-24', '25-34', '35+', '+18', '18+']);
+        if (ageGroup && !validAgeGroups.has(String(ageGroup).trim())) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Selecione uma faixa etária válida' }), { status: 400, headers });
+        }
+
+        // 4. Sanitização da Bio
+        const cleanBio = typeof bio === 'string' ? bio.trim().substring(0, 500).replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+
+        // 5. Sanitização de Contatos Opcionais
+        const cleanContacts = {
+          whatsapp: typeof contacts?.whatsapp === 'string' ? contacts.whatsapp.trim().substring(0, 30) : '',
+          discord: typeof contacts?.discord === 'string' ? contacts.discord.trim().substring(0, 50) : '',
+          instagram: typeof contacts?.instagram === 'string' ? contacts.instagram.trim().replace(/^@+/, '').substring(0, 50) : ''
+        };
+
+        await dbQueries.saveUserProfile(db, {
+          userId: user.userId,
+          name: name.trim(),
+          nickname,
+          ageGroup: String(ageGroup || '18-24').trim(),
+          bio: cleanBio,
+          contacts: cleanContacts,
+          avatarUrl: typeof avatarUrl === 'string' ? avatarUrl.trim() : '',
+          bannerUrl: typeof bannerUrl === 'string' ? bannerUrl.trim() : ''
+        });
+
+        // Reemite Token JWT com novos displayName e avatarUrl
+        const jwtSecret = env?.JWT_SECRET || 'arcana-super-secret-key-development-local-2026-vtt';
+        const exp = Math.floor(Date.now() / 1000) + LIMITS.JWT_EXPIRATION_SECONDS;
+        const updatedToken = await signJWT({
+          sub: user.userId,
+          email: user.email,
+          role: user.role,
+          displayName: name.trim(),
+          avatarUrl: typeof avatarUrl === 'string' ? avatarUrl.trim() : '',
+          emailVerified: 1,
+          profileCompleted: 1,
+          exp
+        }, jwtSecret);
+
+        headers.set('Set-Cookie', createAuthCookie(updatedToken, LIMITS.JWT_EXPIRATION_SECONDS));
+
+        const updatedStats = await dbQueries.getUserStats(db, user.userId);
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: 'Perfil do aventureiro atualizado com sucesso!',
+          token: updatedToken,
+          perfil: {
+            userId: user.userId,
+            name: name.trim(),
+            nickname,
+            ageGroup: String(ageGroup || '18-24').trim(),
+            bio: cleanBio,
+            contacts: cleanContacts,
+            avatarUrl: typeof avatarUrl === 'string' ? avatarUrl.trim() : '',
+            bannerUrl: typeof bannerUrl === 'string' ? bannerUrl.trim() : '',
+            role: user.role,
+            profileCompleted: 1
+          },
+          stats: updatedStats
+        }), { status: 200, headers });
+      }
+
+      case 'profile.password.update':
+      case 'profile.changePassword': {
+        const { currentPassword, newPassword } = data;
+
+        if (!newPassword || typeof newPassword !== 'string') {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Informe a nova senha' }), { status: 400, headers });
+        }
+
+        if (newPassword.length < LIMITS.MIN_PASSWORD_LENGTH || newPassword.length > LIMITS.MAX_PASSWORD_LENGTH) {
+          return new Response(JSON.stringify({ sucesso: false, erro: `A nova senha deve ter entre ${LIMITS.MIN_PASSWORD_LENGTH} e ${LIMITS.MAX_PASSWORD_LENGTH} caracteres` }), { status: 400, headers });
+        }
+
+        const userAuth = await dbQueries.getUserWithAuth(db, user.userId);
+        if (!userAuth) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Usuário não encontrado' }), { status: 404, headers });
+        }
+
+        // Se o usuário já possui senha cadastrada, valida a senha atual
+        if (userAuth.password_hash) {
+          if (!currentPassword) {
+            return new Response(JSON.stringify({ sucesso: false, erro: 'Informe sua senha atual para autorizar a alteração' }), { status: 400, headers });
+          }
+          const isMatch = await verifyPassword(currentPassword, userAuth.password_hash, userAuth.salt);
+          if (!isMatch) {
+            return new Response(JSON.stringify({ sucesso: false, erro: 'A senha atual informada está incorreta' }), { status: 401, headers });
+          }
+        }
+
+        const salt = generateSalt();
+        const passwordHash = await hashPassword(newPassword, salt);
+        await dbQueries.updateUserPassword(db, user.userId, passwordHash, salt);
+
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: 'Senha alterada com sucesso! Suas credenciais foram atualizadas com segurança.'
+        }), { status: 200, headers });
       }
 
       // CAMPANHAS (RLS: O usuário só enxerga/cria sob seu ID)

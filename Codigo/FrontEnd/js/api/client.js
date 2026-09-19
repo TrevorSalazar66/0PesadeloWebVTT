@@ -245,12 +245,22 @@ export const apiClient = {
     return this.sync('admin.user.resetPassword', { targetUserId, newPassword });
   },
 
-  adminListCampaigns(params = {}) {
-    return this.sync('admin.campaigns.list', params);
-  },
-
   adminListAuditLogs(params = {}) {
     return this.sync('admin.audit.logs', params);
+  },
+
+  // === MÉTODOS DE PERFIL & SEGURANÇA PESSOAL ===
+
+  getUserProfile() {
+    return this.sync('profile.get');
+  },
+
+  updateUserProfile(data = {}) {
+    return this.sync('profile.update', data);
+  },
+
+  changeUserPassword(data = {}) {
+    return this.sync('profile.password.update', data);
   }
 };
 

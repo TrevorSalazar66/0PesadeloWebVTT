@@ -116,6 +116,50 @@ export const dbQueries = {
     return await stmtUser.bind(name.trim(), avatarUrl.trim(), userId).run();
   },
 
+  async getUserWithAuth(db, id) {
+    const stmt = db.prepare('SELECT id, email, password_hash, salt, display_name, role, avatar_url, email_verified, profile_completed, auth_provider, is_blocked, created_at FROM users WHERE id = ?');
+    return await stmt.bind(id).first();
+  },
+
+  async updateUserPassword(db, userId, passwordHash, salt) {
+    const stmt = db.prepare(`
+      UPDATE users
+      SET password_hash = ?, salt = ?, auth_provider = CASE WHEN auth_provider = 'google' THEN 'both' ELSE auth_provider END
+      WHERE id = ?
+    `);
+    return await stmt.bind(passwordHash, salt, userId).run();
+  },
+
+  async getUserStats(db, userId) {
+    let totalCampaigns = 0;
+    let totalCreatedCampaigns = 0;
+    let totalCharacters = 0;
+
+    try {
+      const campCountStmt = db.prepare('SELECT COUNT(*) as total FROM campaign_players WHERE user_id = ?');
+      const campRes = await campCountStmt.bind(userId).first();
+      totalCampaigns = campRes?.total || 0;
+    } catch (_) {}
+
+    try {
+      const createdCountStmt = db.prepare('SELECT COUNT(*) as total FROM campaigns WHERE owner_id = ?');
+      const createdRes = await createdCountStmt.bind(userId).first();
+      totalCreatedCampaigns = createdRes?.total || 0;
+    } catch (_) {}
+
+    try {
+      const charCountStmt = db.prepare('SELECT COUNT(*) as total FROM characters WHERE user_id = ?');
+      const charRes = await charCountStmt.bind(userId).first();
+      totalCharacters = charRes?.total || 0;
+    } catch (_) {}
+
+    return {
+      totalCampaigns,
+      totalCreatedCampaigns,
+      totalCharacters
+    };
+  },
+
   // ==========================================
   // VERIFICAÇÃO DE E-MAIL (OTP DE 6 DÍGITOS)
   // ==========================================
@@ -761,10 +805,6 @@ export const dbQueries = {
     return await stmt.bind(userId).run();
   },
 
-  async updateUserPassword(db, userId, passwordHash, salt) {
-    const stmt = db.prepare('UPDATE users SET password_hash = ?, salt = ? WHERE id = ?');
-    return await stmt.bind(passwordHash, salt, userId).run();
-  },
 
   async listAllCampaignsAdmin(db, { search = '', limit = 50, offset = 0 } = {}) {
     let sql = `

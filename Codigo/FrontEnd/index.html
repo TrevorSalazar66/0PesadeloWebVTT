@@ -2472,10 +2472,254 @@
       background: var(--bg-surface);
       border: 1px solid var(--border-card);
       border-radius: var(--radius-lg);
-      padding: 20px;
+    /* ==========================================
+       ESTILOS DA ABA DE PERFIL DO AVENTUREIRO
+       ========================================== */
+    .profile-hero-card {
+      position: relative;
+      background: radial-gradient(circle at 80% 20%, rgba(212, 163, 75, 0.15), transparent 60%),
+                  radial-gradient(circle at 10% 90%, rgba(139, 92, 246, 0.12), transparent 50%),
+                  var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-xl);
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transition: all var(--transition-normal);
+    }
+
+    .profile-hero-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .profile-hero-avatar-box {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .profile-hero-avatar {
+      width: 88px;
+      height: 88px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-surface);
+      border: 3px solid var(--gold-primary);
+      box-shadow: 0 0 20px rgba(212, 163, 75, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-title);
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--gold-light);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .profile-hero-info {
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .profile-hero-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .profile-hero-nick {
+      font-size: 14px;
+      color: var(--gold-light);
+      font-weight: 600;
+      background: rgba(212, 163, 75, 0.1);
+      padding: 2px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-gold);
+    }
+
+    .profile-hero-bio {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.5;
+      margin: 8px 0 12px 0;
+      max-width: 680px;
+    }
+
+    .profile-hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-dim);
+      flex-wrap: wrap;
+    }
+
+    .profile-hero-actions {
+      flex-shrink: 0;
+    }
+
+    .profile-id-box {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+    }
+
+    .profile-id-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: block;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .profile-id-input {
+      background: transparent;
+      border: none;
+      color: var(--gold-light);
+      font-family: monospace;
+      font-size: 12px;
+      font-weight: 600;
+      width: 140px;
+      outline: none;
+    }
+
+    .profile-layout-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .profile-layout-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .config-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      transition: all var(--transition-fast);
+    }
+
+    .config-card:hover {
+      border-color: rgba(212, 163, 75, 0.3);
+    }
+
+    .config-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .config-card-title {
+      font-family: var(--font-title);
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 4px 0;
+    }
+
+    .config-card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .config-form-group {
+      margin-bottom: 14px;
+    }
+
+    .config-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .config-subtext {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+      display: block;
+    }
+
+    .profile-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .profile-stat-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+      transition: all var(--transition-fast);
+    }
+
+    .profile-stat-box:hover {
+      border-color: var(--border-gold);
+      transform: translateY(-2px);
+    }
+
+    .profile-stat-icon {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    .profile-stat-val {
+      font-family: var(--font-title);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--gold-light);
+      line-height: 1.1;
+    }
+
+    .profile-stat-label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .profile-stat-sub {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .badge-email-verified {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #10b981;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
     }
   </style>
 
@@ -3134,58 +3378,226 @@
       </section>
 
       <!-- ==========================================
-           TELA: PERFIL
+           TELA: PERFIL DO AVENTUREIRO (HERO & GOVERNANÇA)
            ========================================== -->
       <section id="view-perfil" class="view-section">
-        <header class="page-header">
-          <h2 class="page-title">Perfil do Aventureiro</h2>
-          <p class="page-subtitle">Gerencie sua alcunha, credenciais e identificador na taverna.</p>
-        </header>
-
-        <div class="profile-card">
-          <div class="profile-header-group">
-            <div class="avatar-large">
-              <!-- Ícone Aventureiro -->
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
+        <!-- HERO BANNER DO PERFIL -->
+        <div class="profile-hero-card" id="profile-hero-banner">
+          <div class="profile-hero-content">
+            <div class="profile-hero-avatar-box">
+              <div class="profile-hero-avatar" id="profile-hero-avatar-img">A</div>
+              <span class="role-badge role-badge-jogador" id="profile-hero-role-badge">Jogador</span>
             </div>
-            <div>
-              <h3 class="font-cinzel" id="profile-display-name" style="font-size: 20px; font-weight: 700; color: #fff;">
-                Aventureiro Arcano</h3>
-              <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">
-                Papel: <span class="role-badge">Jogador</span>
-              </p>
+            <div class="profile-hero-info">
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <h1 class="font-cinzel profile-hero-title" id="profile-hero-display-name">Aventureiro Arcano</h1>
+                <span class="profile-hero-nick" id="profile-hero-nickname">@aventureiro</span>
+              </div>
+              <p class="profile-hero-bio" id="profile-hero-bio-preview">"Carregando crônicas e histórico do aventureiro..."</p>
+              <div class="profile-hero-meta">
+                <span id="profile-hero-created-at">📅 Membro da Taverna</span>
+                <span>•</span>
+                <span id="profile-hero-auth-method">🔑 Login: E-mail</span>
+              </div>
+            </div>
+            <div class="profile-hero-actions">
+              <div class="profile-id-box">
+                <span class="profile-id-label">Seu ID de Aventureiro:</span>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <input type="text" id="profile-user-id" class="profile-id-input" readonly value="...">
+                  <button type="button" class="btn-secondary" onclick="copiarIdUsuarioPerfil()" title="Copiar ID para convites" style="padding: 4px 10px; font-size: 11.5px; white-space: nowrap;">
+                    📋 Copiar ID
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <form id="form-profile" onsubmit="salvarPerfil(event)">
-            <div class="form-group">
-              <label class="form-label" for="profile-name">Nome de Exibição / Alcunha</label>
-              <input type="text" id="profile-name" class="form-input" value="Aventureiro Arcano" required>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="profile-email">E-mail Cadastrado</label>
-              <input type="email" id="profile-email" class="form-input" value="aventureiro@arcana.vtt" readonly
-                style="opacity: 0.7; cursor: not-allowed;">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Seu ID de Usuário (para ser convidado para mesas)</label>
-              <div class="id-copy-group">
-                <input type="text" id="profile-user-id" class="form-input" value="usr_arcana_9f2a71d" readonly
-                  style="font-family: monospace;">
-                <button type="button" class="btn-secondary" onclick="copiarIdUsuario()">Copiar ID</button>
+        <!-- GRADE PRINCIPAL DO PERFIL -->
+        <div class="profile-layout-grid">
+          
+          <!-- CARD 1: IDENTIDADE & BIOGRAFIA -->
+          <div class="config-card">
+            <div class="config-card-header">
+              <div>
+                <h3 class="config-card-title">🛡️ Identidade & Biografia</h3>
+                <p class="config-card-desc">Personalize seu nome nobre, alcunha e apresentação na taverna.</p>
               </div>
             </div>
 
-            <button type="submit" class="btn-gold" style="margin-bottom: 0; margin-top: 16px;">
-              Salvar Alterações
-            </button>
-          </form>
+            <form id="form-profile-main" onsubmit="salvarPerfilCompleto(event)">
+              <div class="config-form-group">
+                <label class="config-label" for="profile-input-name">Nome de Exibição / Alcunha Principal</label>
+                <input type="text" id="profile-input-name" class="form-input" placeholder="Ex: Mestre Gandalf, Aragorn..." required minlength="2" maxlength="60">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="config-form-group">
+                  <label class="config-label" for="profile-input-nickname">Nickname Único (@)</label>
+                  <div style="position: relative;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gold-light); font-weight: 700;">@</span>
+                    <input type="text" id="profile-input-nickname" class="form-input" style="padding-left: 28px;" placeholder="seu_apelido" required minlength="3" maxlength="25">
+                  </div>
+                </div>
+                <div class="config-form-group">
+                  <label class="config-label" for="profile-input-age">Faixa Etária Declarada</label>
+                  <select id="profile-input-age" class="form-input">
+                    <option value="18-24">18 a 24 anos</option>
+                    <option value="25-34">25 a 34 anos</option>
+                    <option value="35+">35 anos ou mais</option>
+                    <option value="14-17">14 a 17 anos</option>
+                    <option value="-14">Menor de 14 anos</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="config-form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <label class="config-label" for="profile-input-bio">Biografia do Aventureiro</label>
+                  <span id="profile-bio-counter" style="font-size: 11.5px; color: var(--text-dim);">500 restantes</span>
+                </div>
+                <textarea id="profile-input-bio" class="form-input" rows="4" maxlength="500" oninput="atualizarContadorBio(this.value)" placeholder="Conte um pouco sobre suas experiências de RPG, sistemas favoritos ou estilo de interpretação..."></textarea>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                <button type="submit" class="btn-gold" id="btn-save-profile" style="margin: 0; padding: 10px 20px; font-size: 13px;">
+                  💾 Salvar Identidade
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- CARD 2: MÍDIAS, REDES & CONTATOS -->
+          <div class="config-card">
+            <div class="config-card-header">
+              <div>
+                <h3 class="config-card-title">🌐 Mídias & Redes Sociais</h3>
+                <p class="config-card-desc">Vincule seus contatos para facilitar a comunicação com seu grupo.</p>
+              </div>
+            </div>
+
+            <form id="form-profile-social" onsubmit="salvarPerfilCompleto(event)">
+              <div class="config-form-group">
+                <label class="config-label" for="profile-input-avatar">URL da Imagem do Avatar</label>
+                <input type="url" id="profile-input-avatar" class="form-input" placeholder="https://exemplo.com/minha-foto.png">
+                <span class="config-subtext">Cole o link direto da imagem para usar como seu retrato personalizado.</span>
+              </div>
+
+              <div class="config-form-group">
+                <label class="config-label" for="profile-input-banner">URL do Estandarte / Banner de Fundo</label>
+                <input type="url" id="profile-input-banner" class="form-input" placeholder="https://exemplo.com/meu-banner.jpg">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="config-form-group">
+                  <label class="config-label" for="profile-input-discord">Discord (Usuário)</label>
+                  <input type="text" id="profile-input-discord" class="form-input" placeholder="usuario#0000 ou @usuario">
+                </div>
+                <div class="config-form-group">
+                  <label class="config-label" for="profile-input-whatsapp">WhatsApp (com DDD)</label>
+                  <input type="text" id="profile-input-whatsapp" class="form-input" placeholder="(11) 98765-4321">
+                </div>
+              </div>
+
+              <div class="config-form-group">
+                <label class="config-label" for="profile-input-instagram">Instagram (@)</label>
+                <input type="text" id="profile-input-instagram" class="form-input" placeholder="@seu_instagram">
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                <button type="submit" class="btn-gold" style="margin: 0; padding: 10px 20px; font-size: 13px;">
+                  💾 Salvar Mídias & Redes
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- CARD 3: VITRINE DA TAVERNA (MÉTRICAS & ESTATÍSTICAS) -->
+          <div class="config-card">
+            <div class="config-card-header">
+              <div>
+                <h3 class="config-card-title">📊 Vitrine & Estatísticas da Taverna</h3>
+                <p class="config-card-desc">Histórico e engajamento do seu aventureiro no Arcana VTT.</p>
+              </div>
+            </div>
+
+            <div class="profile-stats-grid">
+              <div class="profile-stat-box">
+                <div class="profile-stat-icon">🗺️</div>
+                <div class="profile-stat-val" id="profile-stat-campaigns">-</div>
+                <div class="profile-stat-label">Campanhas na Taverna</div>
+                <div class="profile-stat-sub">Mesas onde você joga</div>
+              </div>
+              <div class="profile-stat-box">
+                <div class="profile-stat-icon">👑</div>
+                <div class="profile-stat-val" id="profile-stat-created-campaigns">-</div>
+                <div class="profile-stat-label">Mesas Mestrada(s)</div>
+                <div class="profile-stat-sub">Criadas por você</div>
+              </div>
+              <div class="profile-stat-box">
+                <div class="profile-stat-icon">⚔️</div>
+                <div class="profile-stat-val" id="profile-stat-characters">-</div>
+                <div class="profile-stat-label">Heróis Forjados</div>
+                <div class="profile-stat-sub">Fichas vinculadas</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 4: SEGURANÇA & ALTERAÇÃO DE SENHA -->
+          <div class="config-card">
+            <div class="config-card-header">
+              <div>
+                <h3 class="config-card-title">🔒 Segurança & Credenciais</h3>
+                <p class="config-card-desc">Gerencie o acesso à sua conta e altere sua senha de forma segura.</p>
+              </div>
+            </div>
+
+            <div class="config-form-group">
+              <label class="config-label">E-mail Cadastrado</label>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="email" id="profile-info-email" class="form-input" readonly style="opacity: 0.8; cursor: not-allowed;">
+                <span class="badge-email-verified" id="profile-email-badge">✓ Confirmado</span>
+              </div>
+            </div>
+
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div>
+                  <h4 style="margin: 0; font-size: 13.5px; color: #fff; font-weight: 600;">Alterar Senha de Acesso</h4>
+                  <p style="margin: 2px 0 0 0; font-size: 11.5px; color: var(--text-dim);">Crie uma senha forte com pelo menos 8 caracteres.</p>
+                </div>
+                <button type="button" class="btn-secondary" onclick="alternarFormTrocarSenha()" id="btn-toggle-change-pass" style="padding: 6px 14px; font-size: 12px;">
+                  🔑 Alterar Senha
+                </button>
+              </div>
+
+              <!-- Formulário Colapsável de Troca de Senha -->
+              <form id="form-change-password" style="display: none; margin-top: 12px; background: rgba(0,0,0,0.25); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);" onsubmit="alterarSenhaPerfil(event)">
+                <div class="config-form-group">
+                  <label class="config-label" for="pass-current">Senha Atual</label>
+                  <input type="password" id="pass-current" class="form-input" placeholder="Digite sua senha atual..." required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div class="config-form-group">
+                    <label class="config-label" for="pass-new">Nova Senha</label>
+                    <input type="password" id="pass-new" class="form-input" placeholder="Mínimo de 8 caracteres..." minlength="8" required>
+                  </div>
+                  <div class="config-form-group">
+                    <label class="config-label" for="pass-confirm">Confirme a Nova Senha</label>
+                    <input type="password" id="pass-confirm" class="form-input" placeholder="Repita a nova senha..." minlength="8" required>
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;">
+                  <button type="button" class="btn-secondary" onclick="alternarFormTrocarSenha()">Cancelar</button>
+                  <button type="submit" class="btn-gold" id="btn-submit-change-pass" style="margin: 0; padding: 8px 16px; font-size: 12.5px;">Atualizar Senha</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -4666,6 +5078,11 @@
       // Se for a tela de administração, carrega a sub-aba ativa (Visão Geral por padrão)
       if (telaId === 'admin') {
         alternarSubAbaAdmin(adminState.activeSubTab || 'stats');
+      }
+
+      // Se for a tela de perfil, carrega dados completos e métricas do aventureiro
+      if (telaId === 'perfil') {
+        carregarPerfilUsuario();
       }
 
       // 3. Salvar última tela no localStorage para persistência de navegação
@@ -7415,35 +7832,345 @@
     }
 
     /**
-     * Copia o ID do usuário para a área de transferência
+     * =========================================================================
+     * FUNÇÕES DA ABA DE PERFIL DO AVENTUREIRO
+     * =========================================================================
      */
-    function copiarIdUsuario() {
 
-      const idInput = document.getElementById('profile-user-id');
-      if (idInput) {
-        navigator.clipboard.writeText(idInput.value).then(() => {
-          mostrarToast('ID copiado com sucesso!');
-        }).catch(() => {
-          idInput.select();
-          document.execCommand('copy');
-          mostrarToast('ID copiado com sucesso!');
-        });
+    /**
+     * Atualiza o contador de caracteres da bio
+     */
+    function atualizarContadorBio(valor) {
+      const counter = document.getElementById('profile-bio-counter');
+      if (!counter) return;
+      const rem = 500 - (valor ? valor.length : 0);
+      counter.textContent = `${rem} restantes`;
+      if (rem < 50) {
+        counter.style.color = '#ef4444';
+      } else {
+        counter.style.color = 'var(--text-dim)';
       }
     }
 
     /**
-     * Salva as alterações de perfil simuladas
+     * Copia o ID do usuário para a área de transferência com feedback
      */
-    function salvarPerfil(event) {
-      if (event) event.preventDefault();
-      const nomeInput = document.getElementById('profile-name');
-      const displayTitle = document.getElementById('profile-display-name');
+    function copiarIdUsuarioPerfil() {
+      const idInput = document.getElementById('profile-user-id');
+      if (idInput && idInput.value && idInput.value !== '...') {
+        navigator.clipboard.writeText(idInput.value).then(() => {
+          mostrarToast('📋 ID copiado para a área de transferência!');
+        }).catch(() => {
+          idInput.select();
+          document.execCommand('copy');
+          mostrarToast('📋 ID copiado para a área de transferência!');
+        });
+      }
+    }
+    // Alias para compatibilidade
+    function copiarIdUsuario() {
+      copiarIdUsuarioPerfil();
+    }
 
-      if (nomeInput && displayTitle) {
-        displayTitle.textContent = nomeInput.value;
+    /**
+     * Alterna a exibição do formulário de alteração de senha
+     */
+    function alternarFormTrocarSenha() {
+      const form = document.getElementById('form-change-password');
+      const btn = document.getElementById('btn-toggle-change-pass');
+      if (!form) return;
+      if (form.style.display === 'none' || !form.style.display) {
+        form.style.display = 'block';
+        if (btn) btn.textContent = '✖ Fechar Formulário';
+      } else {
+        form.style.display = 'none';
+        if (btn) btn.textContent = '🔑 Alterar Senha';
+        form.reset();
+      }
+    }
+
+    /**
+     * Carrega os dados reais do perfil e as métricas do aventureiro via Cloudflare Gateway
+     */
+    async function carregarPerfilUsuario() {
+      try {
+        if (!window.apiClient) return;
+
+        const res = await window.apiClient.getUserProfile();
+        if (res && res.sucesso && res.dados) {
+          const user = res.dados.user || {};
+          const profile = res.dados.profile || {};
+          const stats = res.dados.stats || {};
+
+          // 1. Atualizar Hero Banner
+          const displayName = profile.displayName || user.name || 'Aventureiro Arcano';
+          const nickname = profile.nickname || user.name?.toLowerCase().replace(/\s+/g, '_') || 'aventureiro';
+          const bio = profile.bio || 'Nenhuma crônica ou história contada ainda. Edite sua biografia para forjar sua lenda na Taverna.';
+          
+          const elTitle = document.getElementById('profile-hero-display-name');
+          if (elTitle) elTitle.textContent = displayName;
+
+          const elNick = document.getElementById('profile-hero-nickname');
+          if (elNick) elNick.textContent = `@${nickname}`;
+
+          const elBio = document.getElementById('profile-hero-bio-preview');
+          if (elBio) elBio.textContent = `"${bio}"`;
+
+          const elId = document.getElementById('profile-user-id');
+          if (elId) elId.value = user.id || '...';
+
+          // Data de criação
+          const elCreated = document.getElementById('profile-hero-created-at');
+          if (elCreated && user.created_at) {
+            try {
+              const dt = new Date(user.created_at);
+              const dataFormatada = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+              elCreated.textContent = `📅 Membro desde ${dataFormatada}`;
+            } catch(e) {
+              elCreated.textContent = `📅 Membro da Taverna`;
+            }
+          }
+
+          // Provedor de Login
+          const elAuth = document.getElementById('profile-hero-auth-method');
+          if (elAuth) {
+            elAuth.textContent = `🔑 Login: ${user.auth_provider === 'google' ? 'Google' : 'E-mail'}`;
+          }
+
+          // Role Badge do Hero
+          const elRoleBadge = document.getElementById('profile-hero-role-badge');
+          if (elRoleBadge) {
+            const role = String(user.role || 'jogador').toLowerCase();
+            let roleLabel = 'Jogador';
+            let roleClass = 'role-badge-jogador';
+            if (role === 'superadmin') {
+              roleLabel = 'Superadmin';
+              roleClass = 'role-badge-superadmin';
+            } else if (role === 'admin') {
+              roleLabel = 'Administrador';
+              roleClass = 'role-badge-admin';
+            } else if (role === 'mestre') {
+              roleLabel = 'Mestre';
+              roleClass = 'role-badge-mestre';
+            }
+            elRoleBadge.textContent = roleLabel;
+            elRoleBadge.className = `role-badge ${roleClass}`;
+          }
+
+          // Avatar Heráldico
+          const elAvatar = document.getElementById('profile-hero-avatar-img');
+          if (elAvatar) {
+            if (profile.avatarUrl) {
+              elAvatar.innerHTML = `<img src="${profile.avatarUrl}" alt="Avatar de ${displayName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.onerror=null; this.parentElement.textContent='${displayName[0].toUpperCase()}';">`;
+            } else {
+              elAvatar.innerHTML = '';
+              elAvatar.textContent = (displayName[0] || 'A').toUpperCase();
+            }
+          }
+
+          // Banner de Fundo Hero
+          const elBanner = document.getElementById('profile-hero-banner');
+          if (elBanner) {
+            if (profile.bannerUrl) {
+              elBanner.style.background = `linear-gradient(to top, rgba(16, 16, 29, 0.95), rgba(16, 16, 29, 0.75)), url('${profile.bannerUrl}') center/cover no-repeat`;
+            } else {
+              elBanner.style.background = `linear-gradient(135deg, rgba(20, 20, 36, 0.95) 0%, rgba(30, 25, 45, 0.9) 100%)`;
+            }
+          }
+
+          // 2. Preencher Formulário 1 (Identidade & Bio)
+          const inName = document.getElementById('profile-input-name');
+          if (inName) inName.value = profile.displayName || user.name || '';
+
+          const inNick = document.getElementById('profile-input-nickname');
+          if (inNick) inNick.value = profile.nickname || '';
+
+          const inAge = document.getElementById('profile-input-age');
+          if (inAge) inAge.value = profile.ageRange || '18-24';
+
+          const inBio = document.getElementById('profile-input-bio');
+          if (inBio) {
+            inBio.value = profile.bio || '';
+            atualizarContadorBio(inBio.value);
+          }
+
+          // 3. Preencher Formulário 2 (Mídias & Redes)
+          const inAvatar = document.getElementById('profile-input-avatar');
+          if (inAvatar) inAvatar.value = profile.avatarUrl || '';
+
+          const inBanner = document.getElementById('profile-input-banner');
+          if (inBanner) inBanner.value = profile.bannerUrl || '';
+
+          const inDiscord = document.getElementById('profile-input-discord');
+          if (inDiscord) inDiscord.value = profile.contactDiscord || '';
+
+          const inWhatsapp = document.getElementById('profile-input-whatsapp');
+          if (inWhatsapp) inWhatsapp.value = profile.contactWhatsapp || '';
+
+          const inInstagram = document.getElementById('profile-input-instagram');
+          if (inInstagram) inInstagram.value = profile.contactInstagram || '';
+
+          // 4. Preencher Estatísticas
+          const statCamp = document.getElementById('profile-stat-campaigns');
+          if (statCamp) statCamp.textContent = stats.participatingCampaigns ?? 0;
+
+          const statMaster = document.getElementById('profile-stat-created-campaigns');
+          if (statMaster) statMaster.textContent = stats.masterCampaigns ?? 0;
+
+          const statChars = document.getElementById('profile-stat-characters');
+          if (statChars) statChars.textContent = stats.charactersCreated ?? 0;
+
+          // 5. Preencher Segurança
+          const inEmail = document.getElementById('profile-info-email');
+          if (inEmail) inEmail.value = user.email || '';
+
+          const elEmailBadge = document.getElementById('profile-email-badge');
+          if (elEmailBadge) {
+            if (user.email_verified) {
+              elEmailBadge.textContent = '✓ Confirmado';
+              elEmailBadge.className = 'badge-email-verified';
+            } else {
+              elEmailBadge.textContent = '⚠️ Não confirmado';
+              elEmailBadge.className = 'role-badge role-badge-jogador';
+            }
+          }
+
+          // Atualizar cache local do usuário
+          try {
+            const raw = localStorage.getItem('arcana_user_data');
+            if (raw) {
+              const current = JSON.parse(raw);
+              current.displayName = profile.displayName || user.name;
+              current.name = user.name;
+              localStorage.setItem('arcana_user_data', JSON.stringify(current));
+            }
+          } catch(e) {}
+        }
+      } catch (err) {
+        console.error('Erro ao carregar perfil:', err);
+        mostrarToast('Não foi possível sincronizar o perfil com a Taverna.');
+      }
+    }
+
+    /**
+     * Salva as alterações de identidade, biografia e contatos
+     */
+    async function salvarPerfilCompleto(event) {
+      if (event) event.preventDefault();
+
+      const btnSave = document.getElementById('btn-save-profile');
+      const oldText = btnSave ? btnSave.innerHTML : '💾 Salvar';
+
+      try {
+        const displayName = document.getElementById('profile-input-name')?.value?.trim();
+        const nickname = document.getElementById('profile-input-nickname')?.value?.trim();
+        const ageRange = document.getElementById('profile-input-age')?.value;
+        const bio = document.getElementById('profile-input-bio')?.value?.trim();
+        const avatarUrl = document.getElementById('profile-input-avatar')?.value?.trim();
+        const bannerUrl = document.getElementById('profile-input-banner')?.value?.trim();
+        const contactDiscord = document.getElementById('profile-input-discord')?.value?.trim();
+        const contactWhatsapp = document.getElementById('profile-input-whatsapp')?.value?.trim();
+        const contactInstagram = document.getElementById('profile-input-instagram')?.value?.trim();
+
+        if (!displayName || displayName.length < 2) {
+          mostrarToast('O nome de exibição deve ter pelo menos 2 caracteres.');
+          return;
+        }
+
+        if (nickname) {
+          const nickRegex = /^[a-zA-Z0-9_]{3,25}$/;
+          if (!nickRegex.test(nickname)) {
+            mostrarToast('O Nickname deve ter entre 3 e 25 caracteres (apenas letras, números e _).');
+            return;
+          }
+        }
+
+        if (btnSave) {
+          btnSave.disabled = true;
+          btnSave.innerHTML = '<div class="spinner" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;"></div> Gravando...';
+        }
+
+        const res = await window.apiClient.updateUserProfile({
+          displayName,
+          nickname,
+          ageRange,
+          bio,
+          avatarUrl,
+          bannerUrl,
+          contactDiscord,
+          contactWhatsapp,
+          contactInstagram
+        });
+
+        if (res && res.sucesso) {
+          mostrarToast('✨ Perfil forjado e gravado com sucesso!');
+          await carregarPerfilUsuario();
+        } else {
+          throw new Error(res?.erro || 'Falha ao atualizar perfil.');
+        }
+      } catch (err) {
+        console.error('Erro ao salvar perfil:', err);
+        mostrarToast(`❌ ${err.message}`);
+      } finally {
+        if (btnSave) {
+          btnSave.disabled = false;
+          btnSave.innerHTML = oldText;
+        }
+      }
+    }
+
+    /**
+     * Altera a senha do usuário com validação de credencial atual
+     */
+    async function alterarSenhaPerfil(event) {
+      if (event) event.preventDefault();
+
+      const btnSubmit = document.getElementById('btn-submit-change-pass');
+      const curPass = document.getElementById('pass-current')?.value;
+      const newPass = document.getElementById('pass-new')?.value;
+      const confirmPass = document.getElementById('pass-confirm')?.value;
+
+      if (!curPass) {
+        mostrarToast('Informe sua senha atual.');
+        return;
       }
 
-      mostrarToast('Alterações salvas com sucesso!');
+      if (!newPass || newPass.length < 8) {
+        mostrarToast('A nova senha deve possuir no mínimo 8 caracteres.');
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        mostrarToast('A nova senha e a confirmação não coincidem.');
+        return;
+      }
+
+      try {
+        if (btnSubmit) {
+          btnSubmit.disabled = true;
+          btnSubmit.textContent = 'Alterando...';
+        }
+
+        const res = await window.apiClient.changeUserPassword({
+          currentPassword: curPass,
+          newPassword: newPass
+        });
+
+        if (res && res.sucesso) {
+          mostrarToast('🔒 Senha atualizada com sucesso! Suas novas credenciais estão ativas.');
+          document.getElementById('form-change-password')?.reset();
+          alternarFormTrocarSenha();
+        } else {
+          throw new Error(res?.erro || 'Falha ao alterar senha.');
+        }
+      } catch (err) {
+        mostrarToast(`❌ ${err.message}`);
+      } finally {
+        if (btnSubmit) {
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = 'Atualizar Senha';
+        }
+      }
     }
 
     /**
