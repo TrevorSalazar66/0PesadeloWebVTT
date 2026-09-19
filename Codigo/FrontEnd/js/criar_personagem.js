@@ -233,28 +233,76 @@ async function carregarCampanhasDisponiveis() {
     const selectCampaign = document.getElementById('input-campanha');
     if (!selectCampaign) return;
 
-    const res = await apiClient.sync('campaign.list', {});
-    if (res && res.sucesso && Array.isArray(res.dados) && res.dados.length > 0) {
+    selectCampaign.innerHTML = '<option value="" disabled selected>⏳ Carregando suas campanhas...</option>';
+
+    // 1. Tentar buscar campanhas vinculadas ao usuário
+    let listaCampanhas = [];
+    const resList = await apiClient.sync('campaigns.list', {});
+    if (resList && resList.sucesso && Array.isArray(resList.dados)) {
+      listaCampanhas = resList.dados;
+    }
+
+    // 2. Se houver preselectedCampaignId na URL e ela não estiver na lista (ex: jogador recém-entrado), buscar diretamente
+    if (preselectedCampaignId && !listaCampanhas.some(c => String(c.id) === String(preselectedCampaignId))) {
+      try {
+        const resSingle = await apiClient.sync('campaigns.get', { campaignId: preselectedCampaignId });
+        if (resSingle && resSingle.sucesso && resSingle.dados) {
+          listaCampanhas.unshift(resSingle.dados);
+        }
+      } catch (errGet) {
+        console.warn('Não foi possível obter a campanha específica:', errGet);
+      }
+    }
+
+    // 3. Renderizar opções no select
+    if (listaCampanhas.length > 0) {
       selectCampaign.innerHTML = '<option value="" disabled selected>Selecione a campanha para o seu personagem...</option>';
-      res.dados.forEach(c => {
+      let selecionado = false;
+
+      listaCampanhas.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.id;
-        opt.textContent = `${c.name || 'Campanha #' + c.id} (Sistema: ${c.system || 'AlphaD6'})`;
+        const papel = c.user_role ? ` (${c.user_role})` : '';
+        const sistema = c.system_id || c.system || 'AlphaD6';
+        opt.textContent = `⚔️ ${c.name || 'Campanha #' + c.id} — ${sistema}${papel}`;
+
         if (preselectedCampaignId && String(c.id) === String(preselectedCampaignId)) {
           opt.selected = true;
+          selecionado = true;
         }
         selectCampaign.appendChild(opt);
       });
 
-      // Se só houver 1 campanha e nenhuma pré-selecionada, auto-seleciona
-      if (res.dados.length === 1 && !preselectedCampaignId) {
+      // Se não havia pré-selecionado mas só há 1 campanha, auto-seleciona
+      if (!selecionado && listaCampanhas.length === 1) {
         selectCampaign.selectedIndex = 1;
       }
+
+      // Se houver uma campanha pré-selecionada, adicionar um aviso visual amigável
+      const containerAviso = document.getElementById('aviso-campanha-preselecionada');
+      if (preselectedCampaignId && containerAviso) {
+        const cAtiva = listaCampanhas.find(c => String(c.id) === String(preselectedCampaignId));
+        if (cAtiva) {
+          containerAviso.style.display = 'block';
+          containerAviso.innerHTML = `🛡️ <strong>Campanha selecionada:</strong> ${cAtiva.name} <em>(${cAtiva.system_id || 'AlphaD6'})</em>`;
+        }
+      }
     } else {
-      selectCampaign.innerHTML = '<option value="" disabled selected>⚠️ Nenhuma campanha ativa encontrada. Crie ou entre em uma campanha primeiro!</option>';
+      selectCampaign.innerHTML = '<option value="" disabled selected>⚠️ Nenhuma campanha ativa encontrada.</option>';
+      const containerAviso = document.getElementById('aviso-campanha-preselecionada');
+      if (containerAviso) {
+        containerAviso.style.display = 'block';
+        containerAviso.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+        containerAviso.style.background = 'rgba(239, 68, 68, 0.1)';
+        containerAviso.innerHTML = `⚠️ <strong>Você ainda não participa de nenhuma campanha!</strong><br><span style="font-size: 0.8rem;">Crie uma campanha na Taverna ou solicite entrada em uma campanha existente antes de criar seu personagem.</span>`;
+      }
     }
   } catch (err) {
-    console.warn('Não foi possível carregar campanhas ativas:', err);
+    console.warn('Erro ao carregar campanhas:', err);
+    const selectCampaign = document.getElementById('input-campanha');
+    if (selectCampaign) {
+      selectCampaign.innerHTML = '<option value="" disabled selected>⚠️ Erro ao carregar campanhas do servidor.</option>';
+    }
   }
 }
 

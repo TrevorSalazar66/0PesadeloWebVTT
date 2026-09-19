@@ -191,6 +191,7 @@ export async function handleSyncRequest(request, env, clientIp) {
       }
 
       // CAMPANHAS (RLS: O usuário só enxerga/cria sob seu ID)
+      case 'campaign.list':
       case 'campaigns.list': {
         const campaigns = await dbQueries.getCampaignsByUser(db, user.userId);
         return new Response(JSON.stringify({ sucesso: true, dados: campaigns }), { status: 200, headers });
@@ -207,6 +208,7 @@ export async function handleSyncRequest(request, env, clientIp) {
         }), { status: 200, headers });
       }
 
+      case 'campaign.get':
       case 'campaigns.get': {
         const { campaignId, simpleId } = data;
         let campaign = null;
