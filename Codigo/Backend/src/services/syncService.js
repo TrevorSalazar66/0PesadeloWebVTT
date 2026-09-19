@@ -1026,6 +1026,261 @@ export async function handleSyncRequest(request, env, clientIp) {
       }
 
       // ==========================================
+      // SISTEMA ALPHAD6 & COMPÊNDIO GERAL / COMUNIDADE
+      // ==========================================
+      case 'rpg.system.overview':
+      case 'systems.alphad6.details': {
+        const { systemId = 'alphad6' } = data;
+        
+        // 1. Dados Canônicos do Sistema e Compêndio
+        const compendiumItems = rpgEngineService.getCompendiumItems();
+        const specializations = rpgEngineService.getCompendiumSpecializations();
+        const wealthTiers = rpgEngineService.WEALTH_TIERS;
+        const weaponsCatalog = rpgEngineService.WEAPONS_CATALOG;
+        const defensesCatalog = rpgEngineService.DEFENSES_CATALOG;
+        const difficultyTable = rpgEngineService.DIFFICULTY_TABLE;
+
+        const rules = {
+          nome: 'AlphaD6 RPG',
+          versao: '1.2.0 (Oficial)',
+          resumo: 'Sistema minimalista voltado primariamente ao RolePlay, com 4 atributos (Corpo, Mente, Social, Espírito), sucessos em 4, 5 ou 6, característica única de Anima (vida, mente e magia), especializações dinâmicas, 4 ações por turno e economia narrativa abstrata.',
+          atributos: [
+            { id: 'corpo', nome: 'Corpo', desc: 'Força física, atletismo, vigor corporal, combate corpo a corpo e iniciativa.' },
+            { id: 'mente', nome: 'Mente', desc: 'Intelecto, percepção, armas de fogo, medicina, investigação e define a quantidade de Especializações.' },
+            { id: 'social', nome: 'Social', desc: 'Carisma, empatia, persuasão, intimidação, presença de palco e traquejo social.' },
+            { id: 'espirito', nome: 'Espírito', desc: 'Força de vontade, intuição, conexão mística, defesa mágica e canalização de poderes.' }
+          ],
+          mecanica_dados: {
+            tipo_dado: 'D6',
+            regra_sucesso: 'Cada dado com resultado superior a 3 (4, 5 ou 6) é contabilizado como 1 Sucesso.',
+            reserva_dados: 'Pontos no Atributo (em D6) + 1d6 se houver Especialização aplicável (+1d6 extra por ajuda de aliado com especialização ou vantagem concedida pelo mestre).',
+            testes_resistidos: 'Aquele com mais sucessos vence. Em caso de empate, vence quem obteve os maiores valores nos dados de sucesso. Se o empate persistir, considera-se sucesso parcial.',
+            resultados: {
+              sucesso_total: 'Sucessos >= Dificuldade definida pelo mestre.',
+              sucesso_parcial: 'Sucessos > metade da Dificuldade (atinge o objetivo a um custo significativo).',
+              falha_total: 'Sucessos < metade da Dificuldade.'
+            },
+            dificuldades: difficultyTable
+          },
+          recursos: {
+            anima: '2d6 + 10 — Característica única vital que representa a vida física, saúde mental e energia para magias/habilidades. Ao chegar a 0, ocorre a Passagem para o Vazio.',
+            descansos: {
+              curto: { tempo: 'Mínimo 2 horas', local: 'Minimamente seguro e confortável', recuperacao: '3d4 pontos de Anima (Média 7,5)' },
+              longo: { tempo: '6 horas', local: 'Confortável e totalmente seguro', recuperacao: '3d6 pontos de Anima (Média 10,5)' },
+              completo: { tempo: '8 horas', local: 'Totalmente confortável e totalmente seguro', recuperacao: '3d8 pontos de Anima (Média 13,5)' }
+            },
+            restauracoes: {
+              emergencia: { condicao: 'Sem especialização em medicina ou em ambiente perigoso', custo: '1 item de cura consumido', recuperacao: '6 pontos de Anima' },
+              cuidadosa: { condicao: 'Com especialização em medicina ou com proteção e tempo', custo: '2 itens de cura consumidos', recuperacao: '12 pontos de Anima' },
+              completa: { condicao: 'Com especialização em medicina em ambiente próprio de cura (mínimo 24 horas)', custo: '3 itens de cura consumidos', recuperacao: 'Restaura todos os pontos de Anima' }
+            },
+            capacidade_carga: '2d6 + Corpo em slots de inventário (itens pequenos/leves não ocupam slots).',
+            arquetipos_contatos: 'Arquétipos livres para roleplay + 3 NPCs contatos criados livremente pelo jogador a qualquer momento da campanha.',
+            acoes_rodada: '4 Ações por turno fixas (3 metros por ação de movimento). Ações não usadas viram Reações para contra-ataques, proteção de aliados ou ativação de itens de defesa (máx. 3 itens).',
+            iniciativa: 'Teste de Corpo (desempate: sucessos -> maiores valores nos dados -> pontos no atributo Corpo).',
+            combate: {
+              ataque_corpo_a_corpo: 'Teste de Corpo contra a Defesa do alvo.',
+              ataque_distancia_fogo: 'Teste de Mente contra a Defesa do alvo (todas as armas de fogo usam Mente).',
+              defesa_alvo: 'Atributo de Corpo (físico) ou Espírito (mágico) + bônus de itens de defesa ativados com reação.',
+              tabela_defesas_itens: [
+                { defesa: 4, riqueza_minima: 'Milionário' },
+                { defesa: 2, riqueza_minima: 'Classe Média Alta' },
+                { defesa: 1, riqueza_minima: 'Pobre' }
+              ],
+              morrendo: 'Ao zerar Anima: teste de Corpo ou Espírito a cada turno (Dificuldade inicial 4, +2 a cada novo teste na cena). 1 falha = morte instantânea. Ataque inimigo em morrendo = morte instantânea.'
+            }
+          },
+          sistema_monetario: {
+            conceito: 'Abstrato e narrativo pela soma de Mente + Social',
+            tiers: wealthTiers
+          }
+        };
+
+        // 2. Ecossistema da Comunidade (Fichas, NPCs e Homebrews de Campanhas)
+        const rawCharacters = await dbQueries.getCharactersBySystem(db, systemId);
+        const campaigns = await dbQueries.getCampaignsBySystem(db, systemId);
+
+        const players = [];
+        const npcs = [];
+        const homebrews = [];
+
+        for (const c of rawCharacters) {
+          const sheet = typeof c.sheet_data === 'string' ? JSON.parse(c.sheet_data || '{}') : (c.sheet_data || {});
+          const isNpc = sheet.tipo_personagem === 'npc' || sheet.is_npc === true;
+          
+          const itemResumo = {
+            id: c.id,
+            name: c.name,
+            campaignId: c.campaign_id,
+            campaignName: c.campaign_name || 'Campanha Desconhecida',
+            campaignSimpleId: c.campaign_simple_id || null,
+            creatorName: c.creator_name || 'Aventureiro',
+            creatorAvatar: c.creator_avatar || '',
+            createdAt: c.created_at,
+            sheet: {
+              arquetipo: sheet.arquetipo || 'Aventureiro',
+              atributos: sheet.atributos || { corpo: 2, mente: 2, social: 2, espirito: 2 },
+              pontos_vida_max: sheet.pontos_vida_max || (10 + (sheet.atributos?.corpo || 2) * 3),
+              anima_max: sheet.anima_max || (10 + (sheet.atributos?.espirito || 2) * 2),
+              defesa_total: sheet.defesa_total || 2,
+              riqueza: sheet.riqueza || 'pobre',
+              pratas: sheet.pratas !== undefined ? sheet.pratas : 2500,
+              especializacoes: sheet.especializacoes || [],
+              inventario: sheet.inventario || [],
+              lore: sheet.lore || {}
+            }
+          };
+
+          if (isNpc) {
+            npcs.push(itemResumo);
+          } else {
+            players.push(itemResumo);
+          }
+
+          // Coleta itens ou recursos homebrew criados nas fichas
+          if (Array.isArray(sheet.inventario)) {
+            sheet.inventario.forEach(item => {
+              if (item && (item.is_homebrew || item.origem === 'homebrew' || item.custom)) {
+                homebrews.push({
+                  id: item.id || `hb-${item.nome}`,
+                  nome: item.nome,
+                  tipo: item.tipo || 'Item Customizado',
+                  categoria: item.categoria || 'Homebrew',
+                  custo_pratas: item.custo_pratas || 0,
+                  peso_slots: item.peso_slots || 1,
+                  descricao: item.descricao || 'Item customizado criado pela comunidade.',
+                  autor: c.creator_name || 'Mestre',
+                  campanha: c.campaign_name || 'Mesa Local'
+                });
+              }
+            });
+          }
+        }
+
+        // Se não houver homebrews ou NPCs no banco, disponibilizar catálogo padrão exemplar
+        if (npcs.length === 0) {
+          npcs.push(
+            {
+              id: 'npc-guard-01',
+              name: 'Guarda da Vigília Noturna',
+              campaignName: 'Guarnição de Solaria',
+              creatorName: 'Compêndio Oficial AlphaD6',
+              sheet: {
+                arquetipo: 'Sentinela Urbano',
+                atributos: { corpo: 3, mente: 2, social: 2, espirito: 1 },
+                pontos_vida_max: 19,
+                anima_max: 12,
+                defesa_total: 4,
+                riqueza: 'pobre',
+                pratas: 2500,
+                especializacoes: [{ nome: 'Arma Branca', atributo: 'corpo', rank: 2 }, { nome: 'Atenção', atributo: 'mente', rank: 1 }],
+                inventario: [{ nome: 'Espada Longa', slot: 'mao_primaria', dano: '+3 Dano' }, { nome: 'Cota de Malha Leve', slot: 'armadura', defesa: 2 }]
+              }
+            },
+            {
+              id: 'npc-cultist-02',
+              name: 'Cultista do Olho Escarlate',
+              campaignName: 'O Chamado das Profundezas',
+              creatorName: 'Compêndio Oficial AlphaD6',
+              sheet: {
+                arquetipo: 'Iniciado do Oculto',
+                atributos: { corpo: 1, mente: 3, social: 2, espirito: 4 },
+                pontos_vida_max: 13,
+                anima_max: 18,
+                defesa_total: 2,
+                riqueza: 'miseravel',
+                pratas: 1200,
+                especializacoes: [{ nome: 'Ocultismo & Rituais', atributo: 'espirito', rank: 3 }, { nome: 'Enganação', atributo: 'social', rank: 2 }],
+                inventario: [{ nome: 'Adaga Cerimonial', slot: 'mao_primaria', dano: '+1 Dano' }]
+              }
+            },
+            {
+              id: 'npc-beast-03',
+              name: 'Lobo das Cinzas Primevas',
+              campaignName: 'Terras Selvagens de Valen',
+              creatorName: 'Compêndio Oficial AlphaD6',
+              sheet: {
+                arquetipo: 'Predador Alfa',
+                atributos: { corpo: 4, mente: 2, social: 1, espirito: 2 },
+                pontos_vida_max: 22,
+                anima_max: 14,
+                defesa_total: 3,
+                riqueza: 'miseravel',
+                pratas: 0,
+                especializacoes: [{ nome: 'Furtividade', atributo: 'corpo', rank: 2 }, { nome: 'Rastreamento & Sobrevivência', atributo: 'mente', rank: 2 }],
+                inventario: [{ nome: 'Mordida Dilacerante', slot: 'mao_primaria', dano: '+4 Dano Físico' }]
+              }
+            }
+          );
+        }
+
+        if (homebrews.length === 0) {
+          homebrews.push(
+            {
+              id: 'hb-01',
+              nome: 'Lâmina do Eclipse Sombrio',
+              tipo: 'Arma Branca Mágica',
+              categoria: 'Armas & Focos',
+              custo_pratas: 4800,
+              peso_slots: 2,
+              descricao: 'Forjada em ferro estelar e banhada em sangue de aberrações. Concede +3 de dano e permite drenar 2 pontos de Anima do alvo em acertos críticos.',
+              autor: 'Mestre Salazar',
+              campanha: 'Crônicas do Pesadelo'
+            },
+            {
+              id: 'hb-02',
+              nome: 'Elixir de Anima Instável',
+              tipo: 'Consumível Alquímico',
+              categoria: 'Foco & Restauração',
+              custo_pratas: 850,
+              peso_slots: 1,
+              descricao: 'Restaura imediatamente 2d6 de Anima, mas exige um teste de Espírito (Dificuldade 4) para não sofrer 1 ponto de choque no Vazio.',
+              autor: 'Grimório dos Alquimistas',
+              campanha: 'O Labirinto da Lua Negra'
+            },
+            {
+              id: 'hb-03',
+              nome: 'Manto da Neblina Eterna',
+              tipo: 'Vestimenta Encantada',
+              categoria: 'Proteções & Escudos',
+              custo_pratas: 3200,
+              peso_slots: 1,
+              descricao: 'Tecido com fios de espectros. Adiciona +2 dados em qualquer teste de Furtividade e +1 de Defesa passiva.',
+              autor: 'Guardião Eldrin',
+              campanha: 'Cripta dos Esquecidos'
+            }
+          );
+        }
+
+        return new Response(JSON.stringify({
+          sucesso: true,
+          dados: {
+            systemId,
+            rules,
+            compendium: {
+              items: compendiumItems,
+              weapons: weaponsCatalog,
+              defenses: defensesCatalog,
+              specializations: specializations,
+              wealthTiers: wealthTiers
+            },
+            community: {
+              players,
+              npcs,
+              homebrews,
+              stats: {
+                totalPlayers: players.length,
+                totalNpcs: npcs.length,
+                totalHomebrews: homebrews.length,
+                totalCampaigns: campaigns.length
+              }
+            }
+          }
+        }), { status: 200, headers });
+      }
+
+
+      // ==========================================
       // EVOLUÇÃO, XP & GATILHOS DE CENA (ALPHAD6)
       // ==========================================
       case 'rpg.character.awardXP': {

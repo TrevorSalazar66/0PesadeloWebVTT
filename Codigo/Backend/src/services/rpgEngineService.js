@@ -624,34 +624,92 @@ export function validateArchetypeAndContacts({ arquetipo = '', contatos = [] } =
 // RIQUEZA & INVENTÁRIO (ALPHAD6)
 // ==========================================
 
+// ==========================================
+// RIQUEZA, MOEDA (PRATAS) & INVENTÁRIO (ALPHAD6)
+// ==========================================
+
 export const WEALTH_TIERS = {
-  milionario: { min: 22, max: 24, label: 'Milionário', nivel: 6 },
-  rico: { min: 18, max: 21, label: 'Rico', nivel: 5 },
-  classe_media_alta: { min: 14, max: 17, label: 'Classe Média Alta', nivel: 4 },
-  classe_media_baixa: { min: 8, max: 13, label: 'Classe Média Baixa', nivel: 3 },
-  pobre: { min: 4, max: 7, label: 'Pobre', nivel: 2 },
-  miseravel: { min: 2, max: 3, label: 'Miserável', nivel: 1 }
+  milionario: {
+    id: 'milionario',
+    label: 'Milionário',
+    nivel: 5,
+    min: 10,
+    max: 99,
+    dinheiroPrata: 12500,
+    patrimonio: 'Casas de luxo, Veículos de luxo, Equipamentos variados, Terrenos, Empresas, etc.',
+    descricao: 'Uma pessoa com renda estável muito maior que todos, a maior classe na escala monetária, provavelmente dono de várias empresas e com incontáveis coisas compondo seu patrimônio.'
+  },
+  rico: {
+    id: 'rico',
+    label: 'Rico',
+    nivel: 4,
+    min: 8,
+    max: 9,
+    dinheiroPrata: 8500,
+    patrimonio: 'Casas, Veículos, Terrenos, etc.',
+    descricao: 'Uma pessoa com renda mensal significativamente maior que a média, com liberdade financeira e muitos bens compondo seu patrimônio.'
+  },
+  abastado: {
+    id: 'abastado',
+    label: 'Abastado',
+    nivel: 3,
+    min: 6,
+    max: 7,
+    dinheiroPrata: 5500,
+    patrimonio: 'Casa, Veículos, Equipamentos variados.',
+    descricao: 'Uma pessoa com uma fonte de renda estável, possuindo uma casa própria ou talvez até mesmo um apartamento espaçoso, um veículo e com certa liberdade financeira.'
+  },
+  pobre: {
+    id: 'pobre',
+    label: 'Pobre',
+    nivel: 2,
+    min: 4,
+    max: 5,
+    dinheiroPrata: 2500,
+    patrimonio: 'Alguns utensílios domésticos e parte de uma casa, provavelmente um quarto próprio.',
+    descricao: 'Uma pessoa com renda mensal baixa, comumente morando junto com outras pessoas desta classe social que se ajudam a manter o local alugado, nada mais que a escala monetária mínima para sobreviver.'
+  },
+  miseravel: {
+    id: 'miseravel',
+    label: 'Miserável',
+    nivel: 1,
+    min: 2,
+    max: 3,
+    dinheiroPrata: 1200,
+    patrimonio: 'Nenhum.',
+    descricao: 'Uma pessoa que não possui patrimônio algum, muitas vezes se abrigando em estruturas sem uso para não ficar exposto à chuva e vento. A classe social mais baixa na escala monetária.'
+  }
 };
 
 export function getWealthTier({ mente = 1, social = 1 }) {
-  const soma = Math.max(2, Math.floor(Number(mente) || 1) + Math.floor(Number(social) || 1));
-  
-  for (const [key, tier] of Object.entries(WEALTH_TIERS)) {
-    if (soma >= tier.min && soma <= tier.max) {
-      return {
-        id: key,
-        label: tier.label,
-        somaMenteSocial: soma,
-        nivel: tier.nivel
-      };
-    }
+  const menteVal = Math.max(1, Math.floor(Number(mente) || 1));
+  const socialVal = Math.max(1, Math.floor(Number(social) || 1));
+  const soma = menteVal + socialVal;
+
+  let chosenTier = WEALTH_TIERS.miseravel;
+  if (soma >= 10) {
+    chosenTier = WEALTH_TIERS.milionario;
+  } else if (soma >= 8) {
+    chosenTier = WEALTH_TIERS.rico;
+  } else if (soma >= 6) {
+    chosenTier = WEALTH_TIERS.abastado;
+  } else if (soma >= 4) {
+    chosenTier = WEALTH_TIERS.pobre;
+  } else {
+    chosenTier = WEALTH_TIERS.miseravel;
   }
 
-  // Fallbacks
-  if (soma > 24) {
-    return { id: 'milionario', label: 'Milionário', somaMenteSocial: soma, nivel: 6 };
-  }
-  return { id: 'miseravel', label: 'Miserável', somaMenteSocial: soma, nivel: 1 };
+  return {
+    id: chosenTier.id,
+    label: chosenTier.label,
+    nivel: chosenTier.nivel,
+    somaMenteSocial: soma,
+    dinheiroPrata: chosenTier.dinheiroPrata,
+    dinheiroPrataInicial: chosenTier.dinheiroPrata,
+    dinheiroPrataAtual: chosenTier.dinheiroPrata,
+    patrimonio: chosenTier.patrimonio,
+    descricao: chosenTier.descricao
+  };
 }
 
 export function calculateMaxInventorySlots({ corpo = 1, customRoll = null }) {
@@ -677,38 +735,38 @@ export function calculateMaxInventorySlots({ corpo = 1, customRoll = null }) {
 
 export const WEAPONS_CATALOG = {
   // Armas Simples (Corpo)
-  arma_cortante_pequena: { id: 'arma_cortante_pequena', nome: 'Arma Cortante Pequena (Adaga/Faca)', dano: '1d4+1', riquezaMinima: 'miseravel', atributo: 'corpo', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: ['Leve'] },
-  arma_cortante_grande: { id: 'arma_cortante_grande', nome: 'Arma Cortante Grande (Espada Longa/Machado)', dano: '1d6+2', riquezaMinima: 'classe_media_baixa', atributo: 'corpo', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: ['Especializada'] },
-  arma_impactante_pequena: { id: 'arma_impactante_pequena', nome: 'Arma Impactante Pequena (Porrete/Clava)', dano: '1d6+2', riquezaMinima: 'miseravel', atributo: 'corpo', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: [] },
-  arma_impactante_grande: { id: 'arma_impactante_grande', nome: 'Arma Impactante Grande (Marreta/Martelo de Guerra)', dano: '1d8+3', riquezaMinima: 'classe_media_alta', atributo: 'corpo', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: ['Especializada', 'Pesada'] },
-  arma_perfurante_pequena: { id: 'arma_perfurante_pequena', nome: 'Arma Perfurante Pequena (Estilete/Florete Leve)', dano: '1d4+3', riquezaMinima: 'miseravel', atributo: 'corpo', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: ['Perfuração'] },
-  arma_perfurante_grande: { id: 'arma_perfurante_grande', nome: 'Arma Perfurante Grande (Lança/Pique)', dano: '1d6+4', riquezaMinima: 'classe_media_alta', atributo: 'corpo', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: ['Especializada', 'Alcance'] },
-  arma_de_haste: { id: 'arma_de_haste', nome: 'Arma de Haste (Alabarda/Glaive)', dano: '1d10+2', riquezaMinima: 'rico', atributo: 'corpo', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: ['Especializada', 'Longa', 'Duas Mãos'] },
-  chicote: { id: 'chicote', nome: 'Chicote de Couro Rúnico', dano: '1d8+2', riquezaMinima: 'pobre', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arma Especial', tracos: ['Especializada', 'Longa', 'Laço'] },
-  arma_de_arremesso: { id: 'arma_de_arremesso', nome: 'Adagas de Arremesso (Conjunto com 3)', dano: '1d4', riquezaMinima: 'miseravel', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arremesso', tracos: ['Munição (3)'] },
-  arco_e_flecha: { id: 'arco_e_flecha', nome: 'Arco e Flecha Caçador', dano: '1d6+3', riquezaMinima: 'pobre', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Disparo', tracos: ['Especializada', 'Munição (12)', 'Recarregável'] },
-  arremessador: { id: 'arremessador', nome: 'Funda / Arremessador de Projéteis', dano: '1d4+2', riquezaMinima: 'miseravel', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Disparo', tracos: ['Recarregável'] },
+  arma_cortante_pequena: { id: 'arma_cortante_pequena', nome: 'Arma Cortante Pequena (Adaga/Faca)', dano: '1d4+1', custo: 30, riquezaMinima: 'miseravel', atributo: 'corpo', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: ['Leve'] },
+  arma_cortante_grande: { id: 'arma_cortante_grande', nome: 'Arma Cortante Grande (Espada Longa/Machado)', dano: '1d6+2', custo: 150, riquezaMinima: 'abastado', atributo: 'corpo', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: ['Especializada'] },
+  arma_impactante_pequena: { id: 'arma_impactante_pequena', nome: 'Arma Impactante Pequena (Porrete/Clava)', dano: '1d6+2', custo: 20, riquezaMinima: 'miseravel', atributo: 'corpo', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: [] },
+  arma_impactante_grande: { id: 'arma_impactante_grande', nome: 'Arma Impactante Grande (Marreta/Martelo de Guerra)', dano: '1d8+3', custo: 200, riquezaMinima: 'abastado', atributo: 'corpo', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: ['Especializada', 'Pesada'] },
+  arma_perfurante_pequena: { id: 'arma_perfurante_pequena', nome: 'Arma Perfurante Pequena (Estilete/Florete Leve)', dano: '1d4+3', custo: 40, riquezaMinima: 'miseravel', atributo: 'corpo', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: ['Perfuração'] },
+  arma_perfurante_grande: { id: 'arma_perfurante_grande', nome: 'Arma Perfurante Grande (Lança/Pique)', dano: '1d6+4', custo: 180, riquezaMinima: 'abastado', atributo: 'corpo', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: ['Especializada', 'Alcance'] },
+  arma_de_haste: { id: 'arma_de_haste', nome: 'Arma de Haste (Alabarda/Glaive)', dano: '1d10+2', custo: 350, riquezaMinima: 'rico', atributo: 'corpo', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma Branca', tracos: ['Especializada', 'Longa', 'Duas Mãos'] },
+  chicote: { id: 'chicote', nome: 'Chicote de Couro Rúnico', dano: '1d8+2', custo: 80, riquezaMinima: 'pobre', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arma Especial', tracos: ['Especializada', 'Longa', 'Laço'] },
+  arma_de_arremesso: { id: 'arma_de_arremesso', nome: 'Adagas de Arremesso (Conjunto com 3)', dano: '1d4', custo: 30, riquezaMinima: 'miseravel', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arremesso', tracos: ['Munição (3)'] },
+  arco_e_flecha: { id: 'arco_e_flecha', nome: 'Arco e Flecha Caçador', dano: '1d6+3', custo: 100, riquezaMinima: 'pobre', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Disparo', tracos: ['Especializada', 'Munição (12)', 'Recarregável'] },
+  arremessador: { id: 'arremessador', nome: 'Funda / Arremessador de Projéteis', dano: '1d4+2', custo: 15, riquezaMinima: 'miseravel', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Disparo', tracos: ['Recarregável'] },
 
   // Armas de Fogo (Todas usam Mente)
-  fogo_pequena_fraca: { id: 'fogo_pequena_fraca', nome: 'Pistola Leve Calibre Curto', dano: '2d4', riquezaMinima: 'pobre', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (6)'] },
-  fogo_pequena_forte: { id: 'fogo_pequena_forte', nome: 'Revólver Pesado / Magnum', dano: '2d6+3', riquezaMinima: 'classe_media_baixa', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (8)'] },
-  fogo_media_fraca: { id: 'fogo_media_fraca', nome: 'Carabina de Repetição Leve', dano: '2d8+2', riquezaMinima: 'classe_media_baixa', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (12)'] },
-  fogo_media_forte: { id: 'fogo_media_forte', nome: 'Espingarda de Cano Duplo', dano: '2d8+4', riquezaMinima: 'classe_media_alta', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (14)', 'Impacto'] },
-  fogo_grande_fraca: { id: 'fogo_grande_fraca', nome: 'Rifle de Longo Alcance', dano: '2d10+4', riquezaMinima: 'classe_media_alta', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (16)', 'Longo Alcance'] },
-  fogo_grande_forte: { id: 'fogo_grande_forte', nome: 'Rifle de Precisão de Elite', dano: '2d10+6', riquezaMinima: 'rico', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (18)', 'Perfurante'] },
-  fogo_especial_fraca: { id: 'fogo_especial_fraca', nome: 'Armamento Pesado Automático', dano: '2d12+6', riquezaMinima: 'rico', atributo: 'mente', slotsCarga: 3, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (20)', 'Rajada'] },
-  fogo_especial_forte: { id: 'fogo_especial_forte', nome: 'Canhão Portátil Rúnico', dano: '2d12+8', riquezaMinima: 'milionario', atributo: 'mente', slotsCarga: 3, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (22)', 'Devastador'] }
+  fogo_pequena_fraca: { id: 'fogo_pequena_fraca', nome: 'Pistola Leve Calibre Curto', dano: '2d4', custo: 120, riquezaMinima: 'pobre', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (6)'] },
+  fogo_pequena_forte: { id: 'fogo_pequena_forte', nome: 'Revólver Pesado / Magnum', dano: '2d6+3', custo: 220, riquezaMinima: 'abastado', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (8)'] },
+  fogo_media_fraca: { id: 'fogo_media_fraca', nome: 'Carabina de Repetição Leve', dano: '2d8+2', custo: 280, riquezaMinima: 'abastado', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (12)'] },
+  fogo_media_forte: { id: 'fogo_media_forte', nome: 'Espingarda de Cano Duplo', dano: '2d8+4', custo: 380, riquezaMinima: 'abastado', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (14)', 'Impacto'] },
+  fogo_grande_fraca: { id: 'fogo_grande_fraca', nome: 'Rifle de Longo Alcance', dano: '2d10+4', custo: 480, riquezaMinima: 'abastado', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (16)', 'Longo Alcance'] },
+  fogo_grande_forte: { id: 'fogo_grande_forte', nome: 'Rifle de Precisão de Elite', dano: '2d10+6', custo: 650, riquezaMinima: 'rico', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (18)', 'Perfurante'] },
+  fogo_especial_fraca: { id: 'fogo_especial_fraca', nome: 'Armamento Pesado Automático', dano: '2d12+6', custo: 850, riquezaMinima: 'rico', atributo: 'mente', slotsCarga: 3, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (20)', 'Rajada'] },
+  fogo_especial_forte: { id: 'fogo_especial_forte', nome: 'Canhão Portátil Rúnico', dano: '2d12+8', custo: 1200, riquezaMinima: 'milionario', atributo: 'mente', slotsCarga: 3, slot: 'mao_primaria', categoria: 'Arma de Fogo', tracos: ['Especializada', 'Recarregável', 'Munição (22)', 'Devastador'] }
 };
 
 export const DEFENSES_CATALOG = {
   roupas_comuns: { id: 'roupas_comuns', nome: 'Roupas Comuns de Tecido', bonusDefesa: 0, slotsCarga: 0, slot: 'tronco', categoria: 'Escudos & Armaduras', custo: 20, riquezaMinima: 'miseravel', tracos: ['Sem Penalidade'], desc: 'Vestimenta cotidiana básica sem proteção adicional (+0 Defesa).' },
-  armadura_leve: { id: 'armadura_leve', nome: 'Armadura Leve (Gibão de Couro Batido / Traje Balístico)', bonusDefesa: 1, slotsCarga: 2, slot: 'tronco', categoria: 'Escudos & Armaduras', custo: 250, riquezaMinima: 'classe_media_alta', tracos: ['Proteção', 'Armadura Leve'], desc: 'Vestida no Tronco. Concede +1 de Defesa Total sem penalidades de mobilidade.' },
+  armadura_leve: { id: 'armadura_leve', nome: 'Armadura Leve (Gibão de Couro Batido / Traje Balístico)', bonusDefesa: 1, slotsCarga: 2, slot: 'tronco', categoria: 'Escudos & Armaduras', custo: 250, riquezaMinima: 'abastado', tracos: ['Proteção', 'Armadura Leve'], desc: 'Vestida no Tronco. Concede +1 de Defesa Total sem penalidades de mobilidade.' },
   armadura_media: { id: 'armadura_media', nome: 'Armadura Média (Cota de Malha / Brigantina Reforçada)', bonusDefesa: 2, slotsCarga: 2, slot: 'tronco', categoria: 'Escudos & Armaduras', custo: 500, riquezaMinima: 'milionario', tracos: ['Proteção', 'Armadura Média', 'Req: Corpo 2d6', 'Penalidade: -1m mov, -1d6 furtividade'], desc: 'Vestida no Tronco. Concede +2 de Defesa Total. Requer Corpo 2d6, reduz movimento em -1m por ação e impõe -1d6 em Furtividade.' },
   armadura_pesada: { id: 'armadura_pesada', nome: 'Armadura Pesada (Meia-Armadura de Placas de Aço)', bonusDefesa: 3, slotsCarga: 3, slot: 'tronco', categoria: 'Escudos & Armaduras', custo: 1000, riquezaMinima: 'milionario', tracos: ['Proteção', 'Armadura Pesada', 'Req: Corpo 3d6', 'Penalidade: -2m mov, -2d6 furtividade'], desc: 'Vestida no Tronco. Concede +3 de Defesa Total. Requer Corpo 3d6, reduz movimento em -2m por ação e impõe -2d6 em Furtividade.' },
   armadura_completa: { id: 'armadura_completa', nome: 'Armadura Completa (Placas Completas / Traje de Exotitânio)', bonusDefesa: 4, slotsCarga: 4, slot: 'tronco', categoria: 'Escudos & Armaduras', custo: 1500, riquezaMinima: 'milionario', tracos: ['Proteção', 'Armadura Completa', 'Req: Corpo 4d6', 'Penalidade: -3m mov, -3d6 furtividade', 'Carga Pesada'], desc: 'Vestida no Tronco. Concede +4 de Defesa Total. Requer Corpo 4d6, reduz movimento em -3m por ação e impõe -3d6 em Furtividade.' },
   // Compatibilidade legada
   defesa_leve: { id: 'defesa_leve', nome: 'Defesa Básica (Gibão de Couro/Colete Balístico Leve)', bonusDefesa: 1, slotsCarga: 1, slot: 'tronco', categoria: 'Escudos & Armaduras', custo: 250, riquezaMinima: 'pobre', tracos: ['Ágil'], desc: 'Proteção leve (+1 Defesa).' },
-  defesa_media: { id: 'defesa_media', nome: 'Defesa Reforçada (Cota de Malha/Colete Tático)', bonusDefesa: 2, slotsCarga: 2, slot: 'tronco', categoria: 'Escudos & Armaduras', custo: 500, riquezaMinima: 'classe_media_alta', tracos: ['Proteção'], desc: 'Proteção média (+2 Defesa).' },
+  defesa_media: { id: 'defesa_media', nome: 'Defesa Reforçada (Cota de Malha/Colete Tático)', bonusDefesa: 2, slotsCarga: 2, slot: 'tronco', categoria: 'Escudos & Armaduras', custo: 500, riquezaMinima: 'abastado', tracos: ['Proteção'], desc: 'Proteção média (+2 Defesa).' },
   defesa_pesada: { id: 'defesa_pesada', nome: 'Defesa Mestra (Armadura de Placas/Exotraje Reforçado)', bonusDefesa: 4, slotsCarga: 3, slot: 'tronco', categoria: 'Escudos & Armaduras', custo: 1500, riquezaMinima: 'milionario', tracos: ['Blindagem Máxima', 'Pesada'], desc: 'Blindagem completa (+4 Defesa).' }
 };
 
@@ -719,33 +777,33 @@ export const ITEMS_COMPENDIUM = {
   cura_rapida: { id: 'cura_rapida', nome: 'Cura Rápida Consumível', slot: 'mochila', categoria: 'Saúde & Cura', slotsCarga: 1, custo: 50, riquezaMinima: 'pobre', tracos: ['Consumível', 'Empilhável (até 12)'], desc: 'Gasta 1 ação. Contém 3 doses. Cada dose recupera 1d6 + Corpo de Anima.' },
   cura_lenta: { id: 'cura_lenta', nome: 'Cura Lenta Consumível', slot: 'mochila', categoria: 'Saúde & Cura', slotsCarga: 2, custo: 30, riquezaMinima: 'miseravel', tracos: ['Consumível', 'Prolongado'], desc: '12 doses diárias. A partir do 3º dia consecutivo, soma o bônus de Corpo na recuperação de Anima em descansos e anula 1 condição por dia.' },
   cura_complexa: { id: 'cura_complexa', nome: 'Cura Complexa Consumível', slot: 'mochila', categoria: 'Saúde & Cura', slotsCarga: 2, custo: 80, riquezaMinima: 'pobre', tracos: ['Consumível', 'Especializado'], desc: 'Exige Especialização em Medicina de Campo (Mente). Teste de Mente (Meta 2). Cura 2d6 + Mente de Anima (+1d6 por sucesso extra). Estabiliza estado de Morrendo. Possui 12 usos.' },
-  cura_emergencial: { id: 'cura_emergencial', nome: 'Cura Emergencial (Desfibrilador de Alma / Soro Fênix)', slot: 'mochila', categoria: 'Saúde & Cura', slotsCarga: 1, custo: 200, riquezaMinima: 'classe_media_alta', tracos: ['Consumível', 'Limitado (1 por personagem)', 'Extremo'], desc: 'Ao entrar em Morrendo, gasta as 4 ações do turno para reviver com 50% da Anima Máxima. Reduz permanentemente 1 atributo sorteado para 1d4 sem evolução.' },
+  cura_emergencial: { id: 'cura_emergencial', nome: 'Cura Emergencial (Desfibrilador de Alma / Soro Fênix)', slot: 'mochila', categoria: 'Saúde & Cura', slotsCarga: 1, custo: 200, riquezaMinima: 'abastado', tracos: ['Consumível', 'Limitado (1 por personagem)', 'Extremo'], desc: 'Ao entrar em Morrendo, gasta as 4 ações do turno para reviver com 50% da Anima Máxima. Reduz permanentemente 1 atributo sorteado para 1d4 sem evolução.' },
 
   // ===================================================
   // 2. FOCO MENTAL, ESTRESSE & VONTADE
   // ===================================================
   relaxante_rapido: { id: 'relaxante_rapido', nome: 'Relaxante Rápido Consumível', slot: 'mochila', categoria: 'Foco Mental & Vontade', slotsCarga: 1, custo: 60, riquezaMinima: 'pobre', tracos: ['Consumível', 'Empilhável (até 12)'], desc: 'Gasta 1 ação (3 doses, limite 1x/dia). Anula penalidades de pânico, estresse ou medo no próximo teste de Espírito ou Mente.' },
-  relaxante_lento: { id: 'relaxante_lento', nome: 'Relaxante Lento Consumível', slot: 'mochila', categoria: 'Foco Mental & Vontade', slotsCarga: 2, custo: 90, riquezaMinima: 'classe_media_baixa', tracos: ['Consumível', 'Terapêutico'], desc: '12 doses diárias. A partir do 3º dia, remove penalidades mentais a cada 3 dias e trata traumas permanentes a cada 5 dias de descanso longo.' },
+  relaxante_lento: { id: 'relaxante_lento', nome: 'Relaxante Lento Consumível', slot: 'mochila', categoria: 'Foco Mental & Vontade', slotsCarga: 2, custo: 90, riquezaMinima: 'abastado', tracos: ['Consumível', 'Terapêutico'], desc: '12 doses diárias. A partir do 3º dia, remove penalidades mentais a cada 3 dias e trata traumas permanentes a cada 5 dias de descanso longo.' },
   motivador_rapido: { id: 'motivador_rapido', nome: 'Motivador Rápido Consumível', slot: 'mochila', categoria: 'Foco Mental & Vontade', slotsCarga: 1, custo: 50, riquezaMinima: 'pobre', tracos: ['Consumível', 'Empilhável (até 12)'], desc: 'Gasta 1 ação (2 doses). Concede +1d6 de bônus na reserva de dados em qualquer teste de atributo nas próximas 2 rodadas.' },
   motivador_lento: { id: 'motivador_lento', nome: 'Motivador Lento Consumível', slot: 'mochila', categoria: 'Foco Mental & Vontade', slotsCarga: 2, custo: 80, riquezaMinima: 'pobre', tracos: ['Consumível', 'Ampliador', 'Temporário'], desc: '12 doses diárias. A partir do 3º dia, concede +4 de Anima Máxima temporária e +1d6 em testes de resistência de Espírito enquanto mantiver o uso diário.' },
-  objeto_motivador: { id: 'objeto_motivador', nome: 'Objeto Motivador (Relíquia Sentimental)', slot: 'acessorios', categoria: 'Foco Mental & Vontade', slotsCarga: 2, custo: 130, riquezaMinima: 'classe_media_baixa', tracos: ['Limitado (1 por personagem)', 'Restaurador'], desc: '1x por sessão: Se entrar em Morrendo ou sofrer colapso moral, evoca o objeto e testa Espírito (com bônus narrativo de -2 a +2 dados) para recuperar Anima.' },
-  objeto_relaxante: { id: 'objeto_relaxante', nome: 'Objeto Relaxante (Relíquia de Conforto)', slot: 'acessorios', categoria: 'Foco Mental & Vontade', slotsCarga: 2, custo: 160, riquezaMinima: 'classe_media_alta', tracos: ['Limitado (1 por personagem)', 'Emergencial'], desc: '1x por sessão: Ao ser alvo de terror sobrenatural ou trauma psíquico, segurar o objeto concede +2d6 no teste de Espírito para dissipar o efeito.' },
-  amplificador_capacidades: { id: 'amplificador_capacidades', nome: 'Amplificador de Capacidades (Injeção de Adrenalina / Fúria Alquímica)', slot: 'mochila', categoria: 'Foco Mental & Vontade', slotsCarga: 1, custo: 180, riquezaMinima: 'classe_media_alta', tracos: ['Consumível', 'Limitado (1 por personagem)', 'Risco Severo'], desc: 'Uso único (1 ação). Concede +2d6 de bônus em todos os testes na cena. Ao fim da cena, entra em colapso com -2d6 em todos os atributos até receber Cura Complexa.' },
+  objeto_motivador: { id: 'objeto_motivador', nome: 'Objeto Motivador (Relíquia Sentimental)', slot: 'acessorios', categoria: 'Foco Mental & Vontade', slotsCarga: 2, custo: 130, riquezaMinima: 'abastado', tracos: ['Limitado (1 por personagem)', 'Restaurador'], desc: '1x por sessão: Se entrar em Morrendo ou sofrer colapso moral, evoca o objeto e testa Espírito (com bônus narrativo de -2 a +2 dados) para recuperar Anima.' },
+  objeto_relaxante: { id: 'objeto_relaxante', nome: 'Objeto Relaxante (Relíquia de Conforto)', slot: 'acessorios', categoria: 'Foco Mental & Vontade', slotsCarga: 2, custo: 160, riquezaMinima: 'abastado', tracos: ['Limitado (1 por personagem)', 'Emergencial'], desc: '1x por sessão: Ao ser alvo de terror sobrenatural ou trauma psíquico, segurar o objeto concede +2d6 no teste de Espírito para dissipar o efeito.' },
+  amplificador_capacidades: { id: 'amplificador_capacidades', nome: 'Amplificador de Capacidades (Injeção de Adrenalina / Fúria Alquímica)', slot: 'mochila', categoria: 'Foco Mental & Vontade', slotsCarga: 1, custo: 180, riquezaMinima: 'abastado', tracos: ['Consumível', 'Limitado (1 por personagem)', 'Risco Severo'], desc: 'Uso único (1 ação). Concede +2d6 de bônus em todos os testes na cena. Ao fim da cena, entra em colapso com -2d6 em todos os atributos até receber Cura Complexa.' },
 
   // ===================================================
   // 3. DESCANSO, ACAMPAMENTO & ABRIGO
   // ===================================================
-  descanso_relaxante: { id: 'descanso_relaxante', nome: 'Objeto de Descanso Relaxante (Incensário / Aromatizador)', slot: 'mochila', categoria: 'Descanso & Abrigo', slotsCarga: 1, custo: 140, riquezaMinima: 'classe_media_baixa', tracos: ['Restaurador', 'Adicional Descanso'], desc: 'Em descansos, permite ao herói e até 2 aliados recuperarem +2 Anima e começarem a primeira cena com +1d6 na iniciativa.' },
-  descanso_confortavel: { id: 'descanso_confortavel', nome: 'Objeto de Descanso Confortável (Saco de Dormir Térmico)', slot: 'costas', categoria: 'Descanso & Abrigo', slotsCarga: 1, custo: 120, riquezaMinima: 'classe_media_baixa', tracos: ['Restaurador', 'Adicional Descanso'], desc: 'Adiciona +1d6 na rolagem de recuperação de Anima em qualquer Descanso Curto ou Longo.' },
-  protetor_descanso: { id: 'protetor_descanso', nome: 'Objeto Protetor de Descanso (Alarme de Perímetro / Sinos Rúnicos)', slot: 'mochila', categoria: 'Descanso & Abrigo', slotsCarga: 2, custo: 100, riquezaMinima: 'classe_media_baixa', tracos: ['Adicional Descanso', 'Defensivo'], desc: 'Protege contra intempéries leves. Caso atacados por inimigos, dispara instantaneamente impedindo surpresa e concedendo 1 reação livre.' },
-  tenda_expedicao: { id: 'tenda_expedicao', nome: 'Local de Descanso Portátil (Tenda de Expedição)', slot: 'costas', categoria: 'Descanso & Abrigo', slotsCarga: 3, custo: 180, riquezaMinima: 'classe_media_alta', tracos: ['Abrigo Coletivo'], desc: 'Abriga confortavelmente 2 personagens com proteção plena contra intempéries climáticas severas.' },
-  casulo_descanso_emergencial: { id: 'casulo_descanso_emergencial', nome: 'Local de Descanso Emergencial (Casulo / Rede Tática de Ancoragem)', slot: 'costas', categoria: 'Descanso & Abrigo', slotsCarga: 2, custo: 200, riquezaMinima: 'classe_media_alta', tracos: ['Abrigo Emergencial'], desc: 'Rede/casulo que pode ser fixado em superfícies verticais, copas de árvores ou paredões para descanso seguro.' },
+  descanso_relaxante: { id: 'descanso_relaxante', nome: 'Objeto de Descanso Relaxante (Incensário / Aromatizador)', slot: 'mochila', categoria: 'Descanso & Abrigo', slotsCarga: 1, custo: 140, riquezaMinima: 'abastado', tracos: ['Restaurador', 'Adicional Descanso'], desc: 'Em descansos, permite ao herói e até 2 aliados recuperarem +2 Anima e começarem a primeira cena com +1d6 na iniciativa.' },
+  descanso_confortavel: { id: 'descanso_confortavel', nome: 'Objeto de Descanso Confortável (Saco de Dormir Térmico)', slot: 'costas', categoria: 'Descanso & Abrigo', slotsCarga: 1, custo: 120, riquezaMinima: 'abastado', tracos: ['Restaurador', 'Adicional Descanso'], desc: 'Adiciona +1d6 na rolagem de recuperação de Anima em qualquer Descanso Curto ou Longo.' },
+  protetor_descanso: { id: 'protetor_descanso', nome: 'Objeto Protetor de Descanso (Alarme de Perímetro / Sinos Rúnicos)', slot: 'mochila', categoria: 'Descanso & Abrigo', slotsCarga: 2, custo: 100, riquezaMinima: 'abastado', tracos: ['Adicional Descanso', 'Defensivo'], desc: 'Protege contra intempéries leves. Caso atacados por inimigos, dispara instantaneamente impedindo surpresa e concedendo 1 reação livre.' },
+  tenda_expedicao: { id: 'tenda_expedicao', nome: 'Local de Descanso Portátil (Tenda de Expedição)', slot: 'costas', categoria: 'Descanso & Abrigo', slotsCarga: 3, custo: 180, riquezaMinima: 'abastado', tracos: ['Abrigo Coletivo'], desc: 'Abriga confortavelmente 2 personagens com proteção plena contra intempéries climáticas severas.' },
+  casulo_descanso_emergencial: { id: 'casulo_descanso_emergencial', nome: 'Local de Descanso Emergencial (Casulo / Rede Tática de Ancoragem)', slot: 'costas', categoria: 'Descanso & Abrigo', slotsCarga: 2, custo: 200, riquezaMinima: 'abastado', tracos: ['Abrigo Emergencial'], desc: 'Rede/casulo que pode ser fixado em superfícies verticais, copas de árvores ou paredões para descanso seguro.' },
 
   // ===================================================
   // 4. EXPRESSÃO CULTURAL, ARTE & SOCIAL
   // ===================================================
   instrumento_musical_pequeno: { id: 'instrumento_musical_pequeno', nome: 'Instrumento Musical Pequeno (Flauta / Gaita / Pandeiro)', slot: 'acessorios', categoria: 'Arte & Social', slotsCarga: 1, custo: 50, riquezaMinima: 'pobre', tracos: ['Musical', 'Auxiliar'], desc: 'Concede +1d6 em 1 teste de Social por cena ou +1 ponto de Anima recuperado aos ouvintes durante Descanso Curto.' },
-  instrumento_musical_medio: { id: 'instrumento_musical_medio', nome: 'Instrumento Musical Médio (Violão / Alaúde / Tambor)', slot: 'costas', categoria: 'Arte & Social', slotsCarga: 2, custo: 100, riquezaMinima: 'classe_media_baixa', tracos: ['Musical', 'Auxiliar'], desc: 'Concede +1d6 em até 2 testes de Social na cena e inspira aliados com +2 Anima no descanso.' },
+  instrumento_musical_medio: { id: 'instrumento_musical_medio', nome: 'Instrumento Musical Médio (Violão / Alaúde / Tambor)', slot: 'costas', categoria: 'Arte & Social', slotsCarga: 2, custo: 100, riquezaMinima: 'abastado', tracos: ['Musical', 'Auxiliar'], desc: 'Concede +1d6 em até 2 testes de Social na cena e inspira aliados com +2 Anima no descanso.' },
   instrumento_musical_grande: { id: 'instrumento_musical_grande', nome: 'Instrumento Musical Grande (Harmônio / Violoncelo)', slot: 'costas', categoria: 'Arte & Social', slotsCarga: 5, custo: 500, riquezaMinima: 'milionario', tracos: ['Musical', 'Monumental'], desc: 'Concede +2d6 em testes de Performance/Corte e recupera +1d6 de Anima para todo o grupo em descansos.' },
   jogos_portateis: { id: 'jogos_portateis', nome: 'Jogos Portáteis (Baralho / Dados de Aposta / Tarot)', slot: 'acessorios', categoria: 'Arte & Social', slotsCarga: 1, custo: 80, riquezaMinima: 'pobre', tracos: ['Social', 'Recreativo'], desc: 'Estojo para jogos e leituras oraculares. Concede +1d6 em testes de Social em tavernas e jogos.' },
   simbolo_cultural: { id: 'simbolo_cultural', nome: 'Objeto Simbólico e Cultural (Insígnia / Brasão)', slot: 'acessorios', categoria: 'Arte & Social', slotsCarga: 1, custo: 40, riquezaMinima: 'pobre', tracos: ['Social', 'Diplomacia'], desc: 'Concede +1d6 em testes de Social na primeira impressão com personagens da mesma cultura ou facção.' },
@@ -753,7 +811,7 @@ export const ITEMS_COMPENDIUM = {
   // ===================================================
   // 5. ENERGIA, LUZ & CALOR
   // ===================================================
-  fonte_energia: { id: 'fonte_energia', nome: 'Fonte de Energia (Bateria / Cristal de Éter / Célula de Combustível)', slot: 'mochila', categoria: 'Energia, Luz & Calor', slotsCarga: 2, custo: 100, riquezaMinima: 'classe_media_baixa', tracos: ['Consumível', 'Energizador'], desc: 'Unidade com 6 cargas de energia para abastecer artefatos e maquinários.' },
+  fonte_energia: { id: 'fonte_energia', nome: 'Fonte de Energia (Bateria / Cristal de Éter / Célula de Combustível)', slot: 'mochila', categoria: 'Energia, Luz & Calor', slotsCarga: 2, custo: 100, riquezaMinima: 'abastado', tracos: ['Consumível', 'Energizador'], desc: 'Unidade com 6 cargas de energia para abastecer artefatos e maquinários.' },
   fonte_luz: { id: 'fonte_luz', nome: 'Fonte de Luz (Lanterna / Tocha Alquímica)', slot: 'mao_secundaria', categoria: 'Energia, Luz & Calor', slotsCarga: 1, custo: 80, riquezaMinima: 'pobre', tracos: ['Iluminação', 'Utilitário'], desc: 'Ilumina 15 metros em raio. Gasta 1 carga de energia a cada 3 cenas (ou 5h de uso contínuo).' },
   fonte_calor: { id: 'fonte_calor', nome: 'Fonte de Calor (Aquecedor Rúnico / Brasero Portátil)', slot: 'mochila', categoria: 'Energia, Luz & Calor', slotsCarga: 1, custo: 80, riquezaMinima: 'pobre', tracos: ['Térmico', 'Sobrevivência'], desc: 'Aquece 15m² por 4 cenas protegendo contra frio extremo. Consome 1 carga de energia.' },
   recarregador_energia: { id: 'recarregador_energia', nome: 'Recarregador Portátil de Energia (Coletor Solar / Cinético)', slot: 'mochila', categoria: 'Energia, Luz & Calor', slotsCarga: 2, custo: 350, riquezaMinima: 'rico', tracos: ['Sustentável', 'Utilitário'], desc: 'Exposto ao ambiente natural por 4 horas ou Descanso Longo, recupera 1 carga para bateria (máx 10 cargas).' },
@@ -762,26 +820,26 @@ export const ITEMS_COMPENDIUM = {
   // 6. COMUNICAÇÃO, INFORMAÇÃO & SENSORES
   // ===================================================
   comunicador_pequeno: { id: 'comunicador_pequeno', nome: 'Comunicador Pequeno (Curto Alcance)', slot: 'acessorios', categoria: 'Comunicação & Sensores', slotsCarga: 1, custo: 60, riquezaMinima: 'pobre', tracos: ['Comunicação'], desc: 'Conjunto de 4 microtransceptores para áudio nítido em até 500 metros.' },
-  comunicador_medio: { id: 'comunicador_medio', nome: 'Comunicador Médio (Médio Alcance)', slot: 'costas', categoria: 'Comunicação & Sensores', slotsCarga: 2, custo: 120, riquezaMinima: 'classe_media_baixa', tracos: ['Comunicação'], desc: 'Conjunto de 4 rádio-transmissores ou espelhos mágicos pareados com alcance de até 15 km.' },
-  comunicador_grande: { id: 'comunicador_grande', nome: 'Comunicador Grande (Longo Alcance / Estação Global)', slot: 'costas', categoria: 'Comunicação & Sensores', slotsCarga: 3, custo: 240, riquezaMinima: 'classe_media_alta', tracos: ['Comunicação', 'Carga Pesada'], desc: 'Estação portátil de transmissão continental sem limite de distância.' },
-  retentor_informacoes: { id: 'retentor_informacoes', nome: 'Retentor de Informações (Codex Digital / Caderno Oculto)', slot: 'mochila', categoria: 'Comunicação & Sensores', slotsCarga: 1, custo: 100, riquezaMinima: 'classe_media_baixa', tracos: ['Dados', 'Registro'], desc: 'Armazena mapas, áudios, pistas e o diário de bordo da campanha.' },
-  sensor_variado: { id: 'sensor_variado', nome: 'Sensor Variado (Bússola Arcana / Detector Específico)', slot: 'mochila', categoria: 'Comunicação & Sensores', slotsCarga: 2, custo: 150, riquezaMinima: 'classe_media_baixa', tracos: ['Investigação'], desc: 'Radar configurado para detectar substâncias, venenos, radiação ou anomalias de Anima em 50m.' },
+  comunicador_medio: { id: 'comunicador_medio', nome: 'Comunicador Médio (Médio Alcance)', slot: 'costas', categoria: 'Comunicação & Sensores', slotsCarga: 2, custo: 120, riquezaMinima: 'abastado', tracos: ['Comunicação'], desc: 'Conjunto de 4 rádio-transmissores ou espelhos mágicos pareados com alcance de até 15 km.' },
+  comunicador_grande: { id: 'comunicador_grande', nome: 'Comunicador Grande (Longo Alcance / Estação Global)', slot: 'costas', categoria: 'Comunicação & Sensores', slotsCarga: 3, custo: 240, riquezaMinima: 'abastado', tracos: ['Comunicação', 'Carga Pesada'], desc: 'Estação portátil de transmissão continental sem limite de distância.' },
+  retentor_informacoes: { id: 'retentor_informacoes', nome: 'Retentor de Informações (Codex Digital / Caderno Oculto)', slot: 'mochila', categoria: 'Comunicação & Sensores', slotsCarga: 1, custo: 100, riquezaMinima: 'abastado', tracos: ['Dados', 'Registro'], desc: 'Armazena mapas, áudios, pistas e o diário de bordo da campanha.' },
+  sensor_variado: { id: 'sensor_variado', nome: 'Sensor Variado (Bússola Arcana / Detector Específico)', slot: 'mochila', categoria: 'Comunicação & Sensores', slotsCarga: 2, custo: 150, riquezaMinima: 'abastado', tracos: ['Investigação'], desc: 'Radar configurado para detectar substâncias, venenos, radiação ou anomalias de Anima em 50m.' },
   localizador: { id: 'localizador', nome: 'Localizador (Transmissor Rastreador)', slot: 'mochila', categoria: 'Comunicação & Sensores', slotsCarga: 1, custo: 80, riquezaMinima: 'pobre', tracos: ['Rastreio'], desc: 'Emissor de sinal fixável em alvos ou veículos, rastreável pelo Retentor de Informações.' },
-  possibilitador_percepcao: { id: 'possibilitador_percepcao', nome: 'Possibilitador de Percepção (Visor Noturno / Óculos Espectrais)', slot: 'cabeca', categoria: 'Comunicação & Sensores', slotsCarga: 2, custo: 140, riquezaMinima: 'classe_media_baixa', tracos: ['Percepção Especial'], desc: 'Visão no escuro absoluto e rastreio de fluxos de energia ou pegadas invisíveis (1 carga por cena).' },
-  facilitador_percepcao: { id: 'facilitador_percepcao', nome: 'Facilitador de Percepção (Luneta de Precisão / Lupa de Investigação)', slot: 'acessorios', categoria: 'Comunicação & Sensores', slotsCarga: 1, custo: 120, riquezaMinima: 'classe_media_baixa', tracos: ['Percepção Fina', 'Auxiliar'], desc: 'Concede +1d6 em testes de Mente voltados para Investigação e Percepção Fina.' },
+  possibilitador_percepcao: { id: 'possibilitador_percepcao', nome: 'Possibilitador de Percepção (Visor Noturno / Óculos Espectrais)', slot: 'cabeca', categoria: 'Comunicação & Sensores', slotsCarga: 2, custo: 140, riquezaMinima: 'abastado', tracos: ['Percepção Especial'], desc: 'Visão no escuro absoluto e rastreio de fluxos de energia ou pegadas invisíveis (1 carga por cena).' },
+  facilitador_percepcao: { id: 'facilitador_percepcao', nome: 'Facilitador de Percepção (Luneta de Precisão / Lupa de Investigação)', slot: 'acessorios', categoria: 'Comunicação & Sensores', slotsCarga: 1, custo: 120, riquezaMinima: 'abastado', tracos: ['Percepção Fina', 'Auxiliar'], desc: 'Concede +1d6 em testes de Mente voltados para Investigação e Percepção Fina.' },
   objeto_informativo: { id: 'objeto_informativo', nome: 'Objeto Informativo (Guia Regional / Bestiário de Campo)', slot: 'mochila', categoria: 'Comunicação & Sensores', slotsCarga: 1, custo: 60, riquezaMinima: 'pobre', tracos: ['Conhecimento', 'Auxiliar'], desc: '1x por sessão: Concede +1d6 em testes de Mente ao pesquisar sobre fauna, monstros, flora ou geografia local.' },
 
   // ===================================================
   // 7. FERRAMENTAS, MANUSEIO & ARMAZENAMENTO
   // ===================================================
   ferramentas_simples: { id: 'ferramentas_simples', nome: 'Conjunto de Ferramentas Simples', slot: 'mochila', categoria: 'Ferramentas & Armazenamento', slotsCarga: 2, custo: 80, riquezaMinima: 'pobre', tracos: ['Geral', 'Utilitário'], desc: 'Estojo multiuso para reparos simples e desmonte de objetos sem penalidades por falta de equipamento.' },
-  ferramentas_especializadas: { id: 'ferramentas_especializadas', nome: 'Conjunto de Ferramentas Especializadas', slot: 'mochila', categoria: 'Ferramentas & Armazenamento', slotsCarga: 2, custo: 150, riquezaMinima: 'classe_media_baixa', tracos: ['Especializado'], desc: 'Requer especialização (Mecânica/Engenharia/Ladinagem). Concede +1d6 de bônus e habilita feitos técnicos complexos.' },
+  ferramentas_especializadas: { id: 'ferramentas_especializadas', nome: 'Conjunto de Ferramentas Especializadas', slot: 'mochila', categoria: 'Ferramentas & Armazenamento', slotsCarga: 2, custo: 150, riquezaMinima: 'abastado', tracos: ['Especializado'], desc: 'Requer especialização (Mecânica/Engenharia/Ladinagem). Concede +1d6 de bônus e habilita feitos técnicos complexos.' },
   prendedores: { id: 'prendedores', nome: 'Prendedores (Grampos de Escalada / Fixadores Rápidos)', slot: 'mochila', categoria: 'Ferramentas & Armazenamento', slotsCarga: 1, custo: 20, riquezaMinima: 'miseravel', tracos: ['Consumível', 'Empilhável (até 12)'], desc: 'Conjunto com 6 ancoradores rápidos para fixar cordas e equipamentos com firmeza absoluta.' },
-  protetor_risco_ambiental: { id: 'protetor_risco_ambiental', nome: 'Protetor de Risco Ambiental (Máscara de Gás / Traje de Radiação)', slot: 'cabeca', categoria: 'Ferramentas & Armazenamento', slotsCarga: 2, custo: 200, riquezaMinima: 'classe_media_alta', tracos: ['Imunidade Ambiental'], desc: 'Concede imunidade total a um risco ambiental passivo (gases tóxicos, esporos fúngicos ou radiação).' },
-  armazenamento_medio: { id: 'armazenamento_medio', nome: 'Objeto de Armazenamento Médio (Bornal Tático / Bolsa de Cintura)', slot: 'acessorios', categoria: 'Ferramentas & Armazenamento', slotsCarga: 0, custo: 120, riquezaMinima: 'classe_media_baixa', tracos: ['Ampliador de Carga', 'Limitado (3 por personagem)'], desc: 'Concede +4 slots adicionais na mochila para itens de até 2 slots. Limite de 3 por personagem.' },
-  armazenamento_grande: { id: 'armazenamento_grande', nome: 'Objeto de Armazenamento Grande (Mochila de Grande Expedição)', slot: 'costas', categoria: 'Ferramentas & Armazenamento', slotsCarga: 0, custo: 160, riquezaMinima: 'classe_media_alta', tracos: ['Ampliador de Carga', 'Limitado (1 por personagem)'], desc: 'Concede +8 slots adicionais de capacidade na mochila para itens de até 4 slots. Limite de 1 por personagem.' },
+  protetor_risco_ambiental: { id: 'protetor_risco_ambiental', nome: 'Protetor de Risco Ambiental (Máscara de Gás / Traje de Radiação)', slot: 'cabeca', categoria: 'Ferramentas & Armazenamento', slotsCarga: 2, custo: 200, riquezaMinima: 'abastado', tracos: ['Imunidade Ambiental'], desc: 'Concede imunidade total a um risco ambiental passivo (gases tóxicos, esporos fúngicos ou radiação).' },
+  armazenamento_medio: { id: 'armazenamento_medio', nome: 'Objeto de Armazenamento Médio (Bornal Tático / Bolsa de Cintura)', slot: 'acessorios', categoria: 'Ferramentas & Armazenamento', slotsCarga: 0, custo: 120, riquezaMinima: 'abastado', tracos: ['Ampliador de Carga', 'Limitado (3 por personagem)'], desc: 'Concede +4 slots adicionais na mochila para itens de até 2 slots. Limite de 3 por personagem.' },
+  armazenamento_grande: { id: 'armazenamento_grande', nome: 'Objeto de Armazenamento Grande (Mochila de Grande Expedição)', slot: 'costas', categoria: 'Ferramentas & Armazenamento', slotsCarga: 0, custo: 160, riquezaMinima: 'abastado', tracos: ['Ampliador de Carga', 'Limitado (1 por personagem)'], desc: 'Concede +8 slots adicionais de capacidade na mochila para itens de até 4 slots. Limite de 1 por personagem.' },
   facilitador_uso_saque: { id: 'facilitador_uso_saque', nome: 'Objeto Facilitador de Uso (Coldre de Saque Rápido / Bainha Magnética)', slot: 'acessorios', categoria: 'Ferramentas & Armazenamento', slotsCarga: 2, custo: 60, riquezaMinima: 'pobre', tracos: ['Facilitador', 'Limitado (1 por personagem)'], desc: 'Cria 3 Espaços Rápidos. Itens de 1 slot neles podem ser sacados como Ação Livre (0 ações) 1x por rodada.' },
-  recipiente_lacrado: { id: 'recipiente_lacrado', nome: 'Recipiente Lacrado (Frascos Herméticos / Recipiente Blindado)', slot: 'mochila', categoria: 'Ferramentas & Armazenamento', slotsCarga: 2, custo: 100, riquezaMinima: 'classe_media_baixa', tracos: ['Empilhável (até 12)', 'Isolamento'], desc: 'Permite transportar substâncias corrosivas, inflamáveis ou contagiosas sem vazamento.' },
+  recipiente_lacrado: { id: 'recipiente_lacrado', nome: 'Recipiente Lacrado (Frascos Herméticos / Recipiente Blindado)', slot: 'mochila', categoria: 'Ferramentas & Armazenamento', slotsCarga: 2, custo: 100, riquezaMinima: 'abastado', tracos: ['Empilhável (até 12)', 'Isolamento'], desc: 'Permite transportar substâncias corrosivas, inflamáveis ou contagiosas sem vazamento.' },
   purificador: { id: 'purificador', nome: 'Purificador (Destilador Alquímico / Filtro de Éter)', slot: 'mochila', categoria: 'Ferramentas & Armazenamento', slotsCarga: 2, custo: 80, riquezaMinima: 'pobre', tracos: ['Purificação', 'Utilitário'], desc: 'Torna águas e rações contaminadas potáveis e permite isolar venenos em frascos separados.' },
 
   // ===================================================
@@ -790,21 +848,21 @@ export const ITEMS_COMPENDIUM = {
   treino_fisico: { id: 'treino_fisico', nome: 'Objeto de Treino Físico (Halteres de Campo / Tensores)', slot: 'mochila', categoria: 'Treino & Influência', slotsCarga: 2, custo: 50, riquezaMinima: 'pobre', tracos: ['Desenvolvimento'], desc: 'Usado em downtime para conceder bônus de desenvolvimento acelerado para o atributo Corpo.' },
   treino_mental: { id: 'treino_mental', nome: 'Objeto de Treino Mental (Quebra-Cabeças / Foco Psíquico)', slot: 'mochila', categoria: 'Treino & Influência', slotsCarga: 2, custo: 50, riquezaMinima: 'pobre', tracos: ['Desenvolvimento'], desc: 'Usado em downtime para desenvolvimento acelerado dos atributos Mente ou Espírito.' },
   influenciador_mental: { id: 'influenciador_mental', nome: 'Objeto Influenciador Mental Consumível (Soro da Verdade / Essência Hipnótica)', slot: 'mochila', categoria: 'Treino & Influência', slotsCarga: 1, custo: 80, riquezaMinima: 'pobre', tracos: ['Consumível', 'Empilhável (até 12)'], desc: 'Uso único (1 dose). Alvo falha em teste de Espírito -> -2d6 em testes mentais até o descanso e responde com honestidade.' },
-  peconha_debilitante: { id: 'peconha_debilitante', nome: 'Objeto Enfraquecedor Consumível (Peçonha Debilitante)', slot: 'mochila', categoria: 'Treino & Influência', slotsCarga: 1, custo: 100, riquezaMinima: 'classe_media_baixa', tracos: ['Consumível', 'Empilhável (até 12)'], desc: 'Uso único (1 dose em lâmina). O alvo atingido perde 1 dado de atributo a cada 2h até ser tratado ou entrar em Morrendo.' },
+  peconha_debilitante: { id: 'peconha_debilitante', nome: 'Objeto Enfraquecedor Consumível (Peçonha Debilitante)', slot: 'mochila', categoria: 'Treino & Influência', slotsCarga: 1, custo: 100, riquezaMinima: 'abastado', tracos: ['Consumível', 'Empilhável (até 12)'], desc: 'Uso único (1 dose em lâmina). O alvo atingido perde 1 dado de atributo a cada 2h até ser tratado ou entrar em Morrendo.' },
 
   // ===================================================
   // 9. MOBILIDADE & VEÍCULOS
   // ===================================================
   facilitador_deslocamento: { id: 'facilitador_deslocamento', nome: 'Facilitador de Deslocamento (Botas de Cravos / Ganchos de Neve)', slot: 'pes', categoria: 'Mobilidade & Veículos', slotsCarga: 2, custo: 60, riquezaMinima: 'pobre', tracos: ['Mobilidade', 'Vestimenta'], desc: 'Equipado nos pés. Anula penalidades de terreno difícil específico (lamaçal, gelo, escombros).' },
-  transportador_comum: { id: 'transportador_comum', nome: 'Transportador (Bicicleta de Carga / Montaria Terrestre)', slot: 'mochila', categoria: 'Mobilidade & Veículos', slotsCarga: 3, custo: 200, riquezaMinima: 'classe_media_alta', tracos: ['Transporte'], desc: 'Triplica a velocidade de deslocamento do grupo em viagens. Consome 4 cargas de energia por viagem longa.' },
+  transportador_comum: { id: 'transportador_comum', nome: 'Transportador (Bicicleta de Carga / Montaria Terrestre)', slot: 'mochila', categoria: 'Mobilidade & Veículos', slotsCarga: 3, custo: 200, riquezaMinima: 'abastado', tracos: ['Transporte'], desc: 'Triplica a velocidade de deslocamento do grupo em viagens. Consome 4 cargas de energia por viagem longa.' },
   transportador_rapido: { id: 'transportador_rapido', nome: 'Transportador Rápido (Veículo Motorizado / Deslizador Aéreo)', slot: 'mochila', categoria: 'Mobilidade & Veículos', slotsCarga: 3, custo: 500, riquezaMinima: 'milionario', tracos: ['Alta Velocidade'], desc: 'Veículo ultrarrápido impossível de ser interceptado a pé. Consome 10 cargas de energia por viagem.' },
 
   // ===================================================
   // 10. BARREIRA, SUPRESSÃO & PRÓTESES
   // ===================================================
-  local_isolante: { id: 'local_isolante', nome: 'Local Isolante (Domo Isolador de Anima / Gaiola de Faraday)', slot: 'mochila', categoria: 'Barreiras & Próteses', slotsCarga: 3, custo: 175, riquezaMinima: 'classe_media_alta', tracos: ['Barreira', 'Carga Pesada'], desc: 'Bloqueia totalmente manifestações de energias mágicas, transmissões tecnológicas ou presenças espirituais na área.' },
-  local_restritor: { id: 'local_restritor', nome: 'Local Restritor (Âncora de Supressão de Força)', slot: 'mochila', categoria: 'Barreiras & Próteses', slotsCarga: 3, custo: 150, riquezaMinima: 'classe_media_baixa', tracos: ['Supressor', 'Carga Pesada'], desc: 'Impõe -2d6 de penalidade na potência e no dano de ataques ou magias realizados dentro da área.' },
-  protese_simples: { id: 'protese_simples', nome: 'Próteses Simples (Braço, Perna, Tronco ou Sentidos Mecânicos)', slot: 'acessorios', categoria: 'Barreiras & Próteses', slotsCarga: 2, custo: 150, riquezaMinima: 'classe_media_baixa', tracos: ['Prótese', 'Membro'], desc: 'Substitui membro perdido restaurando a função, porém com -1 dado permanente em destreza fina daquele membro.' },
+  local_isolante: { id: 'local_isolante', nome: 'Local Isolante (Domo Isolador de Anima / Gaiola de Faraday)', slot: 'mochila', categoria: 'Barreiras & Próteses', slotsCarga: 3, custo: 175, riquezaMinima: 'abastado', tracos: ['Barreira', 'Carga Pesada'], desc: 'Bloqueia totalmente manifestações de energias mágicas, transmissões tecnológicas ou presenças espirituais na área.' },
+  local_restritor: { id: 'local_restritor', nome: 'Local Restritor (Âncora de Supressão de Força)', slot: 'mochila', categoria: 'Barreiras & Próteses', slotsCarga: 3, custo: 150, riquezaMinima: 'abastado', tracos: ['Supressor', 'Carga Pesada'], desc: 'Impõe -2d6 de penalidade na potência e no dano de ataques ou magias realizados dentro da área.' },
+  protese_simples: { id: 'protese_simples', nome: 'Próteses Simples (Braço, Perna, Tronco ou Sentidos Mecânicos)', slot: 'acessorios', categoria: 'Barreiras & Próteses', slotsCarga: 2, custo: 150, riquezaMinima: 'abastado', tracos: ['Prótese', 'Membro'], desc: 'Substitui membro perdido restaurando a função, porém com -1 dado permanente em destreza fina daquele membro.' },
   protese_avancada: { id: 'protese_avancada', nome: 'Próteses Avançadas (Membro Biomecânico de Alta Performance)', slot: 'acessorios', categoria: 'Barreiras & Próteses', slotsCarga: 3, custo: 300, riquezaMinima: 'rico', tracos: ['Prótese Avançada', 'Membro', 'Compartimento Embutido'], desc: 'Concede +1d6 fixo no atributo correspondente e possui compartimento para acoplar 1 item de até 2 slots sacado com 0 ações.' },
 
   // ===================================================
@@ -816,7 +874,7 @@ export const ITEMS_COMPENDIUM = {
   escudo_grande: { id: 'escudo_grande', nome: 'Escudo Grande (Escudo de Infantaria / Torre)', slot: 'mao_secundaria', categoria: 'Escudos & Armaduras', slotsCarga: 2, custo: 500, riquezaMinima: 'milionario', bonusDefesa: 3, tracos: ['Proteção', 'Escudo Pesado', 'Req: Corpo 3d6', 'Penalidade: -2m mov, -1d6 furtividade'], desc: 'Equipado na Mão Secundária. Concede +3 de Defesa Total. Requer Corpo 3d6, reduz movimento em -2m e impõe -1d6 em Furtividade.' },
   escudo_enorme: { id: 'escudo_enorme', nome: 'Escudo Enorme (Pavise / Baluarte Móvel)', slot: 'mao_secundaria', categoria: 'Escudos & Armaduras', slotsCarga: 3, custo: 600, riquezaMinima: 'milionario', bonusDefesa: 4, tracos: ['Proteção', 'Escudo Baluarte', 'Req: Corpo 4d6', 'Penalidade: -3m mov, -2d6 furtividade', 'Carga Pesada'], desc: 'Equipado na Mão Secundária. Concede +4 de Defesa Total e cobertura sólida. Requer Corpo 4d6, reduz movimento em -3m e impõe -2d6 em Furtividade.' },
   escudo_leve: { id: 'escudo_leve', nome: 'Escudo Leve de Madeira/Aço', slot: 'mao_secundaria', categoria: 'Escudos & Armaduras', slotsCarga: 1, custo: 300, riquezaMinima: 'pobre', bonusDefesa: 1, tracos: ['Proteção', 'Escudo Leve'], desc: 'Garante +1 ponto de bônus na Defesa Total do personagem.' },
-  escudo_pesado: { id: 'escudo_pesado', nome: 'Escudo Torre Blindado', slot: 'mao_secundaria', categoria: 'Escudos & Armaduras', slotsCarga: 2, custo: 500, riquezaMinima: 'classe_media_alta', bonusDefesa: 2, tracos: ['Proteção', 'Escudo Pesado'], desc: 'Garante +2 pontos de bônus na Defesa Total.' },
+  escudo_pesado: { id: 'escudo_pesado', nome: 'Escudo Torre Blindado', slot: 'mao_secundaria', categoria: 'Escudos & Armaduras', slotsCarga: 2, custo: 500, riquezaMinima: 'abastado', bonusDefesa: 2, tracos: ['Proteção', 'Escudo Pesado'], desc: 'Garante +2 pontos de bônus na Defesa Total.' },
 
   // ===================================================
   // 12. FOCOS ARCANOS & ITENS MÁGICOS
@@ -841,37 +899,37 @@ export const ITEMS_COMPENDIUM = {
   // ===================================================
   // Cabeça
   capuz_couro: { id: 'capuz_couro', nome: 'Capuz de Couro e Lã', slot: 'cabeca', categoria: 'Vestimentas & Anatomia', slotsCarga: 0, custo: 20, riquezaMinima: 'miseravel', bonusDefesa: 0, desc: 'Protege contra intempéries e oculta o semblante.' },
-  elmo_ferro: { id: 'elmo_ferro', nome: 'Elmo de Ferro Forjado', slot: 'cabeca', categoria: 'Vestimentas & Anatomia', slotsCarga: 1, custo: 100, riquezaMinima: 'classe_media_baixa', bonusDefesa: 0, desc: 'Proteção robusta contra golpes contundentes.' },
-  oculos_precisao: { id: 'oculos_precisao', nome: 'Óculos de Lentes de Precisão', slot: 'cabeca', categoria: 'Vestimentas & Anatomia', slotsCarga: 0, custo: 140, riquezaMinima: 'classe_media_alta', bonusDefesa: 0, desc: 'Melhora a acuidade visual e inspeção de detalhes.' },
+  elmo_ferro: { id: 'elmo_ferro', nome: 'Elmo de Ferro Forjado', slot: 'cabeca', categoria: 'Vestimentas & Anatomia', slotsCarga: 1, custo: 100, riquezaMinima: 'abastado', bonusDefesa: 0, desc: 'Proteção robusta contra golpes contundentes.' },
+  oculos_precisao: { id: 'oculos_precisao', nome: 'Óculos de Lentes de Precisão', slot: 'cabeca', categoria: 'Vestimentas & Anatomia', slotsCarga: 0, custo: 140, riquezaMinima: 'abastado', bonusDefesa: 0, desc: 'Melhora a acuidade visual e inspeção de detalhes.' },
   mascara_gas: { id: 'mascara_gas', nome: 'Máscara Rúnica Respiratória / Anti-Gás', slot: 'cabeca', categoria: 'Vestimentas & Anatomia', slotsCarga: 1, custo: 200, riquezaMinima: 'rico', bonusDefesa: 0, desc: 'Filtra toxinas, vapores do Vazio e fumaça densa.' },
 
   // Costas
   mochila_aventureiro: { id: 'mochila_aventureiro', nome: 'Mochila de Couro Reforçada', slot: 'costas', categoria: 'Vestimentas & Anatomia', slotsCarga: 0, custo: 80, riquezaMinima: 'pobre', bonusSlots: 2, desc: 'Aumenta a capacidade de carga do herói em +2 slots.' },
   capa_viagem: { id: 'capa_viagem', nome: 'Capa de Viagem Impermeável', slot: 'costas', categoria: 'Vestimentas & Anatomia', slotsCarga: 0, custo: 30, riquezaMinima: 'miseravel', desc: 'Resiste a chuva, lama e ventos cortantes.' },
   aljava_flechas: { id: 'aljava_flechas', nome: 'Aljava Rígida de Caça', slot: 'costas', categoria: 'Vestimentas & Anatomia', slotsCarga: 1, custo: 40, riquezaMinima: 'pobre', desc: 'Armazena com segurança até 24 flechas ou virotes.' },
-  coldre_duplo: { id: 'coldre_duplo', nome: 'Coldre Duplo de Ombro', slot: 'costas', categoria: 'Vestimentas & Anatomia', slotsCarga: 0, custo: 100, riquezaMinima: 'classe_media_baixa', desc: 'Permite saque rápido de armas de porte leve.' },
+  coldre_duplo: { id: 'coldre_duplo', nome: 'Coldre Duplo de Ombro', slot: 'costas', categoria: 'Vestimentas & Anatomia', slotsCarga: 0, custo: 100, riquezaMinima: 'abastado', desc: 'Permite saque rápido de armas de porte leve.' },
 
   // Mão Secundária Utilitária / Parrying
   tocha_eterna: { id: 'tocha_eterna', nome: 'Tocha Alquímica de Longa Duração', slot: 'mao_secundaria', categoria: 'Energia, Luz & Calor', slotsCarga: 1, custo: 40, riquezaMinima: 'miseravel', desc: 'Ilumina um raio de 10 metros durante 4 horas.' },
-  lanterna_foco: { id: 'lanterna_foco', nome: 'Lanterna Direcional a Óleo', slot: 'mao_secundaria', categoria: 'Energia, Luz & Calor', slotsCarga: 1, custo: 90, riquezaMinima: 'classe_media_baixa', desc: 'Projeta um facho cônico de luz intensa a até 20 metros.' },
-  foco_arcano: { id: 'foco_arcano', nome: 'Orbe / Foco de Canalização de Anima', slot: 'mao_secundaria', categoria: 'Focos Arcanos & Mágicos', slotsCarga: 1, custo: 200, riquezaMinima: 'classe_media_alta', desc: 'Estabiliza a emanação de poderes sobrenaturais.' },
-  adaga_parrying: { id: 'adaga_parrying', nome: 'Adaga de Bloqueio (Main-gauche)', slot: 'mao_secundaria', categoria: 'Arma Branca', slotsCarga: 1, custo: 120, riquezaMinima: 'classe_media_baixa', bonusDefesa: 1, dano: '1d4+1', desc: 'Projetada para aparar ataques em combate corpo a corpo (+1 Defesa).' },
+  lanterna_foco: { id: 'lanterna_foco', nome: 'Lanterna Direcional a Óleo', slot: 'mao_secundaria', categoria: 'Energia, Luz & Calor', slotsCarga: 1, custo: 90, riquezaMinima: 'abastado', desc: 'Projeta um facho cônico de luz intensa a até 20 metros.' },
+  foco_arcano: { id: 'foco_arcano', nome: 'Orbe / Foco de Canalização de Anima', slot: 'mao_secundaria', categoria: 'Focos Arcanos & Mágicos', slotsCarga: 1, custo: 200, riquezaMinima: 'abastado', desc: 'Estabiliza a emanação de poderes sobrenaturais.' },
+  adaga_parrying: { id: 'adaga_parrying', nome: 'Adaga de Bloqueio (Main-gauche)', slot: 'mao_secundaria', categoria: 'Arma Branca', slotsCarga: 1, custo: 120, riquezaMinima: 'abastado', bonusDefesa: 1, dano: '1d4+1', desc: 'Projetada para aparar ataques em combate corpo a corpo (+1 Defesa).' },
 
   // Pernas
   calcas_couro: { id: 'calcas_couro', nome: 'Calças de Couro Tratado', slot: 'pernas', categoria: 'Vestimentas & Anatomia', slotsCarga: 0, custo: 30, riquezaMinima: 'miseravel', desc: 'Resistentes e confortáveis para longas jornadas.' },
-  caneleiras_aco: { id: 'caneleiras_aco', nome: 'Caneleiras de Aço Reforçado', slot: 'pernas', categoria: 'Vestimentas & Anatomia', slotsCarga: 1, custo: 110, riquezaMinima: 'classe_media_baixa', desc: 'Protegem contra armadilhas de solo e impactos baixos.' },
+  caneleiras_aco: { id: 'caneleiras_aco', nome: 'Caneleiras de Aço Reforçado', slot: 'pernas', categoria: 'Vestimentas & Anatomia', slotsCarga: 1, custo: 110, riquezaMinima: 'abastado', desc: 'Protegem contra armadilhas de solo e impactos baixos.' },
   calcas_nobreza: { id: 'calcas_nobreza', nome: 'Calças de Seda Nobre com Fios de Ouro', slot: 'pernas', categoria: 'Vestimentas & Anatomia', slotsCarga: 0, custo: 350, riquezaMinima: 'rico', desc: 'Demonstra prestígio social inegável perante cortesãos.' },
 
   // Pés
   botas_viagem: { id: 'botas_viagem', nome: 'Botas de Couro de Viagem', slot: 'pes', categoria: 'Vestimentas & Anatomia', slotsCarga: 0, custo: 30, riquezaMinima: 'miseravel', desc: 'Duráveis, impermeáveis e anatômicas.' },
-  botas_infantaria: { id: 'botas_infantaria', nome: 'Botas Pesadas de Infantaria com Biqueira de Aço', slot: 'pes', categoria: 'Vestimentas & Anatomia', slotsCarga: 1, custo: 100, riquezaMinima: 'classe_media_baixa', desc: 'Excelente estabilidade em terrenos acidentados.' },
-  sapatos_gala: { id: 'sapatos_gala', nome: 'Sapatos Envernizados de Gala', slot: 'pes', categoria: 'Vestimentas & Anatomia', slotsCarga: 0, custo: 200, riquezaMinima: 'classe_media_alta', desc: 'Apropriados para banquetes e ambientes da alta sociedade.' },
+  botas_infantaria: { id: 'botas_infantaria', nome: 'Botas Pesadas de Infantaria com Biqueira de Aço', slot: 'pes', categoria: 'Vestimentas & Anatomia', slotsCarga: 1, custo: 100, riquezaMinima: 'abastado', desc: 'Excelente estabilidade em terrenos acidentados.' },
+  sapatos_gala: { id: 'sapatos_gala', nome: 'Sapatos Envernizados de Gala', slot: 'pes', categoria: 'Vestimentas & Anatomia', slotsCarga: 0, custo: 200, riquezaMinima: 'abastado', desc: 'Apropriados para banquetes e ambientes da alta sociedade.' },
 
   // Acessórios
-  anel_sinete: { id: 'anel_sinete', nome: 'Anel de Sinete da Família', slot: 'acessorios', categoria: 'Arte & Social', slotsCarga: 0, custo: 180, riquezaMinima: 'classe_media_alta', desc: 'Símbolo heráldico usado para lacrar documentos e atestar linhagem.' },
+  anel_sinete: { id: 'anel_sinete', nome: 'Anel de Sinete da Família', slot: 'acessorios', categoria: 'Arte & Social', slotsCarga: 0, custo: 180, riquezaMinima: 'abastado', desc: 'Símbolo heráldico usado para lacrar documentos e atestar linhagem.' },
   amuleto_protecao: { id: 'amuleto_protecao', nome: 'Amuleto Protetor Talhado em Obsidiana', slot: 'acessorios', categoria: 'Arte & Social', slotsCarga: 0, custo: 80, riquezaMinima: 'pobre', desc: 'Talismã com gravuras protetoras contra o Vazio.' },
-  relogio_bolso: { id: 'relogio_bolso', nome: 'Relógio de Bolso de Precisão a Corda', slot: 'acessorios', categoria: 'Comunicação & Sensores', slotsCarga: 0, custo: 160, riquezaMinima: 'classe_media_alta', desc: 'Mede as horas exatas com mecanismo de engrenagens de precisão.' },
-  cantil_prata: { id: 'cantil_prata', nome: 'Cantil de Prata Maciça', slot: 'acessorios', categoria: 'Ferramentas & Armazenamento', slotsCarga: 0, custo: 100, riquezaMinima: 'classe_media_baixa', desc: 'Preserva bebidas puras e ressalta a elegância do aventureiro.' }
+  relogio_bolso: { id: 'relogio_bolso', nome: 'Relógio de Bolso de Precisão a Corda', slot: 'acessorios', categoria: 'Comunicação & Sensores', slotsCarga: 0, custo: 160, riquezaMinima: 'abastado', desc: 'Mede as horas exatas com mecanismo de engrenagens de precisão.' },
+  cantil_prata: { id: 'cantil_prata', nome: 'Cantil de Prata Maciça', slot: 'acessorios', categoria: 'Ferramentas & Armazenamento', slotsCarga: 0, custo: 100, riquezaMinima: 'abastado', desc: 'Preserva bebidas puras e ressalta a elegância do aventureiro.' }
 };
 
 /**
@@ -889,11 +947,13 @@ export function getCompendiumItems({ slot = null, categoria = null, riquezaMax =
   }
 
   if (riquezaMax) {
-    const tierOrder = ['miseravel', 'pobre', 'classe_media_baixa', 'classe_media_alta', 'rico', 'milionario'];
-    const maxIdx = tierOrder.indexOf(riquezaMax);
+    const tierOrder = ['miseravel', 'pobre', 'abastado', 'rico', 'milionario'];
+    const maxIdx = tierOrder.indexOf(riquezaMax === 'classe_media_baixa' || riquezaMax === 'classe_media_alta' ? 'abastado' : riquezaMax);
     if (maxIdx !== -1) {
       list = list.filter(item => {
-        const itemIdx = tierOrder.indexOf(item.riquezaMinima || 'miseravel');
+        let req = item.riquezaMinima || 'miseravel';
+        if (req === 'classe_media_baixa' || req === 'classe_media_alta') req = 'abastado';
+        const itemIdx = tierOrder.indexOf(req);
         return itemIdx <= maxIdx;
       });
     }
@@ -1553,6 +1613,13 @@ export function validateCharacterCreationAlphaD6({
     customRoll: customInventoryRoll
   });
 
+  const totalSlotsOcupados = Array.isArray(itensMochila) 
+    ? itensMochila.reduce((acc, i) => acc + (i.slotsCarga !== undefined ? i.slotsCarga : 1), 0) 
+    : 0;
+  if (totalSlotsOcupados > slotsResult.maxSlots) {
+    throw new Error(`Inventário sobrecarregado: os itens selecionados ocupam ${totalSlotsOcupados} slots, excedendo a capacidade máxima de ${slotsResult.maxSlots} slots.`);
+  }
+
   // 5. Riqueza Abstrata
   const wealth = getWealthTier({ mente, social });
 
@@ -1619,6 +1686,7 @@ export function validateCharacterCreationAlphaD6({
     xp_atual: 0,
     max_anima: animaResult.maxAnima,
     anima: animaResult.currentAnima,
+    max_slots: slotsResult.maxSlots,
     passagem_para_o_vazio: false,
     riqueza: wealth,
     inventario: {
@@ -1627,7 +1695,7 @@ export function validateCharacterCreationAlphaD6({
       itens_mochila: Array.isArray(itensMochila) ? itensMochila : []
     },
     equipamento_silhueta: silhuetaCompleta,
-    contatos: contatosValidados,
+    contatos: contatosValidados.contatos,
     poderes: cleanPoderes,
     lore: cleanLore,
     sistema_estado: sistemaEstado

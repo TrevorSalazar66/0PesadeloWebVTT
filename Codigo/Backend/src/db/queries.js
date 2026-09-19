@@ -550,6 +550,40 @@ export const dbQueries = {
   async deleteScene(db, id) {
     const stmt = db.prepare('DELETE FROM scenes WHERE id = ?');
     return await stmt.bind(id).run();
+  },
+
+  // ==========================================
+  // ECOSSISTEMA E SISTEMAS DE RPG
+  // ==========================================
+  async getCharactersBySystem(db, systemId = 'alphad6') {
+    const stmt = db.prepare(`
+      SELECT c.*, 
+             cmp.name as campaign_name, 
+             cmp.simple_id as campaign_simple_id, 
+             cmp.system_id as campaign_system_id,
+             u.display_name as creator_name,
+             u.avatar_url as creator_avatar
+      FROM characters c
+      LEFT JOIN campaigns cmp ON c.campaign_id = cmp.id
+      LEFT JOIN users u ON c.user_id = u.id
+      WHERE cmp.system_id = ? OR c.sheet_data LIKE ?
+      ORDER BY c.created_at DESC
+    `);
+    const pattern = `%"sistema":"${systemId}"%`;
+    const res = await stmt.bind(systemId, pattern).all();
+    return res.results || res;
+  },
+
+  async getCampaignsBySystem(db, systemId = 'alphad6') {
+    const stmt = db.prepare(`
+      SELECT cmp.*, u.display_name as owner_name
+      FROM campaigns cmp
+      LEFT JOIN users u ON cmp.owner_id = u.id
+      WHERE cmp.system_id = ?
+      ORDER BY cmp.created_at DESC
+    `);
+    const res = await stmt.bind(systemId).all();
+    return res.results || res;
   }
 };
 

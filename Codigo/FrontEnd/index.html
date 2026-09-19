@@ -1771,7 +1771,413 @@
       color: #fff;
       transform: scale(1.04);
     }
+
+    /* ==========================================================================
+       ESTILOS: TELA DE SISTEMAS DE RPG & MODAL DO ALPHAD6
+       ========================================================================== */
+    .systems-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 24px;
+      margin-top: 16px;
+    }
+
+    .system-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .system-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--gold-primary);
+      box-shadow: 0 16px 40px rgba(212, 163, 75, 0.2), 0 0 20px rgba(212, 163, 75, 0.1);
+    }
+
+    .system-card-hero {
+      border: 1.5px solid var(--border-gold);
+      background: linear-gradient(145deg, #16162a 0%, #10101d 100%);
+    }
+
+    .system-card-hero::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, rgba(212, 163, 75, 0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .system-card-badge-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(212, 163, 75, 0.15);
+      border: 1px solid var(--border-gold);
+      color: var(--gold-light);
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: var(--radius-pill);
+      align-self: flex-start;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .system-card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .system-card-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-md);
+      background: var(--gold-dark);
+      border: 1.5px solid var(--gold-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-light);
+      box-shadow: 0 4px 12px rgba(212, 163, 75, 0.25);
+      flex-shrink: 0;
+    }
+
+    .system-card-name {
+      font-family: var(--font-title);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 4px 0;
+    }
+
+    .system-card-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .system-card-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+
+    .system-badges-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .system-pill {
+      font-size: 11.5px;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .system-pill.highlight {
+      background: rgba(212, 163, 75, 0.1);
+      border-color: rgba(212, 163, 75, 0.3);
+      color: var(--gold-light);
+    }
+
+    .system-stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+      text-align: center;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .system-stat-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .system-stat-num {
+      font-family: var(--font-title);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--gold-light);
+    }
+
+    .system-stat-label {
+      font-size: 9.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* Modal Amplo do Sistema */
+    .modal-system-view {
+      max-width: 1050px !important;
+      width: 95% !important;
+      max-height: 90vh !important;
+      display: flex;
+      flex-direction: column;
+      padding: 24px !important;
+      overflow: hidden !important;
+    }
+
+    .modal-system-tabs-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+
+    .system-tab-btn {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-family: var(--font-title);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .system-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #fff;
+    }
+
+    .system-tab-btn.active {
+      background: rgba(212, 163, 75, 0.12);
+      border-color: var(--border-gold);
+      color: var(--gold-light);
+      box-shadow: inset 0 0 8px rgba(212, 163, 75, 0.15);
+    }
+
+    .modal-system-body-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .system-tab-pane {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .system-tab-pane.active {
+      display: block;
+    }
+
+    /* Cards de Regras */
+    .rule-box-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+
+    .rule-box-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--gold-light);
+    }
+
+    .rule-box-title {
+      font-family: var(--font-title);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+    }
+
+    .rule-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .rule-mini-item {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px;
+    }
+
+    .rule-mini-title {
+      font-family: var(--font-title);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold-light);
+      margin-bottom: 4px;
+    }
+
+    .rule-mini-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    /* Compêndio e Especializações */
+    .compendium-search-bar-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .compendium-categories-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .comp-cat-filter-btn {
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .comp-cat-filter-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .comp-cat-filter-btn.active {
+      background: var(--gold-dark);
+      border-color: var(--gold-primary);
+      color: var(--gold-light);
+    }
+
+    .compendium-items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 12px;
+    }
+
+    .comp-item-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all var(--transition-fast);
+    }
+
+    .comp-item-card:hover {
+      border-color: var(--border-gold);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .comp-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .comp-item-name {
+      font-family: var(--font-title);
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+    }
+
+    .comp-item-price {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold-light);
+      background: rgba(212, 163, 75, 0.12);
+      border: 1px solid rgba(212, 163, 75, 0.3);
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+    }
+
+    .comp-item-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin: 0;
+      flex: 1;
+    }
+
+    .comp-item-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .comp-item-tag {
+      font-size: 10.5px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-dim);
+    }
+
+    /* Modal de Ficha da Comunidade */
+    .sheet-preview-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
   </style>
+
 </head>
 
 <body>
@@ -2356,9 +2762,11 @@
           </div>
         </header>
 
-        <div class="loading-indicator">
-          <div class="spinner"></div>
-          <span>Carregando...</span>
+        <div id="systems-list-container">
+          <div class="loading-indicator">
+            <div class="spinner"></div>
+            <span>Consultando os tomos arcanos dos sistemas...</span>
+          </div>
         </div>
       </section>
 
@@ -2668,6 +3076,150 @@
       </form>
     </div>
   </div>
+
+  <!-- ==========================================================================
+       MODAL: SISTEMA ALPHAD6 & COMPÊNDIO OFICIAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="modal-sistema-alphad6" onclick="if(event.target === this) fecharModalSistema()">
+    <div class="modal-card modal-system-view">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="system-card-icon" style="width: 44px; height: 44px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="12" height="12" x="2" y="10" rx="2" />
+              <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3.16l-4.76-4.76a2.24 2.24 0 0 0-3.16 0L10 6.08" />
+              <path d="M6 14h.01" />
+              <path d="M10 18h.01" />
+              <path d="m14 11 .01-.01" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-title" style="margin: 0; font-size: 1.4rem;">AlphaD6 RPG — Grimório & Compêndio</h3>
+            <p class="page-subtitle" style="margin: 2px 0 0 0; font-size: 12.5px;">
+              Regras canônicas, catálogo de equipamentos, 40 especializações e ecossistema da comunidade.
+            </p>
+          </div>
+        </div>
+        <button class="stepper-btn" onclick="fecharModalSistema()" title="Fechar"
+          style="width: 32px; height: 32px; font-size: 14px;">✕</button>
+      </div>
+
+      <!-- Abas de Navegação -->
+      <div class="modal-system-tabs-nav">
+        <button class="system-tab-btn active" id="btn-tab-regras" onclick="alternarAbaSistema('regras')">
+          📜 Regras do Sistema
+        </button>
+        <button class="system-tab-btn" id="btn-tab-compendio" onclick="alternarAbaSistema('compendio')">
+          ⚔️ Compêndio de Itens
+        </button>
+        <button class="system-tab-btn" id="btn-tab-pericias" onclick="alternarAbaSistema('pericias')">
+          🎯 40 Especializações
+        </button>
+        <button class="system-tab-btn" id="btn-tab-comunidade" onclick="alternarAbaSistema('comunidade')">
+          👥 Fichas & Comunidade (<span id="count-comunidade-badge">0</span>)
+        </button>
+      </div>
+
+      <!-- Corpo com Rolagem Interna -->
+      <div class="modal-system-body-scroll" id="modal-system-scroll-container">
+        
+        <!-- ABA 1: REGRAS DO SISTEMA -->
+        <div class="system-tab-pane active" id="tab-pane-regras">
+          <!-- Renderizado dinamicamente -->
+        </div>
+
+        <!-- ABA 2: COMPÊNDIO DE ITENS -->
+        <div class="system-tab-pane" id="tab-pane-compendio">
+          <div class="compendium-search-bar-row">
+            <div style="flex: 1; position: relative;">
+              <input type="text" id="search-compendium-items" class="form-input" 
+                placeholder="Buscar itens por nome, tipo, bônus ou efeito..."
+                oninput="filtrarCompendioItens()" style="padding-left: 36px;">
+              <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.6;">🔍</span>
+            </div>
+          </div>
+          <div class="compendium-categories-row" id="compendium-items-categories">
+            <!-- Categorias geradas dinamicamente -->
+          </div>
+          <div class="compendium-items-grid" id="compendium-items-list-container">
+            <!-- Itens renderizados aqui -->
+          </div>
+        </div>
+
+        <!-- ABA 3: 40 ESPECIALIZAÇÕES -->
+        <div class="system-tab-pane" id="tab-pane-pericias">
+          <div class="compendium-search-bar-row">
+            <div style="flex: 1; position: relative;">
+              <input type="text" id="search-compendium-specs" class="form-input" 
+                placeholder="Buscar especialização por nome, descrição ou atributo..."
+                oninput="filtrarPericias()" style="padding-left: 36px;">
+              <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.6;">🔍</span>
+            </div>
+          </div>
+          <div class="compendium-categories-row" id="compendium-specs-categories">
+            <!-- Categorias de Especializações -->
+          </div>
+          <div class="compendium-items-grid" id="compendium-specs-list-container">
+            <!-- Especializações renderizadas aqui -->
+          </div>
+        </div>
+
+        <!-- ABA 4: COMUNIDADE & FICHAS -->
+        <div class="system-tab-pane" id="tab-pane-comunidade">
+          <div class="compendium-search-bar-row">
+            <div style="flex: 1; position: relative;">
+              <input type="text" id="search-community" class="form-input" 
+                placeholder="Buscar por herói, NPC, criador, campanha ou homebrew..."
+                oninput="filtrarComunidade()" style="padding-left: 36px;">
+              <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.6;">🔍</span>
+            </div>
+          </div>
+          <div class="compendium-categories-row" id="community-categories-filters">
+            <button class="comp-cat-filter-btn active" onclick="filtrarTipoComunidade('todos', this)">Todos</button>
+            <button class="comp-cat-filter-btn" onclick="filtrarTipoComunidade('jogadores', this)">🛡️ Personagens de Jogadores</button>
+            <button class="comp-cat-filter-btn" onclick="filtrarTipoComunidade('npcs', this)">💀 NPCs & Ameaças</button>
+            <button class="comp-cat-filter-btn" onclick="filtrarTipoComunidade('homebrew', this)">✨ Criações Homebrew</button>
+          </div>
+          <div class="tree-characters-grid" id="community-list-container" style="padding: 0;">
+            <!-- Fichas da comunidade renderizadas aqui -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: INSPEÇÃO RÁPIDA DE FICHA DA COMUNIDADE
+       ========================================================================== -->
+  <div class="modal-overlay" id="modal-preview-ficha-comunidade" onclick="if(event.target === this) fecharModalPreviewFicha()">
+    <div class="modal-card modal-card-large" style="max-width: 720px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div id="preview-ficha-avatar" class="character-avatar" style="width: 52px; height: 52px; font-size: 20px;">
+            A
+          </div>
+          <div>
+            <h3 class="modal-title" id="preview-ficha-nome" style="margin: 0; font-size: 1.3rem;">Nome do Personagem</h3>
+            <p class="page-subtitle" id="preview-ficha-sub" style="margin: 2px 0 0 0; font-size: 12px;">
+              Campanha • Criador
+            </p>
+          </div>
+        </div>
+        <button class="stepper-btn" onclick="fecharModalPreviewFicha()" title="Fechar"
+          style="width: 32px; height: 32px; font-size: 14px;">✕</button>
+      </div>
+
+      <div id="preview-ficha-conteudo">
+        <!-- Renderizado dinamicamente -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+        <button class="btn-secondary" onclick="fecharModalPreviewFicha()">Fechar Grimório</button>
+      </div>
+    </div>
+  </div>
+
 
   <!-- Toast Notification -->
   <div class="toast-notification" id="toast-message" role="alert">
@@ -3478,6 +4030,11 @@
         carregarCampanhasPublicas();
       }
 
+      // Se for a tela de sistemas, carrega visão geral e compêndio
+      if (telaId === 'sistemas') {
+        carregarSistemas();
+      }
+
       // Se for a tela de personagens, carrega árvore hierárquica
       if (telaId === 'personagens') {
         carregarPersonagens();
@@ -3493,6 +4050,7 @@
         localStorage.setItem('arcana_active_view', telaId);
       } catch (e) { }
     }
+
 
     /**
      * Carrega e renderiza a árvore hierárquica de personagens (Sistemas > Campanhas > Personagens)
@@ -4242,10 +4800,1234 @@
       }
     }
 
+    // ==========================================================================
+    // SISTEMAS DE RPG & MODAL DO ALPHAD6 (COMPÊNDIO, REGRAS & COMUNIDADE)
+    // ==========================================================================
+    
+    // CATÁLOGO CANÔNICO DAS 40 ESPECIALIZAÇÕES & PERÍCIAS (ALPHAD6)
+    const ALPHAD6_SPECIALIZATIONS_CANON = [
+      // 1. Combate & Táticas Marciais
+      { id: 'acrobacia', nome: 'Acrobacia', atributo: 'corpo', categoria: 'Combate & Táticas Marciais', desc: 'Manobras evasivas, saltos circenses, amortecimento de quedas e travessia ágil de obstáculos em combate.' },
+      { id: 'armas_brancas', nome: 'Armas Brancas', atributo: 'corpo', categoria: 'Combate & Táticas Marciais', desc: 'Manejo refinado de lâminas, maças, machados, lanças e armas de haste corpo a corpo.' },
+      { id: 'armas_fogo', nome: 'Armas de Fogo', atributo: 'mente', categoria: 'Combate & Táticas Marciais', desc: 'Domínio balístico de pistolas, carabinas, rifles de longo alcance e armamento pesado.' },
+      { id: 'armas_exoticas', nome: 'Armas Exóticas', atributo: 'mente', categoria: 'Combate & Táticas Marciais', desc: 'Uso de armas raras, incomuns ou arcanotécnicas (chicotes, correntes, lâminas giratórias, chakrams).' },
+      { id: 'arremesso_disparo', nome: 'Arremesso & Disparo', atributo: 'mente', categoria: 'Combate & Táticas Marciais', desc: 'Precisão em lançar facas, granadas, dardos, flechas de arco e virotes de besta.' },
+      { id: 'esquiva_reflexos', nome: 'Esquiva & Reflexos', atributo: 'corpo', categoria: 'Combate & Táticas Marciais', desc: 'Agilidade instintiva para desviar de golpes corpo a corpo, disparos e armadilhas de área.' },
+      { id: 'furtividade', nome: 'Furtividade', atributo: 'corpo', categoria: 'Combate & Táticas Marciais', desc: 'Movimentação silenciosa, camuflagem em sombras e infiltração sem ser detectado.' },
+      { id: 'luta_desarmada', nome: 'Luta Desarmada', atributo: 'corpo', categoria: 'Combate & Táticas Marciais', desc: 'Artes marciais, socos, chutes, imobilizações e combate desarmado corpo a corpo.' },
+      { id: 'tolerancia_dor', nome: 'Tolerância a Dor', atributo: 'corpo', categoria: 'Combate & Táticas Marciais', desc: 'Resiliência biológica extrema para suportar tortura, venenos e continuar lutando após ferimentos graves.' },
+
+      // 2. Físicas, Exploração & Sobrevivência
+      { id: 'atletismo', nome: 'Atletismo', atributo: 'corpo', categoria: 'Físicas & Exploração', desc: 'Corridas de alta velocidade, escalada de paredes íngremes, levantamento de peso e saltos longos.' },
+      { id: 'adestramento_montaria', nome: 'Adestramento & Montaria', atributo: 'social', categoria: 'Físicas & Exploração', desc: 'Domar, treinar, cavalgar e comandar animais, montarias terrestres e bestas fantásticas.' },
+      { id: 'natacao_mergulho', nome: 'Natação & Mergulho', atributo: 'corpo', categoria: 'Físicas & Exploração', desc: 'Deslocamento aquático veloz, fôlego prolongado e sobrevivência em correntezas fluviais ou marítimas.' },
+      { id: 'pilotagem', nome: 'Pilotagem', atributo: 'mente', categoria: 'Físicas & Exploração', desc: 'Condução e controle de veículos terrestres motorizados, barcos, aeronaves e deslizadores de éter.' },
+      { id: 'sobrevivencia_pesca', nome: 'Sobrevivência & Pesca', atributo: 'mente', categoria: 'Físicas & Exploração', desc: 'Rastreio em ermos, busca de água potável, pesca, caça, acampamento e previsão climática.' },
+      { id: 'preparo_engenhosidade', nome: 'Preparo & Engenhosidade', atributo: 'mente', categoria: 'Físicas & Exploração', desc: 'Capacidade tática de planejar com antecedência; teste de sorte para ter um item utilitário na cena.' },
+
+      // 3. Ofícios & Engenharia (Crafting)
+      { id: 'alfaiataria_couro', nome: 'Alfaiataria & Couro', atributo: 'mente', categoria: 'Ofícios & Engenharia', desc: 'Confecção, conserto, reforço e isolamento térmico de vestimentas, tecidos e armaduras de couro.' },
+      { id: 'carpintaria_estruturas', nome: 'Carpintaria & Estruturas', atributo: 'mente', categoria: 'Ofícios & Engenharia', desc: 'Modelagem de madeira, construção de barricadas, portas reforçadas, barcos e estruturas de abrigo.' },
+      { id: 'lapidacao_joalheria', nome: 'Lapidação & Joalheria', atributo: 'mente', categoria: 'Ofícios & Engenharia', desc: 'Lapidação de cristais arcanos, focos de energia, lentes de precisão e avaliação de gemas.' },
+      { id: 'metalurgia_forja', nome: 'Metalurgia & Forja', atributo: 'mente', categoria: 'Ofícios & Engenharia', desc: 'Forja, têmpera, reparo e aprimoramento de armas brancas de aço, placas de armadura e escudos.' },
+      { id: 'quimica_alquimia', nome: 'Química & Alquimia', atributo: 'mente', categoria: 'Ofícios & Engenharia', desc: 'Produção de poções restauradoras, ácidos corrosivos, venenos, antídotos e compostos herméticos.' },
+      { id: 'engenharia_eletrica_mecanica', nome: 'Engenharia Elétrica & Mecânica', atributo: 'mente', categoria: 'Ofícios & Engenharia', desc: 'Manutenção de circuitos, geradores rúnicos, automações, fechaduras complexas e próteses.' },
+
+      // 4. Investigação, Percepção & Ladinagem
+      { id: 'percepcao_fina_audicao', nome: 'Percepção Fina & Audição', atributo: 'mente', categoria: 'Investigação & Ladinagem', desc: 'Detecção de sussurros, estalos distantes, passos nas sombras e pequenos detalhes visuais no ambiente.' },
+      { id: 'hackeamento_criptografia', nome: 'Hackeamento & Criptografia', atributo: 'mente', categoria: 'Investigação & Ladinagem', desc: 'Invasão de redes digitais, descriptografia de códigos, bypass de terminais e codex de dados.' },
+      { id: 'interrogatorio_intimidacao', nome: 'Interrogatório & Intimidação', atributo: 'social', categoria: 'Investigação & Ladinagem', desc: 'Obtenção de confissões e pistas secretas através de pressão psicológica, postura ameaçadora ou blefe.' },
+      { id: 'investigacao_deducao', nome: 'Investigação & Dedução', atributo: 'mente', categoria: 'Investigação & Ladinagem', desc: 'Análise metódica de cenas de crime, reconstituição de eventos, cruzamento de pistas e resolução de mistérios.' },
+      { id: 'ladinagem_arrombamento', nome: 'Ladinagem & Arrombamento', atributo: 'mente', categoria: 'Investigação & Ladinagem', desc: 'Abertura de fechaduras trancadas com gazua, desarme de armadilhas mecânicas e furto leve.' },
+      { id: 'rastreamento', nome: 'Rastreamento', atributo: 'mente', categoria: 'Investigação & Ladinagem', desc: 'Seguir pegadas, galhos quebrados, manchas de sangue e rastros deixados por alvos na terra ou cidades.' },
+      { id: 'intuicao_sentido_psiquico', nome: 'Intuição & Sentido Psíquico', atributo: 'espirito', categoria: 'Investigação & Ladinagem', desc: 'Percepção empática para notar mentiras, pressentir emboscadas ocultas ou intenções malignas.' },
+
+      // 5. Conhecimento Intelectual & Erudição
+      { id: 'cartografia_navegacao', nome: 'Cartografia & Navegação', atributo: 'mente', categoria: 'Conhecimento & Erudição', desc: 'Leitura e confecção de mapas topográficos detalhados, triangulação de rotas e orientação por astros.' },
+      { id: 'ciencias_naturais_fisica', nome: 'Ciências Naturais & Física', atributo: 'mente', categoria: 'Conhecimento & Erudição', desc: 'Compreensão de leis naturais, balística, cinemática, gravidade, mineralogia e geologia.' },
+      { id: 'historia_arqueologia', nome: 'História & Arqueologia', atributo: 'mente', categoria: 'Conhecimento & Erudição', desc: 'Domínio sobre dinastias esquecidas, eventos antigos, monumentos em ruínas e genealogia nobre.' },
+      { id: 'idiomas_linguistica', nome: 'Idiomas & Linguística', atributo: 'mente', categoria: 'Conhecimento & Erudição', desc: 'Tradução de línguas mortas, dialetos regionais, códigos secretos e comunicação poliglota fluente.' },
+      { id: 'medicina_campo_cirurgia', nome: 'Medicina de Campo & Cirurgia', atributo: 'mente', categoria: 'Conhecimento & Erudição', desc: 'Diagnóstico de moléstias, cirurgias de trauma, suturas complexas, amputações e estabilização de feridos graves.' },
+      { id: 'primeiros_socorros_paramedicina', nome: 'Primeiros Socorros & Paramedicina', atributo: 'mente', categoria: 'Conhecimento & Erudição', desc: 'Cuidados rápidos com bandagens estéreis, estancamento de hemorragias e reanimação de choque em combate.' },
+      { id: 'gastronomia_nutricao', nome: 'Gastronomia & Nutrição', atributo: 'mente', categoria: 'Conhecimento & Erudição', desc: 'Culinária avançada, conservação de rações de expedição e preparo de banquetes restauradores de Anima.' },
+
+      // 6. Expressão Cultural & Social
+      { id: 'diplomacia_negociacao', nome: 'Diplomacia & Negociação', atributo: 'social', categoria: 'Expressão Cultural & Social', desc: 'Mediação de conflitos, barganha comercial vantajosa, acordos de paz e etiqueta nobre.' },
+      { id: 'enganacao_disfarce', nome: 'Enganação & Disfarce', atributo: 'social', categoria: 'Expressão Cultural & Social', desc: 'Criar identidades falsas, mentir com convicção absoluta e forjar documentos convincentes.' },
+      { id: 'performance_musica', nome: 'Performance & Música', atributo: 'social', categoria: 'Expressão Cultural & Social', desc: 'Tocar instrumentos musicais, cantar, atuar em palco, inspirar multidões e elevar a moral do grupo.' },
+      { id: 'psicologia_empatia', nome: 'Psicologia & Empatia', atributo: 'social', categoria: 'Expressão Cultural & Social', desc: 'Análise psicológica do comportamento humano, suporte para crises de pânico e leitura de motivações.' },
+
+      // 7. Artes Místicas, Ocultismo & Magia
+      { id: 'ocultismo_teoria_arcana', nome: 'Ocultismo & Teoria Arcana', atributo: 'espirito', categoria: 'Artes Místicas & Magia', desc: 'Identificação de runas, círculos mágicos, criaturas do Vazio, maldições e análise de fenômenos esotéricos.' },
+      { id: 'divinacao_oraculos', nome: 'Divinação & Oráculos', atributo: 'espirito', categoria: 'Artes Místicas & Magia', desc: 'Práticas oraculares de leitura do futuro e revelação do oculto através de tarô, runas e astrologia.' },
+      { id: 'invocacao_canalizacao', nome: 'Invocação & Canalização', atributo: 'espirito', categoria: 'Artes Místicas & Magia', desc: 'Arte de canalizar entidades cósmicas ou forças espirituais para dentro do próprio corpo como mediador.' },
+      { id: 'evocacao_espiritual', nome: 'Evocação Espiritual', atributo: 'espirito', categoria: 'Artes Místicas & Magia', desc: 'Chamar e projetar espíritos e elementais para o ambiente exterior sem permitir posse no usuário.' },
+      { id: 'encantamento_protecao', nome: 'Encantamento & Proteção', atributo: 'espirito', categoria: 'Artes Místicas & Magia', desc: 'Conjuração de barreiras mágicas, bênçãos de proteção, auras de santuário e rituais de cura mística.' },
+      { id: 'transmutacao_alquimia_arcana', nome: 'Transmutação & Alquimia Arcana', atributo: 'espirito', categoria: 'Artes Místicas & Magia', desc: 'Manipulação mágica da matéria e dos estados físicos, transmutando substâncias e manipulando fluxos elementais.' }
+    ];
+
+    // CATÁLOGO CANÔNICO COMPLETO DE ITENS (ALPHAD6)
+    const ALPHAD6_COMPENDIO_CANON = [
+      // Saúde & Vitalidade
+      { id: 'cura_rapida', nome: 'Cura Rápida Consumível', slot: 'mochila', categoria: 'Saúde & Cura', slotsCarga: 1, custo: 50, riquezaMinima: 'pobre', tracos: ['Consumível', 'Empilhável (12)'], desc: 'Gasta 1 ação (3 doses). Cada dose recupera 1d6 + Corpo de Anima.' },
+      { id: 'cura_lenta', nome: 'Cura Lenta Consumível', slot: 'mochila', categoria: 'Saúde & Cura', slotsCarga: 2, custo: 30, riquezaMinima: 'miseravel', tracos: ['Consumível', 'Prolongado'], desc: '12 doses diárias. A partir do 3º dia consecutivo, soma Corpo na recuperação de Anima em descansos e anula 1 condição/dia.' },
+      { id: 'cura_complexa', nome: 'Cura Complexa Consumível', slot: 'mochila', categoria: 'Saúde & Cura', slotsCarga: 2, custo: 80, riquezaMinima: 'pobre', tracos: ['Consumível', 'Especializado'], desc: 'Exige Medicina de Campo (Mente). Meta 2. Cura 2d6 + Mente de Anima (+1d6 por sucesso extra). Estabiliza estado Morrendo.' },
+      { id: 'cura_emergencial', nome: 'Cura Emergencial (Desfibrilador de Alma / Soro Fênix)', slot: 'mochila', categoria: 'Saúde & Cura', slotsCarga: 1, custo: 200, riquezaMinima: 'abastado', tracos: ['Consumível', 'Extremo', '1 por personagem'], desc: 'Ao entrar em Morrendo, gasta as 4 ações do turno para reviver com 50% de Anima Máxima (reduz 1 atributo sorteado para 1d4).' },
+
+      // Foco Mental & Vontade
+      { id: 'relaxante_rapido', nome: 'Relaxante Rápido Consumível', slot: 'mochila', categoria: 'Foco Mental & Vontade', slotsCarga: 1, custo: 60, riquezaMinima: 'pobre', tracos: ['Consumível', 'Empilhável (12)'], desc: 'Gasta 1 ação (3 doses, 1x/dia). Anula penalidades de pânico, estresse ou medo no próximo teste de Espírito ou Mente.' },
+      { id: 'relaxante_lento', nome: 'Relaxante Lento Consumível', slot: 'mochila', categoria: 'Foco Mental & Vontade', slotsCarga: 2, custo: 90, riquezaMinima: 'abastado', tracos: ['Consumível', 'Terapêutico'], desc: '12 doses diárias. A partir do 3º dia, remove penalidades mentais a cada 3 dias e trata traumas a cada 5 dias de descanso longo.' },
+      { id: 'motivador_rapido', nome: 'Motivador Rápido Consumível', slot: 'mochila', categoria: 'Foco Mental & Vontade', slotsCarga: 1, custo: 50, riquezaMinima: 'pobre', tracos: ['Consumível', 'Empilhável (12)'], desc: 'Gasta 1 ação (2 doses). Concede +1d6 de bônus na reserva de dados em qualquer teste de atributo nas próximas 2 rodadas.' },
+      { id: 'motivador_lento', nome: 'Motivador Lento Consumível', slot: 'mochila', categoria: 'Foco Mental & Vontade', slotsCarga: 2, custo: 80, riquezaMinima: 'pobre', tracos: ['Consumível', 'Ampliador'], desc: '12 doses diárias. Concede +4 de Anima Máxima temporária e +1d6 em testes de resistência de Espírito durante uso diário.' },
+      { id: 'objeto_motivador', nome: 'Objeto Motivador (Relíquia Sentimental)', slot: 'acessorios', categoria: 'Foco Mental & Vontade', slotsCarga: 2, custo: 130, riquezaMinima: 'abastado', tracos: ['Relíquia', '1 por personagem'], desc: '1x por sessão: Se entrar em Morrendo ou sofrer colapso moral, evoca o objeto e testa Espírito para recuperar Anima.' },
+      { id: 'objeto_relaxante', nome: 'Objeto Relaxante (Relíquia de Conforto)', slot: 'acessorios', categoria: 'Foco Mental & Vontade', slotsCarga: 2, custo: 160, riquezaMinima: 'abastado', tracos: ['Relíquia', 'Emergencial'], desc: '1x por sessão: Ao ser alvo de terror sobrenatural ou trauma psíquico, segurar o objeto concede +2d6 no teste de Espírito.' },
+      { id: 'amplificador_capacidades', nome: 'Amplificador de Capacidades (Injeção de Adrenalina)', slot: 'mochila', categoria: 'Foco Mental & Vontade', slotsCarga: 1, custo: 180, riquezaMinima: 'abastado', tracos: ['Consumível', 'Risco Severo'], desc: 'Uso único (1 ação). Concede +2d6 em todos os testes na cena. Ao fim da cena, entra em colapso com -2d6 até cura complexa.' },
+
+      // Descanso & Abrigo
+      { id: 'descanso_relaxante', nome: 'Incensário / Aromatizador de Descanso', slot: 'mochila', categoria: 'Descanso & Abrigo', slotsCarga: 1, custo: 140, riquezaMinima: 'abastado', tracos: ['Restaurador'], desc: 'Permite ao herói e até 2 aliados recuperarem +2 Anima no descanso e começarem a cena com +1d6 na iniciativa.' },
+      { id: 'descanso_confortavel', nome: 'Saco de Dormir Térmico Confortável', slot: 'costas', categoria: 'Descanso & Abrigo', slotsCarga: 1, custo: 120, riquezaMinima: 'abastado', tracos: ['Restaurador'], desc: 'Adiciona +1d6 na rolagem de recuperação de Anima em qualquer Descanso Curto ou Longo.' },
+      { id: 'protetor_descanso', nome: 'Alarme de Perímetro com Sinos Rúnicos', slot: 'mochila', categoria: 'Descanso & Abrigo', slotsCarga: 2, custo: 100, riquezaMinima: 'abastado', tracos: ['Defensivo', 'Vigilância'], desc: 'Protege contra intempéries leves. Dispara imediatamente caso inimigos se aproximem, impedindo surpresa.' },
+      { id: 'tenda_expedicao', nome: 'Tenda de Expedição de Alta Resistência', slot: 'costas', categoria: 'Descanso & Abrigo', slotsCarga: 3, custo: 180, riquezaMinima: 'abastado', tracos: ['Abrigo Coletivo'], desc: 'Abriga confortavelmente 2 personagens com proteção plena contra nevascas, tempestades e intempéries climáticas.' },
+      { id: 'casulo_descanso_emergencial', nome: 'Casulo / Rede Tática de Ancoragem', slot: 'costas', categoria: 'Descanso & Abrigo', slotsCarga: 2, custo: 200, riquezaMinima: 'abastado', tracos: ['Abrigo Vertical'], desc: 'Rede/casulo fixável em superfícies verticais, copas de árvores ou paredões para descanso seguro nas alturas.' },
+
+      // Expressão Cultural & Social
+      { id: 'instrumento_musical_pequeno', nome: 'Instrumento Musical Pequeno (Flauta / Gaita)', slot: 'acessorios', categoria: 'Arte & Social', slotsCarga: 1, custo: 50, riquezaMinima: 'pobre', tracos: ['Musical'], desc: 'Concede +1d6 em 1 teste de Social por cena ou +1 ponto de Anima recuperado aos ouvintes no descanso curto.' },
+      { id: 'instrumento_musical_medio', nome: 'Instrumento Musical Médio (Violão / Alaúde)', slot: 'costas', categoria: 'Arte & Social', slotsCarga: 2, custo: 100, riquezaMinima: 'abastado', tracos: ['Musical'], desc: 'Concede +1d6 em até 2 testes de Social na cena e inspira aliados com +2 Anima no descanso.' },
+      { id: 'instrumento_musical_grande', nome: 'Instrumento Musical Grande (Harmônio / Violoncelo)', slot: 'costas', categoria: 'Arte & Social', slotsCarga: 5, custo: 500, riquezaMinima: 'milionario', tracos: ['Monumental'], desc: 'Concede +2d6 em testes de Performance/Corte e recupera +1d6 de Anima para todo o grupo em descansos.' },
+      { id: 'jogos_portateis', nome: 'Jogos Portáteis (Baralho / Dados / Tarot)', slot: 'acessorios', categoria: 'Arte & Social', slotsCarga: 1, custo: 80, riquezaMinima: 'pobre', tracos: ['Social', 'Recreativo'], desc: 'Estojo de jogos e leituras oraculares. Concede +1d6 em testes de Social em tavernas e apostas.' },
+      { id: 'simbolo_cultural', nome: 'Insígnia Nobre / Brasão de Linhagem', slot: 'acessorios', categoria: 'Arte & Social', slotsCarga: 1, custo: 40, riquezaMinima: 'pobre', tracos: ['Diplomacia'], desc: 'Concede +1d6 em testes de Social na primeira impressão com personagens da mesma cultura ou facção.' },
+
+      // Ferramentas & Utilitários
+      { id: 'fonte_energia', nome: 'Célula de Energia / Cristal de Éter', slot: 'mochila', categoria: 'Ferramentas & Utilidades', slotsCarga: 2, custo: 100, riquezaMinima: 'abastado', tracos: ['Energizador (6 cargas)'], desc: 'Unidade com 6 cargas de energia para abastecer artefatos e maquinários.' },
+      { id: 'fonte_luz', nome: 'Lanterna Direcional / Tocha Alquímica', slot: 'mao_secundaria', categoria: 'Ferramentas & Utilidades', slotsCarga: 1, custo: 80, riquezaMinima: 'pobre', tracos: ['Iluminação (15m)'], desc: 'Ilumina 15 metros em raio. Gasta 1 carga de energia a cada 3 cenas (ou 5h de uso contínuo).' },
+      { id: 'fonte_calor', nome: 'Aquecedor Rúnico / Brasero Portátil', slot: 'mochila', categoria: 'Ferramentas & Utilidades', slotsCarga: 1, custo: 80, riquezaMinima: 'pobre', tracos: ['Térmico'], desc: 'Aquece 15m² por 4 cenas protegendo contra frio extremo. Consome 1 carga de energia.' },
+      { id: 'recarregador_energia', nome: 'Recarregador Cinético / Coletor Solar', slot: 'mochila', categoria: 'Ferramentas & Utilidades', slotsCarga: 2, custo: 350, riquezaMinima: 'rico', tracos: ['Sustentável'], desc: 'Exposto por 4 horas ou descanso longo, recupera 1 carga para baterias (máximo 10 cargas).' },
+      { id: 'ferramentas_simples', nome: 'Conjunto de Ferramentas Simples', slot: 'mochila', categoria: 'Ferramentas & Utilidades', slotsCarga: 2, custo: 80, riquezaMinima: 'pobre', tracos: ['Geral', 'Utilitário'], desc: 'Estojo multiuso para reparos simples e desmonte de objetos sem penalidades.' },
+      { id: 'ferramentas_especializadas', nome: 'Conjunto de Ferramentas Especializadas', slot: 'mochila', categoria: 'Ferramentas & Utilidades', slotsCarga: 2, custo: 150, riquezaMinima: 'abastado', tracos: ['Especializado'], desc: 'Requer especialização técnica. Concede +1d6 de bônus e habilita feitos técnicos avançados.' },
+      { id: 'prendedores', nome: 'Grampos de Escalada / Fixadores Rápidos', slot: 'mochila', categoria: 'Ferramentas & Utilidades', slotsCarga: 1, custo: 20, riquezaMinima: 'miseravel', tracos: ['Consumível (6 unidades)'], desc: 'Conjunto com 6 ancoradores rápidos para fixar cordas e equipamentos com firmeza absoluta.' },
+      { id: 'protetor_risco_ambiental', nome: 'Máscara Respiratória / Traje Anti-Radiação', slot: 'cabeca', categoria: 'Ferramentas & Utilidades', slotsCarga: 2, custo: 200, riquezaMinima: 'abastado', tracos: ['Imunidade Ambiental'], desc: 'Concede imunidade total a um risco ambiental passivo (gases tóxicos, esporos fúngicos ou radiação).' },
+      { id: 'armazenamento_medio', nome: 'Bornal Tático / Bolsa de Cintura', slot: 'acessorios', categoria: 'Ferramentas & Utilidades', slotsCarga: 0, custo: 120, riquezaMinima: 'abastado', tracos: ['+4 Slots Mochila'], desc: 'Concede +4 slots adicionais na mochila para itens de até 2 slots. Limite de 3 por personagem.' },
+      { id: 'armazenamento_grande', nome: 'Mochila de Grande Expedição Reforçada', slot: 'costas', categoria: 'Ferramentas & Utilidades', slotsCarga: 0, custo: 160, riquezaMinima: 'abastado', tracos: ['+8 Slots Mochila'], desc: 'Concede +8 slots adicionais de capacidade na mochila para itens de até 4 slots. Limite de 1.' },
+      { id: 'facilitador_uso_saque', nome: 'Coldre de Saque Rápido / Bainha Magnética', slot: 'acessorios', categoria: 'Ferramentas & Utilidades', slotsCarga: 2, custo: 60, riquezaMinima: 'pobre', tracos: ['Saque Livre (0 ações)'], desc: 'Cria 3 Espaços Rápidos. Itens de 1 slot neles podem ser sacados como Ação Livre 1x por rodada.' },
+      { id: 'purificador', nome: 'Filtro de Éter / Destilador Alquímico', slot: 'mochila', categoria: 'Ferramentas & Utilidades', slotsCarga: 2, custo: 80, riquezaMinima: 'pobre', tracos: ['Purificação'], desc: 'Torna águas e rações contaminadas potáveis e permite isolar venenos com segurança.' },
+
+      // Comunicação & Sensores
+      { id: 'comunicador_pequeno', nome: 'Micro-Comunicador de Curto Alcance (500m)', slot: 'acessorios', categoria: 'Comunicação & Sensores', slotsCarga: 1, custo: 60, riquezaMinima: 'pobre', tracos: ['Comunicação'], desc: 'Conjunto de 4 microtransceptores para áudio nítido em até 500 metros.' },
+      { id: 'comunicador_medio', nome: 'Transmissor de Médio Alcance (15 km)', slot: 'costas', categoria: 'Comunicação & Sensores', slotsCarga: 2, custo: 120, riquezaMinima: 'abastado', tracos: ['Comunicação'], desc: 'Conjunto de 4 rádio-transmissores ou espelhos mágicos pareados para até 15 km.' },
+      { id: 'retentor_informacoes', nome: 'Codex Digital / Caderno Oculto de Anotações', slot: 'mochila', categoria: 'Comunicação & Sensores', slotsCarga: 1, custo: 100, riquezaMinima: 'abastado', tracos: ['Banco de Dados'], desc: 'Armazena mapas, áudios, pistas e o diário de bordo da campanha.' },
+      { id: 'possibilitador_percepcao', nome: 'Visor Noturno / Óculos Espectrais', slot: 'cabeca', categoria: 'Comunicação & Sensores', slotsCarga: 2, custo: 140, riquezaMinima: 'abastado', tracos: ['Visão Noturna & Astral'], desc: 'Visão no escuro absoluto e rastreio de fluxos de energia ou pegadas invisíveis (1 carga por cena).' },
+      { id: 'facilitador_percepcao', nome: 'Luneta de Precisão / Lupa de Investigação', slot: 'acessorios', categoria: 'Comunicação & Sensores', slotsCarga: 1, custo: 120, riquezaMinima: 'abastado', tracos: ['+1d6 Percepção/Investigação'], desc: 'Concede +1d6 em testes de Mente voltados para Investigação e Percepção Fina.' },
+
+      // Escudos & Armaduras
+      { id: 'roupas_comuns', nome: 'Roupas Comuns de Tecido', slot: 'tronco', categoria: 'Escudos & Armaduras', slotsCarga: 0, custo: 20, riquezaMinima: 'miseravel', bonusDefesa: 0, tracos: ['Sem Penalidade'], desc: 'Vestimenta cotidiana básica sem proteção adicional (+0 Defesa).' },
+      { id: 'armadura_leve', nome: 'Armadura Leve (Gibão de Couro Batido)', slot: 'tronco', categoria: 'Escudos & Armaduras', slotsCarga: 2, custo: 250, riquezaMinima: 'abastado', bonusDefesa: 1, tracos: ['+1 Defesa', 'Ágil'], desc: 'Vestida no Tronco. Concede +1 de Defesa Total sem penalidades de mobilidade.' },
+      { id: 'armadura_media', nome: 'Armadura Média (Cota de Malha Reforçada)', slot: 'tronco', categoria: 'Escudos & Armaduras', slotsCarga: 2, custo: 500, riquezaMinima: 'milionario', bonusDefesa: 2, tracos: ['+2 Defesa', 'Req: Corpo 2d6', '-1m mov'], desc: 'Vestida no Tronco. Concede +2 de Defesa Total. Requer Corpo 2d6 e reduz movimento em -1m por ação.' },
+      { id: 'armadura_pesada', nome: 'Armadura Pesada (Placas de Aço)', slot: 'tronco', categoria: 'Escudos & Armaduras', slotsCarga: 3, custo: 1000, riquezaMinima: 'milionario', bonusDefesa: 3, tracos: ['+3 Defesa', 'Req: Corpo 3d6', '-2m mov'], desc: 'Vestida no Tronco. Concede +3 de Defesa Total. Requer Corpo 3d6 e reduz movimento em -2m por ação.' },
+      { id: 'armadura_completa', nome: 'Armadura Completa de Exotitânio', slot: 'tronco', categoria: 'Escudos & Armaduras', slotsCarga: 4, custo: 1500, riquezaMinima: 'milionario', bonusDefesa: 4, tracos: ['+4 Defesa', 'Req: Corpo 4d6', '-3m mov', 'Blindagem'], desc: 'Vestida no Tronco. Concede +4 de Defesa Total. Requer Corpo 4d6, reduz movimento em -3m por ação.' },
+      { id: 'escudo_pequeno', nome: 'Escudo Pequeno (Broquel de Aço)', slot: 'mao_secundaria', categoria: 'Escudos & Armaduras', slotsCarga: 1, custo: 300, riquezaMinima: 'rico', bonusDefesa: 1, tracos: ['+1 Defesa', 'Escudo Leve'], desc: 'Equipado na Mão Secundária. Concede +1 de Defesa Total ativado por Reação.' },
+      { id: 'escudo_medio', nome: 'Escudo Médio de Duelo / Gota', slot: 'mao_secundaria', categoria: 'Escudos & Armaduras', slotsCarga: 2, custo: 400, riquezaMinima: 'rico', bonusDefesa: 2, tracos: ['+2 Defesa', 'Req: Corpo 2d6'], desc: 'Equipado na Mão Secundária. Concede +2 de Defesa Total ativado por Reação.' },
+      { id: 'escudo_grande', nome: 'Escudo Torre de Infantaria', slot: 'mao_secundaria', categoria: 'Escudos & Armaduras', slotsCarga: 2, custo: 500, riquezaMinima: 'milionario', bonusDefesa: 3, tracos: ['+3 Defesa', 'Req: Corpo 3d6'], desc: 'Equipado na Mão Secundária. Concede +3 de Defesa Total e proteção pesada.' },
+      { id: 'escudo_enorme', nome: 'Escudo Baluarte Móvel (Pavise)', slot: 'mao_secundaria', categoria: 'Escudos & Armaduras', slotsCarga: 3, custo: 600, riquezaMinima: 'milionario', bonusDefesa: 4, tracos: ['+4 Defesa', 'Req: Corpo 4d6', 'Cobertura Plena'], desc: 'Concede +4 de Defesa Total e cobertura sólida contra disparos.' },
+
+      // Focos Arcanos & Magia
+      { id: 'orbe_magia', nome: 'Orbe de Magia Primordial', slot: 'mao_secundaria', categoria: 'Focos Arcanos & Magia', slotsCarga: 1, custo: 900, riquezaMinima: 'milionario', tracos: ['Foco Arcano', 'Mágico'], desc: 'Permite manifestar 1 Poder Arcano de maior potência sem o sacrifício requerido.' },
+      { id: 'cajado_arcano', nome: 'Cajado Arcano (Canalizador de Éter)', slot: 'mao_primaria', categoria: 'Focos Arcanos & Magia', slotsCarga: 2, custo: 1000, riquezaMinima: 'milionario', dano: '1d6+2', tracos: ['Foco Arcano', 'Reduz 50% Anima'], desc: 'Equipado na Mão Primária. Reduz o custo de Anima de todas as magias e poderes ativos em 50%.' },
+      { id: 'grimorio_feiticos', nome: 'Grimório de Feitiços (Tomo Arcano)', slot: 'mao_secundaria', categoria: 'Focos Arcanos & Magia', slotsCarga: 2, custo: 700, riquezaMinima: 'milionario', tracos: ['Grimório', '+1 Poder'], desc: 'Concede o domínio e registro de +1 Poder ou Elemento Arcano adicional na ficha.' },
+      { id: 'varinha_arcana', nome: 'Varinha Arcana (Condutor de Foco)', slot: 'mao_secundaria', categoria: 'Focos Arcanos & Magia', slotsCarga: 1, custo: 600, riquezaMinima: 'milionario', tracos: ['+1d6 Conjuração'], desc: 'Concede +1d6 de bônus fixo em todos os testes de conjuração mágica e canalização de Espírito.' },
+      { id: 'kit_especializacao', nome: 'Kit de Especialização (12 Usos)', slot: 'mochila', categoria: 'Ferramentas & Utilidades', slotsCarga: 1, custo: 300, riquezaMinima: 'rico', tracos: ['Consumível (12 usos)', '+1d6 Teste'], desc: 'Gasta 1 uso antes de um teste da perícia correspondente para receber +1d6 na rolagem.' },
+
+      // Armas Brancas & Corpo a Corpo (Corpo)
+      { id: 'arma_cortante_pequena', nome: 'Adaga / Faca de Combate', dano: '1d4+1', custo: 30, riquezaMinima: 'miseravel', atributo: 'corpo', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Leve'], desc: 'Lâmina ágil para combate corpo a corpo rápido.' },
+      { id: 'arma_cortante_grande', nome: 'Espada Longa / Machado de Batalha', dano: '1d6+2', custo: 150, riquezaMinima: 'abastado', atributo: 'corpo', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Especializada'], desc: 'Lâmina nobre forjada em aço temperado.' },
+      { id: 'arma_impactante_pequena', nome: 'Porrete / Clava de Madeira', dano: '1d6+2', custo: 20, riquezaMinima: 'miseravel', atributo: 'corpo', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Contundente'], desc: 'Clava resistente de madeira maciça ou ferro fundido.' },
+      { id: 'arma_impactante_grande', nome: 'Martelo de Guerra / Marreta Pesada', dano: '1d8+3', custo: 200, riquezaMinima: 'abastado', atributo: 'corpo', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Especializada', 'Esmagamento'], desc: 'Impacto devastador que esmaga armaduras pesadas.' },
+      { id: 'arma_perfurante_pequena', nome: 'Estilete / Florete Leve', dano: '1d4+3', custo: 40, riquezaMinima: 'miseravel', atributo: 'corpo', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Perfuração'], desc: 'Lâmina pontiaguda para perfurar pontos vitais.' },
+      { id: 'arma_perfurante_grande', nome: 'Lança de Infantaria / Pique', dano: '1d6+4', custo: 180, riquezaMinima: 'abastado', atributo: 'corpo', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Especializada', 'Alcance'], desc: 'Lança reforçada com ponta de aço e alcance tático.' },
+      { id: 'arma_de_haste', nome: 'Alabarda / Glaive de Guarda', dano: '1d10+2', custo: 350, riquezaMinima: 'rico', atributo: 'corpo', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Duas Mãos', 'Alcance Longo'], desc: 'Arma imponente de duas mãos para controle de espaço e dano maciço.' },
+
+      // Armas à Distância & Armas de Fogo (Mente)
+      { id: 'chicote', nome: 'Chicote de Couro Rúnico', dano: '1d8+2', custo: 80, riquezaMinima: 'pobre', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Laço', 'Desarme'], desc: 'Arma flexível para desarmar e imobilizar oponentes.' },
+      { id: 'arma_de_arremesso', nome: 'Facas de Arremesso (Conjunto com 3)', dano: '1d4', custo: 30, riquezaMinima: 'miseravel', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Munição (3)'], desc: 'Conjunto balanceado de facas finas para arremesso à distância.' },
+      { id: 'arco_e_flecha', nome: 'Arco e Flecha Caçador', dano: '1d6+3', custo: 100, riquezaMinima: 'pobre', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Silencioso', 'Munição (12)'], desc: 'Arco recurvo para disparos silenciosos e precisos.' },
+      { id: 'fogo_pequena_fraca', nome: 'Pistola Leve Calibre Curto', dano: '2d4', custo: 120, riquezaMinima: 'pobre', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Arma de Fogo', 'Munição (6)'], desc: 'Pistola compacta de porte veloz e recuo moderado (Usa Mente).' },
+      { id: 'fogo_pequena_forte', nome: 'Revólver Pesado / Magnum', dano: '2d6+3', custo: 220, riquezaMinima: 'abastado', atributo: 'mente', slotsCarga: 1, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Arma de Fogo', 'Munição (8)', 'Poder de Parada'], desc: 'Tambor reforçado com alto poder de impacto e perfuração (Usa Mente).' },
+      { id: 'fogo_media_fraca', nome: 'Carabina de Repetição Leve', dano: '2d8+2', custo: 280, riquezaMinima: 'abastado', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Arma de Fogo', 'Munição (12)'], desc: 'Fuzil leve com sistema ágil por alavanca (Usa Mente).' },
+      { id: 'fogo_media_forte', nome: 'Espingarda de Cano Duplo', dano: '2d8+4', custo: 380, riquezaMinima: 'abastado', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Arma de Fogo', 'Munição (14)', 'Impacto'], desc: 'Dispersão letal de chumbo a curta distância (Usa Mente).' },
+      { id: 'fogo_grande_fraca', nome: 'Rifle de Longo Alcance', dano: '2d10+4', custo: 480, riquezaMinima: 'abastado', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Arma de Fogo', 'Longo Alcance'], desc: 'Rifle de caça pesado com alcance kilométrico (Usa Mente).' },
+      { id: 'fogo_grande_forte', nome: 'Rifle de Precisão de Elite', dano: '2d10+6', custo: 650, riquezaMinima: 'rico', atributo: 'mente', slotsCarga: 2, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Arma de Fogo', 'Perfurante'], desc: 'Lentes balísticas de alta precisão e munição perfurante de blindagem (Usa Mente).' },
+      { id: 'fogo_especial_fraca', nome: 'Armamento Pesado Automático', dano: '2d12+6', custo: 850, riquezaMinima: 'rico', atributo: 'mente', slotsCarga: 3, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Arma de Fogo', 'Rajada'], desc: 'Metralhadora com cadência devastadora para supressão de área (Usa Mente).' },
+      { id: 'fogo_especial_forte', nome: 'Canhão Portátil Rúnico', dano: '2d12+8', custo: 1200, riquezaMinima: 'milionario', atributo: 'mente', slotsCarga: 3, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Arma de Fogo', 'Devastador'], desc: 'Dispositivo arcanotécnico destruidor de fortificações e aberrações (Usa Mente).' }
+    ];
+
+    let cachedSystemData = null;
+    let currentCommunityFilter = 'todos';
+    let currentCompCategory = 'todos';
+    let currentSpecCategory = 'todos';
+
+    function obterItensCompendio() {
+      if (cachedSystemData?.compendium?.items) {
+        const it = cachedSystemData.compendium.items;
+        const arr = Array.isArray(it) ? it : Object.values(it);
+        if (arr.length > 0) return arr;
+      }
+      return ALPHAD6_COMPENDIO_CANON;
+    }
+
+    function obterEspecializacoesCompendio() {
+      if (cachedSystemData?.compendium?.specializations) {
+        const sp = cachedSystemData.compendium.specializations;
+        const arr = Array.isArray(sp) ? sp : Object.values(sp);
+        if (arr.length > 0) return arr;
+      }
+      return ALPHAD6_SPECIALIZATIONS_CANON;
+    }
+
+    async function carregarSistemas() {
+      const container = document.getElementById('systems-list-container');
+      if (!container) return;
+
+      renderizarGradeSistemasFallback();
+
+      try {
+        if (!window.apiClient) return;
+        const res = await window.apiClient.sync('rpg.system.overview', { systemId: 'alphad6' });
+
+        if (res && res.sucesso && res.dados) {
+          cachedSystemData = res.dados;
+          renderizarGradeSistemas(cachedSystemData);
+        }
+      } catch (err) {
+        console.warn('Utilizando compêndio canônico local para AlphaD6:', err.message);
+      }
+    }
+
+    function renderizarGradeSistemasFallback() {
+      cachedSystemData = {
+        systemId: 'alphad6',
+        rules: {
+          nome: 'AlphaD6 RPG',
+          versao: '1.2.0 (Oficial)'
+        },
+        compendium: {
+          items: ALPHAD6_COMPENDIO_CANON,
+          specializations: ALPHAD6_SPECIALIZATIONS_CANON
+        },
+        community: {
+          players: [],
+          npcs: [],
+          homebrews: [],
+          stats: { totalPlayers: 0, totalNpcs: 3, totalHomebrews: 3, totalCampaigns: 1 }
+        }
+      };
+      renderizarGradeSistemas(cachedSystemData);
+    }
+
+    function renderizarGradeSistemas(data) {
+      const container = document.getElementById('systems-list-container');
+      if (!container) return;
+
+      const stats = data.community?.stats || { totalPlayers: 0, totalNpcs: 3, totalHomebrews: 3, totalCampaigns: 1 };
+      const totalItens = obterItensCompendio().length;
+      const totalSpecs = obterEspecializacoesCompendio().length;
+
+      container.innerHTML = `
+        <div class="systems-grid">
+          <!-- CARD HERO: ALPHAD6 RPG -->
+          <div class="system-card system-card-hero">
+            <div class="system-card-badge-top">⭐ Sistema Oficial Core</div>
+            
+            <div class="system-card-title-group">
+              <div class="system-card-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="12" height="12" x="2" y="10" rx="2" />
+                  <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3.16l-4.76-4.76a2.24 2.24 0 0 0-3.16 0L10 6.08" />
+                  <path d="M6 14h.01" />
+                  <path d="M10 18h.01" />
+                  <path d="m14 11 .01-.01" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="system-card-name">AlphaD6 RPG</h3>
+                <span class="system-card-sub">Fantasia Sombria & Ocultismo D6 • Regras Oficiais</span>
+              </div>
+            </div>
+
+            <p class="system-card-desc">
+              Sistema minimalista e focado no RolePlay, com mecânica ágil de dados de 6 lados (D6). Possui 4 atributos essenciais, sucessos em 4+, característica única de Anima (vida, mente e magia), 4 ações por turno, contatos narrativos e economia abstrata por Mente + Social.
+            </p>
+
+            <div class="system-badges-cloud">
+              <span class="system-pill highlight">🎲 Reserva D6 (Sucessos 4+)</span>
+              <span class="system-pill highlight">✨ Anima Vital (2d6 + 10)</span>
+              <span class="system-pill highlight">⚡ 4 Ações / Reações</span>
+              <span class="system-pill">🎯 Especializações = Mente</span>
+              <span class="system-pill">🎒 Carga: 2d6 + Corpo</span>
+              <span class="system-pill">🪙 Riqueza: Mente + Social</span>
+              <span class="system-pill">👥 3 Contatos NPCs Livres</span>
+              <span class="system-pill">⚔️ Iniciativa por Corpo</span>
+            </div>
+
+            <div class="system-stats-bar">
+              <div class="system-stat-box">
+                <span class="system-stat-num">${totalItens}</span>
+                <span class="system-stat-label">Itens & Focos</span>
+              </div>
+              <div class="system-stat-box">
+                <span class="system-stat-num">${totalSpecs}</span>
+                <span class="system-stat-label">Especializações</span>
+              </div>
+              <div class="system-stat-box">
+                <span class="system-stat-num">${stats.totalPlayers}</span>
+                <span class="system-stat-label">Heróis Criados</span>
+              </div>
+              <div class="system-stat-box">
+                <span class="system-stat-num">${stats.totalCampaigns || 1}</span>
+                <span class="system-stat-label">Mesas Ativas</span>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: auto;">
+              <button class="btn-create-campaign" onclick="abrirModalSistema('alphad6')" style="flex: 1; justify-content: center;">
+                📜 Abrir Livro de Regras & Compêndio
+              </button>
+            </div>
+          </div>
+
+          <!-- CARD: SISTEMA LIVRE / CUSTOM -->
+          <div class="system-card">
+            <div class="system-card-badge-top" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: var(--text-muted);">
+              🎲 Sandbox Livre
+            </div>
+
+            <div class="system-card-title-group">
+              <div class="system-card-icon" style="background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: var(--text-muted);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                  <polyline points="2 17 12 22 22 17" />
+                  <polyline points="2 12 12 17 22 12" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="system-card-name">Sistema Próprio / Livre</h3>
+                <span class="system-card-sub">Mesa Agnóstica & Regras da Casa</span>
+              </div>
+            </div>
+
+            <p class="system-card-desc">
+              Espaço livre para mestres que desejam conduzir campanhas com sistemas próprios, regras customizadas ou rolagem livre de dados sem restrições de atributos pré-fixados.
+            </p>
+
+            <div class="system-badges-cloud">
+              <span class="system-pill">🎲 Rolagens Livres (/r 2d20+5)</span>
+              <span class="system-pill">✍️ Homebrew Ilimitado</span>
+              <span class="system-pill">🗺️ Mapas & Cenas Dinâmicas</span>
+              <span class="system-pill">👥 Narrativa Aberta</span>
+            </div>
+
+            <div style="margin-top: auto;">
+              <button class="btn-secondary" onclick="navegarPara('campanhas'); abrirModalCriarCampanha();" style="width: 100%; text-align: center;">
+                + Forjar Mesa com Sistema Livre
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function abrirModalSistema(systemId = 'alphad6') {
+      const modal = document.getElementById('modal-sistema-alphad6');
+      if (!modal) return;
+      modal.classList.add('active');
+
+      if (!cachedSystemData) {
+        renderizarGradeSistemasFallback();
+      }
+
+      // Renderiza imediatamente com os dados disponíveis
+      const totalComunidade = (cachedSystemData?.community?.players?.length || 0) + 
+                             (cachedSystemData?.community?.npcs?.length || 0) + 
+                             (cachedSystemData?.community?.homebrews?.length || 0);
+      const badgeCount = document.getElementById('count-comunidade-badge');
+      if (badgeCount) badgeCount.textContent = totalComunidade;
+
+      renderizarAbaRegras();
+      renderizarAbaCompendio();
+      renderizarAbaPericias();
+      renderizarAbaComunidade();
+
+      alternarAbaSistema('regras');
+
+      // Tenta buscar atualizações do backend de forma resiliente
+      try {
+        if (window.apiClient) {
+          const res = await window.apiClient.sync('rpg.system.overview', { systemId });
+          if (res && res.sucesso && res.dados) {
+            cachedSystemData = res.dados;
+            const updatedTotal = (cachedSystemData?.community?.players?.length || 0) + 
+                                 (cachedSystemData?.community?.npcs?.length || 0) + 
+                                 (cachedSystemData?.community?.homebrews?.length || 0);
+            if (badgeCount) badgeCount.textContent = updatedTotal;
+            renderizarAbaCompendio();
+            renderizarAbaPericias();
+            renderizarAbaComunidade();
+          }
+        }
+      } catch (e) {
+        console.warn('Erro ao atualizar dados do modal via API:', e);
+      }
+    }
+
+    function fecharModalSistema() {
+      const modal = document.getElementById('modal-sistema-alphad6');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function alternarAbaSistema(tabKey) {
+      const tabs = ['regras', 'compendio', 'pericias', 'comunidade'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`btn-tab-${t}`);
+        const pane = document.getElementById(`tab-pane-${t}`);
+        if (btn) btn.classList.toggle('active', t === tabKey);
+        if (pane) pane.classList.toggle('active', t === tabKey);
+      });
+
+      const scrollBox = document.getElementById('modal-system-scroll-container');
+      if (scrollBox) scrollBox.scrollTop = 0;
+
+      if (tabKey === 'regras') renderizarAbaRegras();
+      if (tabKey === 'compendio') renderizarAbaCompendio();
+      if (tabKey === 'pericias') renderizarAbaPericias();
+      if (tabKey === 'comunidade') renderizarAbaComunidade();
+    }
+
+    function renderizarAbaRegras() {
+      const pane = document.getElementById('tab-pane-regras');
+      if (!pane) return;
+
+      pane.innerHTML = `
+        <!-- 1. Testes e Atributos -->
+        <div class="rule-box-card">
+          <div class="rule-box-header">
+            <h4 class="rule-box-title">1. Testes e Atributos</h4>
+          </div>
+          <p class="rule-mini-text" style="margin-bottom: 12px; line-height: 1.6;">
+            Na parte sistêmica esse livro é bem simples e deve favorecer primariamente o <strong>RolePlay</strong>, sendo assim ele possuí pouquíssimos atributos, sendo eles: <strong>Corpo</strong>, <strong>Mente</strong>, <strong>Social</strong> e <strong>Espírito</strong>. Cada atributo começa já inicialmente com <strong>1 ponto</strong> nele.
+          </p>
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-gold-glow); border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px;">
+            <p style="font-size: 13px; color: var(--gold-light); margin: 0; font-weight: 600;">
+              🎲 Regra do Teste: Cada ponto em um atributo representa um dado de 6 lados (D6) que será jogado para os testes (ex: 3 pontos de Corpo = 3d6). Cada dado que cair com um valor superior a 3 (ou seja, <strong>4, 5 ou 6</strong>) será um <strong>Sucesso</strong>.
+            </p>
+          </div>
+          <div class="rule-grid-4" style="margin-bottom: 14px;">
+            <div class="rule-mini-item">
+              <div class="rule-mini-title">💪 Corpo</div>
+              <p class="rule-mini-text">Força física, atletismo, vigor corporal, combate corpo a corpo e iniciativa.</p>
+            </div>
+            <div class="rule-mini-item">
+              <div class="rule-mini-title">🧠 Mente</div>
+              <p class="rule-mini-text">Intelecto, percepção, armas de fogo, medicina, investigação e define a quantidade de Especializações.</p>
+            </div>
+            <div class="rule-mini-item">
+              <div class="rule-mini-title">🎭 Social</div>
+              <p class="rule-mini-text">Carisma, empatia, persuasão, intimidação, presença de palco e traquejo social.</p>
+            </div>
+            <div class="rule-mini-item">
+              <div class="rule-mini-title">✨ Espírito</div>
+              <p class="rule-mini-text">Força de vontade, intuição, conexão mística, defesa mágica e canalização de poderes.</p>
+            </div>
+          </div>
+          
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px;">
+            <h5 style="color: var(--gold-light); font-size: 13px; font-family: var(--font-title); margin-bottom: 6px;">Criação, Evolução & Especializações</h5>
+            <p class="rule-mini-text" style="margin-bottom: 8px;">
+              • <strong>Distribuição Inicial:</strong> Você tem <strong>6 pontos</strong> para distribuir entre os atributos na criação ([1+1+1+1] + 6 = 10 pontos totais). Conforme evolui o personagem, você ganha mais pontos de atributo para investir. <strong>Não existe valor máximo de pontos em um único atributo</strong>.
+            </p>
+            <p class="rule-mini-text" style="margin-bottom: 8px;">
+              • <strong>Especializações:</strong> Você ganha inicialmente <strong>uma Especialização para cada ponto no atributo Mente</strong> (as especializações sempre são iguais aos pontos em Mente). Podem ser qualquer prática ou estudo profundo (luta armada, pescaria, investigação, química, história). Se fizer sentido para o teste, adiciona <strong>+1d6</strong>.
+            </p>
+            <p class="rule-mini-text" style="margin-bottom: 8px;">
+              • <strong>Ajuda de Aliados:</strong> Um jogador pode ajudar outro em um teste desde que tenha uma especialização que justifique isso, concedendo <strong>+1 dado extra (+1d6)</strong> ao teste.
+            </p>
+            <p class="rule-mini-text" style="margin-bottom: 8px;">
+              • <strong>Vantagens:</strong> Em situações vantajosas, o mestre pode conceder uma ou mais vantagens. Cada vantagem adiciona <strong>+1d6</strong> no teste do personagem em vantagem.
+            </p>
+            <p class="rule-mini-text" style="margin: 0;">
+              • <strong>Testes Resistidos:</strong> Aquele com mais sucessos sempre vence. Se houver empate no número de sucessos, leva-se em consideração quem teve o <strong>maior valor nos dados que foram sucesso</strong>. Se o empate persistir, trata-se o teste como <strong>sucesso parcial</strong>.
+            </p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+            <div class="rule-mini-item" style="border-left: 3px solid #34d399;">
+              <div class="rule-mini-title" style="color: #34d399;">Sucesso Total</div>
+              <p class="rule-mini-text">Número de sucessos foi <strong>igual ou maior</strong> à dificuldade definida pelo mestre. O personagem realiza a ação plenamente.</p>
+            </div>
+            <div class="rule-mini-item" style="border-left: 3px solid #f59e0b;">
+              <div class="rule-mini-title" style="color: #f59e0b;">Sucesso Parcial</div>
+              <p class="rule-mini-text">Quantidade de sucessos foi <strong>acima da metade da dificuldade</strong> (&gt; dif / 2). O personagem consegue o que deseja mas a um custo significativo.</p>
+            </div>
+            <div class="rule-mini-item" style="border-left: 3px solid #ef4444;">
+              <div class="rule-mini-title" style="color: #ef4444;">Falha Total</div>
+              <p class="rule-mini-text">Quantidade de sucessos ficou <strong>abaixo da metade da dificuldade</strong>. A ação falha completamente ou gera complicações graves.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Tabela de Dificuldades Padrão -->
+        <div class="rule-box-card">
+          <div class="rule-box-header">
+            <h4 class="rule-box-title">2. Tabela de Dificuldades Padrão</h4>
+          </div>
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-gold); color: var(--gold-light); font-family: var(--font-title);">
+                  <th style="padding: 8px 12px; width: 110px;">Sucesso Total</th>
+                  <th style="padding: 8px 12px; width: 120px;">Sucesso Parcial</th>
+                  <th style="padding: 8px 12px;">Significado do Feito</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(239, 68, 68, 0.06);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: #f87171;">22</td>
+                  <td style="padding: 8px 12px; font-weight: 600; color: #fca5a5;">12</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Algo que quebra o padrão da realidade pré estabelecida</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: #f87171;">20</td>
+                  <td style="padding: 8px 12px; font-weight: 600; color: #fca5a5;">10</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Um feito lendário</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: #fb923c;">18</td>
+                  <td style="padding: 8px 12px; font-weight: 600; color: #fdba74;">9</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Está totalmente fora do alcance das pessoas comuns, mesmo que sejam treinadas ao extremo.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: #fb923c;">16</td>
+                  <td style="padding: 8px 12px; font-weight: 600; color: #fdba74;">8</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Apenas a melhor pessoa no mundo nesta área conseguiria realizar este feito</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: #f59e0b;">14</td>
+                  <td style="padding: 8px 12px; font-weight: 600; color: #fcd34d;">7</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Uma pessoa genial, que extrapolou os limites comuns em uma área deve conseguir</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: #f59e0b;">12</td>
+                  <td style="padding: 8px 12px; font-weight: 600; color: #fcd34d;">6</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Uma pessoa extremamente bem treinada deve conseguir realizar este feito</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: #60a5fa;">10</td>
+                  <td style="padding: 8px 12px; font-weight: 600; color: #93c5fd;">5</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Uma pessoa com um treinamento decente deve conseguir realizar este feito</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: #60a5fa;">8</td>
+                  <td style="padding: 8px 12px; font-weight: 600; color: #93c5fd;">4</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Uma pessoa com treinamento básico deve conseguir realizar este feito</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: #34d399;">6</td>
+                  <td style="padding: 8px 12px; font-weight: 600; color: #6ee7b7;">3</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Qualquer pessoa em situações normais pode realizar essa ação</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: #34d399;">4</td>
+                  <td style="padding: 8px 12px; font-weight: 600; color: #6ee7b7;">2</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Qualquer pessoa deve conseguir realizar o feito</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 12px; font-weight: 700; color: #a7f3d0;">2</td>
+                  <td style="padding: 8px 12px; font-weight: 600; color: #d1fae5;">1</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Extremamente fácil</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. Características (Anima, Descansos e Restaurações) -->
+        <div class="rule-box-card">
+          <div class="rule-box-header">
+            <h4 class="rule-box-title">3. Características & Anima</h4>
+          </div>
+          <p class="rule-mini-text" style="margin-bottom: 10px; line-height: 1.6;">
+            Todo personagem tem apenas uma característica que define tanto sua <strong>vida física</strong> quanto sua <strong>saúde mental</strong> e <strong>energia para magias e habilidades</strong>: essa característica se chama <strong>“Anima”</strong>. Ela é a soma de tudo que faz seu personagem e quando chega a 0 o personagem morre ou simplesmente deixa de existir, fazendo a <strong>“Passagem para o Vazio”</strong> de onde nunca mais sairá.
+          </p>
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-gold-glow); border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px;">
+            <p style="font-size: 13px; color: var(--gold-light); margin: 0; font-weight: 600;">
+              ✨ Cálculo Inicial de Anima: Rolagem de <strong>2d6 + 10</strong> (onde o “+10” vem da soma de todos os atributos iniciais: [1+1+1+1]+6 = 10).
+            </p>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <h5 style="color: var(--gold-light); font-size: 13px; font-family: var(--font-title); margin-bottom: 8px;">Tipos de Descanso</h5>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+              <div class="rule-mini-item">
+                <div class="rule-mini-title">☕ Descanso Curto</div>
+                <p class="rule-mini-text">• Local minimamente seguro e confortável.<br>• Duração de no mínimo <strong>2 horas</strong>.<br>• Recupera <strong>3d4</strong> pontos de Anima (Média 7,5).</p>
+              </div>
+              <div class="rule-mini-item">
+                <div class="rule-mini-title">⛺ Descanso Longo</div>
+                <p class="rule-mini-text">• Local confortável e totalmente seguro.<br>• Duração de <strong>6 horas</strong>.<br>• Recupera <strong>3d6</strong> pontos de Anima (Média 10,5).</p>
+              </div>
+              <div class="rule-mini-item">
+                <div class="rule-mini-title">🏰 Descanso Completo</div>
+                <p class="rule-mini-text">• Local totalmente confortável e totalmente seguro.<br>• Duração de <strong>8 horas</strong>.<br>• Recupera <strong>3d8</strong> pontos de Anima (Média 13,5).</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h5 style="color: var(--gold-light); font-size: 13px; font-family: var(--font-title); margin-bottom: 8px;">Tipos de Restauração</h5>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+              <div class="rule-mini-item">
+                <div class="rule-mini-title" style="color: #f87171;">🩹 Restauração de Emergência</div>
+                <p class="rule-mini-text">• Feita sem especialização em medicina OU em ambiente perigoso / com complicações.<br>• Consome <strong>1 item de cura</strong> permanentemente.<br>• Restaura <strong>6 pontos</strong> de Anima.</p>
+              </div>
+              <div class="rule-mini-item">
+                <div class="rule-mini-title" style="color: #60a5fa;">🩺 Restauração Cuidadosa</div>
+                <p class="rule-mini-text">• Feita por personagem com especialização em medicina OU em situação de proteção e tempo.<br>• Consome <strong>2 itens de cura</strong> permanentemente.<br>• Restaura <strong>12 pontos</strong> de Anima.</p>
+              </div>
+              <div class="rule-mini-item">
+                <div class="rule-mini-title" style="color: #34d399;">🏥 Restauração Completa</div>
+                <p class="rule-mini-text">• Feita por médico em ambiente feito para cura e recuperação.<br>• Leva no mínimo <strong>24 horas</strong>.<br>• Consome <strong>3 itens de cura</strong> permanentemente.<br>• Restaura <strong>todos os pontos de Anima</strong>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Arquétipos & Contatos -->
+        <div class="rule-box-card">
+          <div class="rule-box-header">
+            <h4 class="rule-box-title">4. Arquétipos & Contatos</h4>
+          </div>
+          <p class="rule-mini-text" style="line-height: 1.6; margin-bottom: 10px;">
+            Todos os personagens são definidos não por classes, mas por <strong>trabalhos, ocupações e origens</strong>, levando em consideração os estereótipos dessas coisas. O Arquétipo do personagem é totalmente de livre criação, e não afeta nada além do RolePlay.
+          </p>
+          <div class="rule-mini-item" style="border-left: 3px solid var(--gold-primary);">
+            <div class="rule-mini-title">👥 Regra dos Contatos</div>
+            <p class="rule-mini-text">
+              Todo jogador tem direito a criar <strong>3 NPCs à sua escolha</strong> a qualquer momento da campanha, que servirão como contatos para que ele usufrua de uma amizade ou dívida com esse NPC.
+            </p>
+          </div>
+        </div>
+
+        <!-- 5. Itens & Dinheiro -->
+        <div class="rule-box-card">
+          <div class="rule-box-header">
+            <h4 class="rule-box-title">5. Itens, Capacidade de Carga & Dinheiro</h4>
+          </div>
+          <p class="rule-mini-text" style="margin-bottom: 12px; line-height: 1.6;">
+            Todo personagem pode carregar itens consigo, mas a quantidade máxima depende da seguinte rolagem: <strong>2d6 + Corpo</strong>. Itens pequenos, comuns ou extremamente leves <strong>não ocupam espaços de inventário</strong> (mas devem ser anotados nele).
+          </p>
+          <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px;">
+            <p class="rule-mini-text" style="margin: 0;">
+              ✨ <strong>Itens Sobrenaturais:</strong> Alguns itens possuem efeitos especiais ou sobrenaturais específicos. Estes não podem ser comprados ou escolhidos na criação inicial, apenas descobertos durante a campanha.
+            </p>
+          </div>
+
+          <h5 style="color: var(--gold-light); font-size: 13px; font-family: var(--font-title); margin-bottom: 8px;">Níveis de Riqueza (Soma de Mente + Social)</h5>
+          <p class="rule-mini-text" style="margin-bottom: 10px;">
+            A situação monetária é definida pela soma dos atributos <strong>Mente + Social</strong>. O dinheiro funciona como um conceito abstrato e narrativo (um personagem rico tem acesso a itens mais raros que um miserável).
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+            <div class="rule-mini-item" style="border-left: 3px solid var(--gold-primary);">
+              <div class="rule-mini-title">Milionário</div>
+              <div style="font-size: 12px; color: var(--gold-light); font-weight: 700;">Soma 22 até 24</div>
+            </div>
+            <div class="rule-mini-item" style="border-left: 3px solid #f59e0b;">
+              <div class="rule-mini-title">Rico</div>
+              <div style="font-size: 12px; color: var(--gold-light); font-weight: 700;">Soma 18 até 21</div>
+            </div>
+            <div class="rule-mini-item" style="border-left: 3px solid #34d399;">
+              <div class="rule-mini-title">Classe Média Alta</div>
+              <div style="font-size: 12px; color: var(--gold-light); font-weight: 700;">Soma 14 até 17</div>
+            </div>
+            <div class="rule-mini-item" style="border-left: 3px solid #60a5fa;">
+              <div class="rule-mini-title">Classe Média Baixa</div>
+              <div style="font-size: 12px; color: var(--gold-light); font-weight: 700;">Soma 8 até 13</div>
+            </div>
+            <div class="rule-mini-item" style="border-left: 3px solid #a78bfa;">
+              <div class="rule-mini-title">Pobre</div>
+              <div style="font-size: 12px; color: var(--gold-light); font-weight: 700;">Soma 4 até 7</div>
+            </div>
+            <div class="rule-mini-item" style="border-left: 3px solid #9ca3af;">
+              <div class="rule-mini-title">Miserável</div>
+              <div style="font-size: 12px; color: var(--gold-light); font-weight: 700;">Soma 2 até 3</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Poderes & Sacrifícios -->
+        <div class="rule-box-card">
+          <div class="rule-box-header">
+            <h4 class="rule-box-title">6. Poderes & Sacrifícios</h4>
+          </div>
+          <p class="rule-mini-text" style="line-height: 1.6; margin-bottom: 10px;">
+            Os personagens podem obter poderes através de itens sobrenaturais, criaturas, grimórios ou da energia do caos. Sempre que entrar em contato direto com um desses elementos, o personagem recebe instantaneamente e de forma inconsciente a informação do que <strong>precisa ser sacrificado</strong> para obter a bênção. O poder recebido <strong>nunca é revelado antes do sacrifício ser realizado</strong>.
+          </p>
+          <div class="rule-grid-4">
+            <div class="rule-mini-item">
+              <div class="rule-mini-title">🔮 Poder Passivo</div>
+              <p class="rule-mini-text">O sacrifício para obtê-lo tende a ser maior, concedendo efeitos contínuos permanentes.</p>
+            </div>
+            <div class="rule-mini-item">
+              <div class="rule-mini-title">⚡ Poder Ativo</div>
+              <p class="rule-mini-text">O sacrifício tende a ser menor, porém cada ativação consome uma <strong>quantidade fixa de Anima</strong>.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Combate -->
+        <div class="rule-box-card">
+          <div class="rule-box-header">
+            <h4 class="rule-box-title">7. Combate, Ações, Reações & Dano</h4>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 12px;">
+            <div class="rule-mini-item">
+              <div class="rule-mini-title">🎲 Iniciativa</div>
+              <p class="rule-mini-text">Teste de <strong>Corpo</strong>. 1º Mais sucessos; 2º Maior valor nos dados de sucesso; 3º Mais pontos no atributo Corpo.</p>
+            </div>
+            <div class="rule-mini-item">
+              <div class="rule-mini-title">⚡ 4 Ações por Turno</div>
+              <p class="rule-mini-text">Todo personagem tem <strong>4 ações</strong> fixas para atacar, se mover (3 metros por ação), se esconder, sacar/usar itens ou poderes.</p>
+            </div>
+            <div class="rule-mini-item">
+              <div class="rule-mini-title">🛡️ Reações & Defesa Ativa</div>
+              <p class="rule-mini-text">Ações não usadas viram <strong>Reações</strong>. Podem contra-atacar erros inimigos, proteger aliados ou ativar itens defensivos (máx. 3 itens).</p>
+            </div>
+            <div class="rule-mini-item">
+              <div class="rule-mini-title">🏃 Deslocamento</div>
+              <p class="rule-mini-text">Cada ação gasta para se mover desloca o personagem por <strong>3 metros</strong> em qualquer direção possível.</p>
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px;">
+            <h5 style="color: var(--gold-light); font-size: 13px; font-family: var(--font-title); margin-bottom: 6px;">Ataques, Defesa e Contra-Ataques</h5>
+            <p class="rule-mini-text" style="margin-bottom: 6px;">
+              • <strong>Armas Corpo a Corpo:</strong> Teste de <strong>Corpo</strong> contra a Defesa do alvo.
+            </p>
+            <p class="rule-mini-text" style="margin-bottom: 6px;">
+              • <strong>Armas de Longa Distância & Armas de Fogo:</strong> Teste de <strong>Mente</strong> (todas as armas de fogo são usadas com o atributo Mente).
+            </p>
+            <p class="rule-mini-text" style="margin-bottom: 6px;">
+              • <strong>Defesa do Personagem:</strong> É o atributo de <strong>Corpo</strong> para ataques físicos, ou <strong>Espírito</strong> para ataques mágicos que necessitem de rolagem de acerto. O atacante precisa de <strong>sucessos superiores à Defesa</strong> para acertar e causar dano.
+            </p>
+            <p class="rule-mini-text" style="margin-bottom: 10px;">
+              • <strong>Contra-Ataque:</strong> Caso o ataque seja um erro e o alvo tenha uma arma que possibilite contra-atacar em sua distância atual, o atacante pode ser alvo de um contra-ataque imediato.
+            </p>
+
+            <h5 style="color: var(--gold-light); font-size: 12.5px; font-family: var(--font-title); margin: 10px 0 6px 0;">🛡️ Defesas Fornecidas por Itens (Máximo 3 itens de defesa)</h5>
+            <p class="rule-mini-text" style="margin-bottom: 8px;">
+              Itens que fornecem defesa só têm efeito prático quando uma reação é usada para se defender. As defesas fornecidas são somadas com a Defesa do personagem (dificuldade mínima para o atacante):
+            </p>
+            <div style="overflow-x: auto; margin-bottom: 4px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--border-gold); color: var(--gold-light);">
+                    <th style="padding: 6px 10px;">Quantidade de Defesa Fornecida</th>
+                    <th style="padding: 6px 10px;">Nível de Riqueza Mínimo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 6px 10px; font-weight: 700; color: var(--gold-primary);">+4 Defesa</td>
+                    <td style="padding: 6px 10px; color: var(--gold-light);">Milionário</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 6px 10px; font-weight: 700; color: #34d399;">+2 Defesa</td>
+                    <td style="padding: 6px 10px; color: #a7f3d0;">Classe Média Alta</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 10px; font-weight: 700; color: #9ca3af;">+1 Defesa</td>
+                    <td style="padding: 6px 10px; color: #d1d5db;">Pobre</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: var(--radius-md); padding: 12px;">
+            <div class="rule-mini-title" style="color: #f87171;">💀 Dano & Estado Morrendo</div>
+            <p class="rule-mini-text" style="margin: 0;">
+              Se a Anima de um personagem chegar a 0, ele entra em <strong>Morrendo</strong>. Nesse estado, a cada turno o personagem pode <strong>unicamente rodar um teste com o atributo de Corpo ou Espírito</strong> (a escolha do jogador e Mestre), com dificuldade inicial de 4. A cada vez que refizer este teste na mesma cena, a dificuldade aumenta em +2. Se houver <strong>uma única falha, o personagem morre instantaneamente</strong>. Além disso, se um inimigo atacar um personagem morrendo, ele <strong>morre instantaneamente</strong>.
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderizarAbaCompendio() {
+      const catContainer = document.getElementById('compendium-items-categories');
+      if (!catContainer) return;
+
+      const items = obterItensCompendio();
+      const rawCategories = Array.from(new Set(items.map(i => i.categoria || 'Geral').filter(Boolean)));
+      const categories = ['todos', ...rawCategories];
+
+      const categoryLabels = {
+        'todos': 'Todos os Itens',
+        'Saúde & Cura': '🧪 Saúde & Cura',
+        'Foco Mental & Vontade': '🧠 Foco & Vontade',
+        'Descanso & Abrigo': '⛺ Descanso & Abrigo',
+        'Arte & Social': '🎭 Arte & Social',
+        'Ferramentas & Utilidades': '🔧 Ferramentas & Utilidades',
+        'Ferramentas & Armazenamento': '🔧 Ferramentas & Armazenamento',
+        'Comunicação & Sensores': '📡 Comunicação & Sensores',
+        'Escudos & Armaduras': '🛡️ Proteções & Escudos',
+        'Focos Arcanos & Magia': '🔮 Focos Arcanos & Magia',
+        'Focos Arcanos & Mágicos': '🔮 Focos Arcanos & Magia',
+        'Armas & Focos': '⚔️ Armas & Focos',
+        'Arma Branca': '🗡️ Armas Brancas',
+        'Arma de Fogo': '🔫 Armas de Fogo',
+        'Energia, Luz & Calor': '⚡ Energia & Calor',
+        'Treino & Influência': '📜 Treino & Influência',
+        'Mobilidade & Veículos': '🐎 Mobilidade & Veículos',
+        'Barreiras & Próteses': '⚙️ Barreiras & Próteses',
+        'Vestimentas & Anatomia': '🎽 Vestimentas & Silhueta'
+      };
+
+      catContainer.innerHTML = categories.map(cat => `
+        <button class="comp-cat-filter-btn ${cat === currentCompCategory ? 'active' : ''}" 
+                onclick="filtrarCategoriaCompendio('${cat}', this)">
+          ${categoryLabels[cat] || cat}
+        </button>
+      `).join('');
+
+      filtrarCompendioItens();
+    }
+
+    function filtrarCategoriaCompendio(cat, btnEl) {
+      currentCompCategory = cat;
+      document.querySelectorAll('#compendium-items-categories .comp-cat-filter-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      filtrarCompendioItens();
+    }
+
+    function filtrarCompendioItens() {
+      const container = document.getElementById('compendium-items-list-container');
+      if (!container) return;
+
+      const searchInput = document.getElementById('search-compendium-items');
+      const term = searchInput ? searchInput.value.toLowerCase().trim() : '';
+      const items = obterItensCompendio();
+
+      const filtered = items.filter(item => {
+        const itemCat = item.categoria || item.category || 'Geral';
+        const matchCat = currentCompCategory === 'todos' || itemCat === currentCompCategory;
+        const nome = item.nome || item.name || '';
+        const desc = item.desc || item.descricao || item.description || '';
+        const tipo = item.tipo || item.type || '';
+        const slot = item.slot || '';
+        const dano = item.dano || '';
+        const matchText = !term || 
+          nome.toLowerCase().includes(term) || 
+          desc.toLowerCase().includes(term) ||
+          tipo.toLowerCase().includes(term) ||
+          slot.toLowerCase().includes(term) ||
+          dano.toLowerCase().includes(term) ||
+          itemCat.toLowerCase().includes(term);
+        return matchCat && matchText;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 32px 16px; text-align: center; color: var(--text-muted); background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
+            <div style="font-size: 28px; margin-bottom: 8px;">🔍</div>
+            <div style="font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Nenhum item encontrado</div>
+            <div style="font-size: 12px;">Tente buscar por outro termo ou selecione a categoria "Todos os Itens".</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => {
+        const custoVal = item.custo !== undefined ? item.custo : (item.custo_pratas !== undefined ? item.custo_pratas : null);
+        const precoLabel = custoVal !== null ? `${custoVal} P` : (item.riquezaMinima ? `Req: ${item.riquezaMinima}` : 'Especial');
+        const slotsVal = item.slotsCarga !== undefined ? item.slotsCarga : (item.peso_slots !== undefined ? item.peso_slots : 1);
+        const desc = item.desc || item.descricao || 'Sem descrição.';
+        const defesa = item.bonusDefesa !== undefined ? item.bonusDefesa : item.defesa;
+        const dano = item.dano;
+        const bonus = item.bonus;
+        const tracos = Array.isArray(item.tracos) ? item.tracos : [];
+
+        return `
+        <div class="comp-item-card">
+          <div class="comp-item-header">
+            <div>
+              <h5 class="comp-item-name">${item.nome || item.name}</h5>
+              <span style="font-size: 11px; color: var(--text-dim);">${item.categoria || 'Geral'} • Slot: ${item.slot || 'Geral'}</span>
+            </div>
+            <span class="comp-item-price">${precoLabel}</span>
+          </div>
+          <p class="comp-item-desc">${desc}</p>
+          <div class="comp-item-tags">
+            <span class="comp-item-tag">🎒 ${slotsVal} Slot(s)</span>
+            ${dano ? `<span class="comp-item-tag" style="color: #f87171; border-color: rgba(239, 68, 68, 0.3);">⚔️ ${dano}</span>` : ''}
+            ${defesa ? `<span class="comp-item-tag" style="color: #60a5fa; border-color: rgba(96, 165, 250, 0.3);">🛡️ +${defesa} Defesa</span>` : ''}
+            ${bonus ? `<span class="comp-item-tag" style="color: #34d399; border-color: rgba(52, 211, 153, 0.3);">✨ ${bonus}</span>` : ''}
+            ${tracos.map(t => `<span class="comp-item-tag" style="color: #a78bfa; border-color: rgba(167, 139, 250, 0.3);">🏷️ ${t}</span>`).join('')}
+          </div>
+        </div>
+        `;
+      }).join('');
+    }
+
+    function renderizarAbaPericias() {
+      const catContainer = document.getElementById('compendium-specs-categories');
+      if (!catContainer) return;
+
+      const categories = ['todos', 'corpo', 'mente', 'social', 'espirito'];
+
+      const labelMap = {
+        'todos': 'Todas as 40 Especializações',
+        'corpo': '💪 Corpo (9)',
+        'mente': '🧠 Mente (19)',
+        'social': '🎭 Social (6)',
+        'espirito': '🔮 Espírito (6)'
+      };
+
+      catContainer.innerHTML = categories.map(cat => `
+        <button class="comp-cat-filter-btn ${cat === currentSpecCategory ? 'active' : ''}" 
+                onclick="filtrarCategoriaPericias('${cat}', this)">
+          ${labelMap[cat] || cat}
+        </button>
+      `).join('');
+
+      filtrarPericias();
+    }
+
+    function filtrarCategoriaPericias(cat, btnEl) {
+      currentSpecCategory = cat;
+      document.querySelectorAll('#compendium-specs-categories .comp-cat-filter-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      filtrarPericias();
+    }
+
+    function filtrarPericias() {
+      const container = document.getElementById('compendium-specs-list-container');
+      if (!container) return;
+
+      const searchInput = document.getElementById('search-compendium-specs');
+      const term = searchInput ? searchInput.value.toLowerCase().trim() : '';
+      const specs = obterEspecializacoesCompendio();
+      const specsList = Array.isArray(specs) ? specs : Object.values(specs);
+
+      const filtered = specsList.filter(spec => {
+        const attr = (spec.atributo || '').toLowerCase();
+        const matchCat = currentSpecCategory === 'todos' || attr === currentSpecCategory;
+        const nome = spec.nome || spec.name || '';
+        const desc = spec.desc || spec.descricao || '';
+        const cat = spec.categoria || '';
+        const matchText = !term || 
+          nome.toLowerCase().includes(term) || 
+          desc.toLowerCase().includes(term) ||
+          cat.toLowerCase().includes(term) ||
+          attr.includes(term);
+        return matchCat && matchText;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 32px 16px; text-align: center; color: var(--text-muted); background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
+            <div style="font-size: 28px; margin-bottom: 8px;">🎯</div>
+            <div style="font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Nenhuma especialização encontrada</div>
+            <div style="font-size: 12px;">Tente buscar por outro termo ou selecione o filtro "Todas as 40 Especializações".</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(spec => {
+        const desc = spec.desc || spec.descricao || 'Habilidade técnica ou conhecimento refinado.';
+        const attr = (spec.atributo || 'mente').toUpperCase();
+        return `
+        <div class="comp-item-card">
+          <div class="comp-item-header">
+            <div>
+              <h5 class="comp-item-name">${spec.nome || spec.name}</h5>
+              <span style="font-size: 11px; color: var(--gold-light);">
+                Atributo: <strong>${attr}</strong> • ${spec.categoria || 'Geral'}
+              </span>
+            </div>
+            <span class="comp-item-price" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.3); color: #34d399;">
+              Ranks 1 a 3
+            </span>
+          </div>
+          <p class="comp-item-desc">${desc}</p>
+          <div class="comp-item-tags">
+            <span class="comp-item-tag" style="color: #60a5fa; border-color: rgba(96, 165, 250, 0.3);" title="Nível 1 (+1d6)">Nível I: +1 Dado (D6)</span>
+            <span class="comp-item-tag" style="color: #a78bfa; border-color: rgba(167, 139, 250, 0.3);" title="Nível 2 (+2d6)">Nível II: +2 Dados (D6)</span>
+            <span class="comp-item-tag" style="color: #34d399; border-color: rgba(52, 211, 153, 0.3);" title="Nível 3 (+3d6)">Nível III: +3 Dados (D6)</span>
+          </div>
+        </div>
+        `;
+      }).join('');
+    }
+
+    function renderizarAbaComunidade() {
+      filtrarComunidade();
+    }
+
+    function filtrarTipoComunidade(tipo, btnEl) {
+      currentCommunityFilter = tipo;
+      document.querySelectorAll('#community-categories-filters .comp-cat-filter-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      filtrarComunidade();
+    }
+
+    function filtrarComunidade() {
+      const container = document.getElementById('community-list-container');
+      if (!container) return;
+
+      const searchInput = document.getElementById('search-community');
+      const term = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+      const players = cachedSystemData?.community?.players || [];
+      const npcs = cachedSystemData?.community?.npcs || [];
+      const homebrews = cachedSystemData?.community?.homebrews || [];
+
+      let list = [];
+      if (currentCommunityFilter === 'todos') {
+        list = [
+          ...players.map(p => ({ ...p, _type: 'jogador' })),
+          ...npcs.map(n => ({ ...n, _type: 'npc' })),
+          ...homebrews.map(h => ({ ...h, _type: 'homebrew' }))
+        ];
+      } else if (currentCommunityFilter === 'jogadores') {
+        list = players.map(p => ({ ...p, _type: 'jogador' }));
+      } else if (currentCommunityFilter === 'npcs') {
+        list = npcs.map(n => ({ ...n, _type: 'npc' }));
+      } else if (currentCommunityFilter === 'homebrew') {
+        list = homebrews.map(h => ({ ...h, _type: 'homebrew' }));
+      }
+
+      if (term) {
+        list = list.filter(item => {
+          const nome = (item.name || item.nome || '').toLowerCase();
+          const camp = (item.campaignName || item.campanha || '').toLowerCase();
+          const autor = (item.creatorName || item.autor || '').toLowerCase();
+          const desc = (item.descricao || item.sheet?.arquetipo || '').toLowerCase();
+          return nome.includes(term) || camp.includes(term) || autor.includes(term) || desc.includes(term);
+        });
+      }
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 32px; text-align: center; color: var(--text-muted);">
+            Nenhum registro encontrado na comunidade para os filtros selecionados.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map(item => {
+        if (item._type === 'homebrew') {
+          return `
+            <div class="character-card">
+              <div class="character-card-header">
+                <div class="character-avatar" style="background: rgba(147, 51, 234, 0.2); border-color: #a855f7; color: #c084fc;">
+                  ✨
+                </div>
+                <div class="character-info-main">
+                  <h4 class="character-name">${item.nome}</h4>
+                  <span class="character-archetype">Criação Homebrew • ${item.tipo || 'Item'}</span>
+                </div>
+                <span class="pill-stat" style="background: rgba(147, 51, 234, 0.15); border: 1px solid rgba(147, 51, 234, 0.4); color: #c084fc;">
+                  Homebrew
+                </span>
+              </div>
+              <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.45; margin: 0;">${item.descricao || 'Sem descrição.'}</p>
+              <div class="character-pills-row">
+                <span class="pill-stat pill-wealth">🪙 ${item.custo_pratas || 0} P</span>
+                <span class="pill-stat">🎒 ${item.peso_slots || 1} Slot(s)</span>
+                <span style="font-size: 11px; color: var(--text-dim); margin-left: auto;">Por: <strong>${item.autor}</strong></span>
+              </div>
+            </div>
+          `;
+        }
+
+        const isNpc = item._type === 'npc';
+        const sheet = item.sheet || {};
+        const attrs = sheet.atributos || { corpo: 2, mente: 2, social: 2, espirito: 2 };
+        const initial = (item.name || 'A').charAt(0).toUpperCase();
+
+        return `
+          <div class="character-card">
+            <div class="character-card-header">
+              <div class="character-avatar" style="${isNpc ? 'border-color: #f87171; background: rgba(239, 68, 68, 0.2); color: #f87171;' : ''}">
+                ${initial}
+              </div>
+              <div class="character-info-main">
+                <h4 class="character-name">${item.name}</h4>
+                <span class="character-archetype">${sheet.arquetipo || (isNpc ? 'Ameaça / NPC' : 'Aventureiro')}</span>
+              </div>
+              <span class="pill-stat ${isNpc ? 'pill-anima' : 'pill-defense'}">
+                ${isNpc ? '💀 NPC' : '🛡️ Jogador'}
+              </span>
+            </div>
+
+            <div class="character-pills-row">
+              <span class="pill-stat" style="background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); color: #4ade80;">
+                ❤️ ${sheet.pontos_vida_max || 16} PV
+              </span>
+              <span class="pill-stat pill-anima">
+                ✨ ${sheet.anima_max || 14} Anima
+              </span>
+              <span class="pill-stat pill-defense">
+                🛡️ Def: ${sheet.defesa_total || 2}
+              </span>
+              <span class="pill-stat pill-wealth">
+                🪙 ${sheet.pratas !== undefined ? sheet.pratas : 2500} P
+              </span>
+            </div>
+
+            <div class="character-attributes-grid">
+              <div class="attr-mini-box">
+                <span class="attr-mini-label">COR</span>
+                <span class="attr-mini-val">${attrs.corpo || 2}d6</span>
+              </div>
+              <div class="attr-mini-box">
+                <span class="attr-mini-label">MEN</span>
+                <span class="attr-mini-val">${attrs.mente || 2}d6</span>
+              </div>
+              <div class="attr-mini-box">
+                <span class="attr-mini-label">SOC</span>
+                <span class="attr-mini-val">${attrs.social || 2}d6</span>
+              </div>
+              <div class="attr-mini-box">
+                <span class="attr-mini-label">ESP</span>
+                <span class="attr-mini-val">${attrs.espirito || 2}d6</span>
+              </div>
+            </div>
+
+            <div class="character-actions-row">
+              <button class="btn-enter-table" onclick="inspecionarFichaComunidade('${item.id}')" style="font-size: 11.5px; padding: 6px 12px;">
+                👁️ Inspecionar Ficha
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function inspecionarFichaComunidade(charId) {
+      const players = cachedSystemData?.community?.players || [];
+      const npcs = cachedSystemData?.community?.npcs || [];
+      const target = [...players, ...npcs].find(c => c.id === charId);
+
+      if (!target) {
+        mostrarToast('Ficha não encontrada.');
+        return;
+      }
+
+      const modal = document.getElementById('modal-preview-ficha-comunidade');
+      const avatarEl = document.getElementById('preview-ficha-avatar');
+      const nomeEl = document.getElementById('preview-ficha-nome');
+      const subEl = document.getElementById('preview-ficha-sub');
+      const contentEl = document.getElementById('preview-ficha-conteudo');
+
+      if (avatarEl) avatarEl.textContent = (target.name || 'A').charAt(0).toUpperCase();
+      if (nomeEl) nomeEl.textContent = target.name;
+      if (subEl) subEl.textContent = `${target.sheet?.arquetipo || 'Aventureiro'} • Mesa: ${target.campaignName || 'Campanha'} • Criador: ${target.creatorName || 'Mestre'}`;
+
+      const attrs = target.sheet?.atributos || { corpo: 2, mente: 2, social: 2, espirito: 2 };
+      const specs = Array.isArray(target.sheet?.especializacoes) ? target.sheet.especializacoes : [];
+      const inv = Array.isArray(target.sheet?.inventario) ? target.sheet.inventario : [];
+
+      if (contentEl) {
+        contentEl.innerHTML = `
+          <div class="sheet-preview-card">
+            <!-- Atributos Principais -->
+            <div class="character-attributes-grid" style="padding: 12px; font-size: 14px;">
+              <div class="attr-mini-box">
+                <span class="attr-mini-label" style="font-size: 11px;">Corpo</span>
+                <span class="attr-mini-val" style="font-size: 16px;">${attrs.corpo || 2}d6</span>
+              </div>
+              <div class="attr-mini-box">
+                <span class="attr-mini-label" style="font-size: 11px;">Mente</span>
+                <span class="attr-mini-val" style="font-size: 16px;">${attrs.mente || 2}d6</span>
+              </div>
+              <div class="attr-mini-box">
+                <span class="attr-mini-label" style="font-size: 11px;">Social</span>
+                <span class="attr-mini-val" style="font-size: 16px;">${attrs.social || 2}d6</span>
+              </div>
+              <div class="attr-mini-box">
+                <span class="attr-mini-label" style="font-size: 11px;">Espírito</span>
+                <span class="attr-mini-val" style="font-size: 16px;">${attrs.espirito || 2}d6</span>
+              </div>
+            </div>
+
+            <!-- Barras de Recursos -->
+            <div class="character-pills-row" style="gap: 10px; justify-content: space-around;">
+              <span class="pill-stat" style="background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; color: #4ade80; padding: 6px 14px; font-size: 13px;">
+                ❤️ PV Máximo: <strong>${target.sheet?.pontos_vida_max || 16}</strong>
+              </span>
+              <span class="pill-stat pill-anima" style="padding: 6px 14px; font-size: 13px;">
+                ✨ Anima Máxima: <strong>${target.sheet?.anima_max || 14}</strong>
+              </span>
+              <span class="pill-stat pill-defense" style="padding: 6px 14px; font-size: 13px;">
+                🛡️ Defesa Total: <strong>${target.sheet?.defesa_total || 2}</strong>
+              </span>
+              <span class="pill-stat pill-wealth" style="padding: 6px 14px; font-size: 13px;">
+                🪙 ${target.sheet?.pratas !== undefined ? target.sheet.pratas : 2500} Moedas de Prata (P)
+              </span>
+            </div>
+
+            <!-- Especializações -->
+            <div>
+              <h5 style="font-family: var(--font-title); color: var(--gold-light); margin-bottom: 8px;">Especializações / Perícias</h5>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                ${specs.length > 0 ? specs.map(s => `
+                  <span class="pill-stat" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-gold-glow); color: #fff;">
+                    ${s.nome || s} (+${s.rank || 1}d6)
+                  </span>
+                `).join('') : '<span style="color: var(--text-dim); font-size: 12px;">Nenhuma especialização registrada.</span>'}
+              </div>
+            </div>
+
+            <!-- Equipamentos e Inventário -->
+            <div>
+              <h5 style="font-family: var(--font-title); color: var(--gold-light); margin-bottom: 8px;">Inventário & Equipamentos</h5>
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
+                ${inv.length > 0 ? inv.map(i => `
+                  <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle); padding: 8px 10px; border-radius: var(--radius-sm);">
+                    <div style="font-weight: 700; font-size: 12.5px; color: #fff;">${i.nome || i}</div>
+                    <div style="font-size: 11px; color: var(--text-dim);">${i.dano || i.defesa ? (i.dano || ('+'+i.defesa+' Def')) : (i.custo_pratas ? i.custo_pratas + ' P' : '1 Slot')}</div>
+                  </div>
+                `).join('') : '<span style="color: var(--text-dim); font-size: 12px;">Inventário vazio.</span>'}
+              </div>
+            </div>
+
+            <!-- Lore / Histórico -->
+            ${target.sheet?.lore?.historia_origem ? `
+              <div>
+                <h5 style="font-family: var(--font-title); color: var(--gold-light); margin-bottom: 6px;">Histórico & Origem</h5>
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; background: rgba(0,0,0,0.2); padding: 10px; border-radius: var(--radius-sm);">
+                  ${target.sheet.lore.historia_origem}
+                </p>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      if (modal) modal.classList.add('active');
+    }
+
+    function fecharModalPreviewFicha() {
+      const modal = document.getElementById('modal-preview-ficha-comunidade');
+      if (modal) modal.classList.remove('active');
+    }
+
     /**
      * Copia o ID do usuário para a área de transferência
      */
     function copiarIdUsuario() {
+
       const idInput = document.getElementById('profile-user-id');
       if (idInput) {
         navigator.clipboard.writeText(idInput.value).then(() => {

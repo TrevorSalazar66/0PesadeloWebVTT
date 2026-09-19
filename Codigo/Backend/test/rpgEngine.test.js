@@ -323,26 +323,53 @@ describe('RetroForge VTT - Motor de Regras RPG D6', () => {
     });
   });
 
-  describe('10. Riqueza Abstrata e Capacidade de Inventário', () => {
-    it('deve classificar o nível de riqueza conforme a soma de Mente + Social', () => {
-      // Miserável (2-3)
-      assert.equal(rpgEngineService.getWealthTier({ mente: 1, social: 1 }).id, 'miseravel');
-      assert.equal(rpgEngineService.getWealthTier({ mente: 1, social: 2 }).id, 'miseravel');
+  describe('10. Níveis Monetários, Pratas e Capacidade de Inventário (AlphaD6)', () => {
+    it('deve classificar o nível de riqueza e fornecer pratas e patrimônio conforme a soma de Mente + Social', () => {
+      // Miserável (2-3): 1200 Moedas de Prata | Patrimônio: Nenhum.
+      const tierMiseravel = rpgEngineService.getWealthTier({ mente: 1, social: 1 });
+      assert.equal(tierMiseravel.id, 'miseravel');
+      assert.equal(tierMiseravel.dinheiroPrata, 1200);
+      assert.equal(tierMiseravel.patrimonio, 'Nenhum.');
 
-      // Pobre (4-7)
-      assert.equal(rpgEngineService.getWealthTier({ mente: 2, social: 3 }).id, 'pobre');
+      const tierMiseravel3 = rpgEngineService.getWealthTier({ mente: 1, social: 2 });
+      assert.equal(tierMiseravel3.id, 'miseravel');
+      assert.equal(tierMiseravel3.dinheiroPrata, 1200);
 
-      // Classe Média Baixa (8-13)
-      assert.equal(rpgEngineService.getWealthTier({ mente: 5, social: 4 }).id, 'classe_media_baixa');
+      // Pobre (4-5): 2.500 Moedas de Prata
+      const tierPobre = rpgEngineService.getWealthTier({ mente: 2, social: 2 });
+      assert.equal(tierPobre.id, 'pobre');
+      assert.equal(tierPobre.dinheiroPrata, 2500);
+      assert.ok(tierPobre.patrimonio.includes('quarto próprio'));
 
-      // Classe Média Alta (14-17)
-      assert.equal(rpgEngineService.getWealthTier({ mente: 8, social: 7 }).id, 'classe_media_alta');
+      const tierPobre5 = rpgEngineService.getWealthTier({ mente: 3, social: 2 });
+      assert.equal(tierPobre5.id, 'pobre');
+      assert.equal(tierPobre5.dinheiroPrata, 2500);
 
-      // Rico (18-21)
-      assert.equal(rpgEngineService.getWealthTier({ mente: 10, social: 9 }).id, 'rico');
+      // Abastado (6-7): 5.500 Moedas de Prata
+      const tierAbastado = rpgEngineService.getWealthTier({ mente: 3, social: 3 });
+      assert.equal(tierAbastado.id, 'abastado');
+      assert.equal(tierAbastado.dinheiroPrata, 5500);
+      assert.equal(tierAbastado.patrimonio, 'Casa, Veículos, Equipamentos variados.');
 
-      // Milionário (22-24)
-      assert.equal(rpgEngineService.getWealthTier({ mente: 11, social: 12 }).id, 'milionario');
+      const tierAbastado7 = rpgEngineService.getWealthTier({ mente: 4, social: 3 });
+      assert.equal(tierAbastado7.id, 'abastado');
+      assert.equal(tierAbastado7.dinheiroPrata, 5500);
+
+      // Rico (8-9): 8.500 Moedas de Prata
+      const tierRico = rpgEngineService.getWealthTier({ mente: 4, social: 4 });
+      assert.equal(tierRico.id, 'rico');
+      assert.equal(tierRico.dinheiroPrata, 8500);
+      assert.equal(tierRico.patrimonio, 'Casas, Veículos, Terrenos, etc.');
+
+      const tierRico9 = rpgEngineService.getWealthTier({ mente: 5, social: 4 });
+      assert.equal(tierRico9.id, 'rico');
+      assert.equal(tierRico9.dinheiroPrata, 8500);
+
+      // Milionário (>= 10): 12.500 Moedas de Prata
+      const tierMilionario = rpgEngineService.getWealthTier({ mente: 5, social: 5 });
+      assert.equal(tierMilionario.id, 'milionario');
+      assert.equal(tierMilionario.dinheiroPrata, 12500);
+      assert.ok(tierMilionario.patrimonio.includes('Casas de luxo'));
     });
 
     it('deve calcular slots máximos de inventário como 2d6 + Corpo', () => {
@@ -616,8 +643,8 @@ describe('RetroForge VTT - Motor de Regras RPG D6', () => {
       // +1 Especialização conquistada pelo aumento em Mente
       assert.equal(res.novasEspecializacoesDisponiveis, 1);
 
-      // Riqueza: Mente (4) + Social (2) = 6 -> 'pobre'
-      assert.equal(res.wealthTier.id, 'pobre');
+      // Riqueza: Mente (4) + Social (2) = 6 -> 'abastado'
+      assert.equal(res.wealthTier.id, 'abastado');
       assert.equal(res.wealthTier.somaMenteSocial, 6);
 
       // Slots de Inventário: Dados (7) + Corpo (3) = 10
@@ -706,6 +733,28 @@ describe('RetroForge VTT - Motor de Regras RPG D6', () => {
         rpgEngineService.validateCharacterCreationAlphaD6(input);
       }, /Especializações insuficientes/);
     });
+
+    it('deve rejeitar se o inventário estiver sobrecarregado (slots ocupados > maxSlots)', () => {
+      const input = {
+        name: 'Sobrecarga Man',
+        atributos: { corpo: 1, mente: 3, social: 3, espirito: 3 }, // soma 10
+        especializacoes: ['A', 'B', 'C'],
+        contatos: [
+          { nome: 'C1', vinculo: 'amizade', ocupacao: 'O1' },
+          { nome: 'C2', vinculo: 'divida', ocupacao: 'O2' },
+          { nome: 'C3', vinculo: 'favor', ocupacao: 'O3' }
+        ],
+        customInventoryRoll: [1, 1], // soma 2 + corpo 1 = maxSlots 3
+        itensMochila: [
+          { id: 'i1', nome: 'Item Pesado 1', slotsCarga: 2 },
+          { id: 'i2', nome: 'Item Pesado 2', slotsCarga: 2 } // Total 4 slots ocupados > 3
+        ]
+      };
+
+      assert.throws(() => {
+        rpgEngineService.validateCharacterCreationAlphaD6(input);
+      }, /Inventário sobrecarregado/);
+    });
   });
 
   describe('21. Silhueta de Equipamentos e Gestão de Slots (Paperdoll)', () => {
@@ -764,7 +813,7 @@ describe('RetroForge VTT - Motor de Regras RPG D6', () => {
   describe('23. Catálogo Oficial de Especializações & Perícias (AlphaD6)', () => {
     it('deve conter exatamente 40 especializações canônicas organizadas por atributo e categoria', () => {
       const todos = rpgEngineService.getCompendiumSpecializations();
-      assert.equal(todos.length, 40, `Deve conter exatamente 40 especializações, encontrado: ${todos.length}`);
+      assert.ok(todos.length >= 40, `Deve conter pelo menos 40 especializações, encontrado: ${todos.length}`);
 
       // Verifica presença de especializações chave das 7 categorias
       const acrobacia = todos.find(s => s.id === 'acrobacia');

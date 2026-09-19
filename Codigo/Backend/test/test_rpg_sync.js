@@ -772,11 +772,37 @@ async function runRPGSyncTests() {
   assert.equal(deletedChar, null);
   console.log('   ✅ characters.delete removeu o personagem do banco D1 com sucesso');
 
-  console.log('\n🎉 TODOS OS TESTES DO MOTOR DE COMBATE, EVOLUÇÃO, CRIAÇÃO DE PERSONAGENS, COMPÊNDIO, EXCLUSÃO E GATEWAY RPG PASSARAM COM SUCESSO!\n');
+  // ----------------------------------------------------
+  // TESTE 25: Visão Geral do Sistema e Compêndio (rpg.system.overview)
+  // ----------------------------------------------------
+  console.log('\n25. Testando visão geral do sistema AlphaD6 (rpg.system.overview)...');
+  const resOverview = await worker.fetch(new Request('http://localhost:8787/api/sync', {
+    method: 'POST',
+    headers: { 'Origin': VALID_ORIGIN, 'Content-Type': 'application/json', 'Cookie': cookiePlayer },
+    body: JSON.stringify({
+      action: 'rpg.system.overview',
+      data: { systemId: 'alphad6' }
+    })
+  }), env);
+  const jsonOverview = await resOverview.json();
+  assert.equal(jsonOverview.sucesso, true);
+  assert.equal(jsonOverview.dados.systemId, 'alphad6');
+  assert.ok(jsonOverview.dados.rules.nome.includes('AlphaD6'));
+  assert.ok(Array.isArray(jsonOverview.dados.compendium.items));
+  assert.ok(jsonOverview.dados.compendium.items.length >= 25);
+  assert.ok(Array.isArray(jsonOverview.dados.compendium.specializations));
+  assert.ok(jsonOverview.dados.compendium.specializations.length >= 40);
+  assert.ok(Array.isArray(jsonOverview.dados.community.players));
+  assert.ok(Array.isArray(jsonOverview.dados.community.npcs));
+  assert.ok(Array.isArray(jsonOverview.dados.community.homebrews));
+  console.log('   ✅ rpg.system.overview retornou regras, compêndio oficial e ecossistema da comunidade');
+
+  console.log('\n🎉 TODOS OS TESTES DO MOTOR DE COMBATE, EVOLUÇÃO, CRIAÇÃO DE PERSONAGENS, COMPÊNDIO, SISTEMAS E GATEWAY RPG PASSARAM COM SUCESSO!\n');
 }
 
 runRPGSyncTests().catch(err => {
   console.error('❌ FALHA NO TESTE:', err);
   process.exit(1);
 });
+
 
