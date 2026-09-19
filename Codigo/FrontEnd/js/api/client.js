@@ -167,12 +167,36 @@ export const apiClient = {
     return this.sync('campaigns.requests.list', { campaignId });
   },
 
-  updateCampaignRequest(requestId, status) {
-    return this.sync('campaigns.requests.update', { requestId, status });
+  updateCampaignRequest(requestId, status, reason = '') {
+    return this.sync('campaigns.requests.update', { requestId, status, reason });
   },
 
   updateCampaignPlayerRole(campaignId, targetUserId, newRole) {
     return this.sync('campaigns.players.updateRole', { campaignId, targetUserId, newRole });
+  },
+
+  kickCampaignPlayer(campaignId, targetUserId) {
+    return this.sync('campaigns.players.kick', { campaignId, targetUserId });
+  },
+
+  banPlayerFromGM(campaignId, targetUserId, reason = '') {
+    return this.sync('campaigns.players.ban', { campaignId, targetUserId, reason });
+  },
+
+  unbanPlayerFromGM(targetUserId) {
+    return this.sync('campaigns.players.unban', { targetUserId });
+  },
+
+  listGMBannedPlayers() {
+    return this.sync('campaigns.players.listBanned');
+  },
+
+  updateCampaignSettings(data = {}) {
+    return this.sync('campaigns.settings.update', data);
+  },
+
+  deleteCampaign(campaignId) {
+    return this.sync('campaigns.delete', { campaignId });
   },
 
   listCharacters() {

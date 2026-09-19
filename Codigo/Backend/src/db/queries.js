@@ -388,6 +388,104 @@ export const dbQueries = {
     return await stmt.bind(newRole, campaignId, userId).run();
   },
 
+  async kickPlayerFromCampaign(db, campaignId, userId) {
+    // 1. Remove da tabela de participantes
+    const stmt = db.prepare(`
+      DELETE FROM campaign_players
+      WHERE campaign_id = ? AND user_id = ?
+    `);
+    const res = await stmt.bind(campaignId, userId).run();
+
+    // 2. Desvincula as fichas do jogador desta campanha
+    try {
+      await db.prepare(`
+        UPDATE characters SET campaign_id = NULL
+        WHERE campaign_id = ? AND user_id = ?
+      `).bind(campaignId, userId).run();
+    } catch (_) {}
+
+    return res;
+  },
+
+  async deleteCampaign(db, campaignId) {
+    try { await db.prepare('DELETE FROM scenes WHERE campaign_id = ?').bind(campaignId).run(); } catch (_) {}
+    try { await db.prepare('DELETE FROM campaign_requests WHERE campaign_id = ?').bind(campaignId).run(); } catch (_) {}
+    try { await db.prepare('DELETE FROM campaign_players WHERE campaign_id = ?').bind(campaignId).run(); } catch (_) {}
+    try { await db.prepare('UPDATE characters SET campaign_id = NULL WHERE campaign_id = ?').bind(campaignId).run(); } catch (_) {}
+    const stmt = db.prepare('DELETE FROM campaigns WHERE id = ?');
+    return await stmt.bind(campaignId).run();
+  },
+
+  // ==========================================
+  // BANIMENTO DE JOGADORES POR MESTRE (TODAS AS MESAS DO MESTRE)
+  // ==========================================
+  async banPlayerFromGM(db, gmId, playerId, reason = 'Banido pelo Mestre') {
+    // 1. Registra na tabela de banimento do Mestre
+    const stmtBan = db.prepare(`
+      INSERT OR REPLACE INTO gm_banned_players (gm_id, player_id, reason, created_at)
+      VALUES (?, ?, ?, datetime('now'))
+    `);
+    await stmtBan.bind(gmId, playerId, reason).run();
+
+    // 2. Remove o jogador banido de TODAS as campanhas criadas por este mestre
+    const stmtKickAll = db.prepare(`
+      DELETE FROM campaign_players
+      WHERE user_id = ? AND campaign_id IN (SELECT id FROM campaigns WHERE owner_id = ?)
+    `);
+    await stmtKickAll.bind(playerId, gmId).run();
+
+    // 3. Cancela/deleta todas as solicitações pendentes desse jogador nas mesas deste mestre
+    try {
+      await db.prepare(`
+        DELETE FROM campaign_requests
+        WHERE user_id = ? AND campaign_id IN (SELECT id FROM campaigns WHERE owner_id = ?)
+      `).bind(playerId, gmId).run();
+    } catch (_) {}
+
+    // 4. Desvincula personagens desse jogador de todas as campanhas deste mestre
+    try {
+      await db.prepare(`
+        UPDATE characters SET campaign_id = NULL
+        WHERE user_id = ? AND campaign_id IN (SELECT id FROM campaigns WHERE owner_id = ?)
+      `).bind(playerId, gmId).run();
+    } catch (_) {}
+
+    return { sucesso: true };
+  },
+
+  async unbanPlayerFromGM(db, gmId, playerId) {
+    const stmt = db.prepare(`
+      DELETE FROM gm_banned_players
+      WHERE gm_id = ? AND player_id = ?
+    `);
+    return await stmt.bind(gmId, playerId).run();
+  },
+
+  async isPlayerBannedByGM(db, gmId, playerId) {
+    if (!gmId || !playerId) return false;
+    const stmt = db.prepare(`
+      SELECT 1 FROM gm_banned_players
+      WHERE gm_id = ? AND player_id = ?
+    `);
+    const row = await stmt.bind(gmId, playerId).first();
+    return !!row;
+  },
+
+  async listGMBannedPlayers(db, gmId) {
+    const stmt = db.prepare(`
+      SELECT b.gm_id, b.player_id, b.reason, b.created_at,
+             u.display_name, u.email, u.avatar_url,
+             p.nickname
+      FROM gm_banned_players b
+      JOIN users u ON b.player_id = u.id
+      LEFT JOIN user_profiles p ON u.id = p.user_id
+      WHERE b.gm_id = ?
+      ORDER BY b.created_at DESC
+    `);
+    const res = await stmt.bind(gmId).all();
+    return res.results || res || [];
+  },
+
   async createCampaignRequest(db, { id, campaignId, userId }) {
     const stmt = db.prepare(`
       INSERT INTO campaign_requests (id, campaign_id, user_id)
@@ -398,19 +496,20 @@ export const dbQueries = {
 
   async getCampaignRequests(db, campaignId) {
     const stmt = db.prepare(`
-      SELECT cr.*, u.display_name, u.email
+      SELECT cr.*, u.display_name, u.email, u.avatar_url, p.nickname
       FROM campaign_requests cr
       JOIN users u ON cr.user_id = u.id
+      LEFT JOIN user_profiles p ON u.id = p.user_id
       WHERE cr.campaign_id = ? AND cr.status = 'pendente'
       ORDER BY cr.created_at ASC
     `);
     const res = await stmt.bind(campaignId).all();
-    return res.results || res;
+    return res.results || res || [];
   },
 
   async updateCampaignRequestStatus(db, requestId, status) {
     const stmt = db.prepare(`
-      UPDATE campaign_requests SET status = ?, updated_at = CURRENT_TIMESTAMP
+      UPDATE campaign_requests SET status = ?
       WHERE id = ?
     `);
     return await stmt.bind(status, requestId).run();

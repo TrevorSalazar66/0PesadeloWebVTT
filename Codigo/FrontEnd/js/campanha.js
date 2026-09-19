@@ -48,6 +48,8 @@ window.changeTab = function(tabId) {
   // Ações específicas por aba
   if (tabId === 'diario') {
     loadDiarioData();
+  } else if (tabId === 'config') {
+    loadConfigData();
   }
 };
 
@@ -640,6 +642,563 @@ window.saveCampaignDetails = async function(event) {
   } catch (error) {
     console.error("Erro ao salvar campanha:", error);
     alert("Ocorreu um erro ao salvar as alterações.");
+  }
+};
+
+// === Aba de Configurações & Governança da Campanha ===
+
+let configAutoApprove = 1;
+let configSceneAccess = 'free';
+
+window.selecionarOpcaoAutoApprove = function(val) {
+  configAutoApprove = Number(val);
+  const card1 = document.getElementById('card-opt-auto-approve-1');
+  const card0 = document.getElementById('card-opt-auto-approve-0');
+  if (card1 && card0) {
+    if (configAutoApprove === 1) {
+      card1.classList.add('selected');
+      card0.classList.remove('selected');
+    } else {
+      card0.classList.add('selected');
+      card1.classList.remove('selected');
+    }
+  }
+};
+
+window.selecionarOpcaoSceneAccess = function(mode) {
+  configSceneAccess = mode === 'approval_required' ? 'approval_required' : 'free';
+  const cardFree = document.getElementById('card-opt-scene-free');
+  const cardApproval = document.getElementById('card-opt-scene-approval');
+  if (cardFree && cardApproval) {
+    if (configSceneAccess === 'free') {
+      cardFree.classList.add('selected');
+      cardApproval.classList.remove('selected');
+    } else {
+      cardApproval.classList.add('selected');
+      cardFree.classList.remove('selected');
+    }
+  }
+};
+
+window.atualizarVolumePreview = function(val) {
+  const lbl = document.getElementById('config-sfx-val');
+  if (lbl) lbl.textContent = `${val}%`;
+};
+
+window.copiarCodigoConviteMesa = function() {
+  const input = document.getElementById('config-camp-simple-id');
+  if (!input || !input.value) return;
+  navigator.clipboard.writeText(input.value).then(() => {
+    alert("Código de convite copiado para a área de transferência!");
+  }).catch(() => {
+    input.select();
+    document.execCommand('copy');
+    alert("Código de convite copiado!");
+  });
+};
+
+window.testarCanalVozDiscord = function() {
+  const voiceInput = document.getElementById('config-discord-voice');
+  const url = voiceInput?.value?.trim();
+  if (!url) {
+    alert("Informe uma URL de canal de voz ou convite do Discord antes de testar.");
+    return;
+  }
+  window.open(url, '_blank');
+};
+
+/**
+ * Carrega todos os dados da aba de Configurações
+ */
+window.loadConfigData = async function() {
+  if (!currentCampaignId) return;
+
+  try {
+    // Sincroniza dados da campanha atual se necessário
+    if (!currentCampaignData) {
+      const res = await apiClient.getCampaign({ campaignId: currentCampaignId });
+      if (res.sucesso && res.dados) {
+        currentCampaignData = res.dados;
+      }
+    }
+
+    const camp = currentCampaignData;
+    if (!camp) return;
+
+    const user = obterUsuarioAtual();
+    const isGM = user && (camp.owner_id === user.userId || camp.gm_id === user.userId || String(camp.owner_id) === String(user.userId));
+    const isSuperAdmin = user && (user.role === 'superadmin' || user.role === 'admin');
+
+    // Preenche campos de identidade
+    const inputName = document.getElementById('config-camp-name');
+    if (inputName) inputName.value = camp.name || '';
+
+    const selectSys = document.getElementById('config-camp-system');
+    if (selectSys) selectSys.value = camp.system_id || 'alphad6';
+
+    const selectTheme = document.getElementById('config-camp-theme');
+    if (selectTheme) selectTheme.value = camp.theme_id || 'dark-fantasy';
+
+    const selectVis = document.getElementById('config-camp-visibility');
+    if (selectVis) selectVis.value = camp.is_public !== undefined ? String(camp.is_public) : '1';
+
+    const inputMax = document.getElementById('config-camp-max-players');
+    if (inputMax) inputMax.value = camp.max_players || 5;
+
+    const inputSimpleId = document.getElementById('config-camp-simple-id');
+    if (inputSimpleId) inputSimpleId.value = camp.simple_id || camp.id || '';
+
+    const inputNotices = document.getElementById('config-camp-notices');
+    if (inputNotices) inputNotices.value = camp.notices || '';
+
+    // Preenche configurações e regras
+    const settings = camp.settings || {};
+    selecionarOpcaoAutoApprove(settings.auto_approve_actions !== undefined ? settings.auto_approve_actions : 1);
+    selecionarOpcaoSceneAccess(settings.scene_access_mode || 'free');
+
+    const selectXp = document.getElementById('config-camp-xp-mult');
+    if (selectXp) selectXp.value = settings.xp_multiplier !== undefined ? String(settings.xp_multiplier) : '1.0';
+
+    const inputVoice = document.getElementById('config-discord-voice');
+    if (inputVoice) inputVoice.value = settings.discord_voice_url || '';
+
+    const inputWebhook = document.getElementById('config-discord-webhook');
+    if (inputWebhook) inputWebhook.value = settings.discord_webhook_url || '';
+
+    const rangeSfx = document.getElementById('config-sfx-volume');
+    const sfxVal = settings.sound_effects_volume !== undefined ? settings.sound_effects_volume : 80;
+    if (rangeSfx) {
+      rangeSfx.value = sfxVal;
+      atualizarVolumePreview(sfxVal);
+    }
+
+    // Exibe ou oculta zona de perigo
+    const dangerZone = document.getElementById('card-danger-zone');
+    if (dangerZone) {
+      dangerZone.style.display = (isGM || isSuperAdmin) ? 'block' : 'none';
+    }
+
+    // Carrega solicitações pendentes e lista de jogadores
+    await Promise.all([
+      carregarSolicitacoesConfig(),
+      carregarJogadoresConfig()
+    ]);
+
+  } catch (err) {
+    console.error("Erro ao carregar configurações da campanha:", err);
+  }
+};
+
+/**
+ * Salva todas as configurações gerais da campanha
+ */
+window.salvarConfiguracoesCampanhaCompleta = async function() {
+  if (!currentCampaignId) return;
+
+  const btn = document.getElementById('btn-save-campaign-config');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+  }
+
+  try {
+    const payload = {
+      campaignId: currentCampaignId,
+      name: document.getElementById('config-camp-name')?.value?.trim(),
+      systemId: document.getElementById('config-camp-system')?.value,
+      themeId: document.getElementById('config-camp-theme')?.value,
+      isPublic: Number(document.getElementById('config-camp-visibility')?.value || 1),
+      maxPlayers: Number(document.getElementById('config-camp-max-players')?.value || 5),
+      notices: document.getElementById('config-camp-notices')?.value || '',
+      autoApproveActions: configAutoApprove,
+      sceneAccessMode: configSceneAccess,
+      xpMultiplier: Number(document.getElementById('config-camp-xp-mult')?.value || 1.0),
+      discordVoiceUrl: document.getElementById('config-discord-voice')?.value?.trim() || '',
+      discordWebhookUrl: document.getElementById('config-discord-webhook')?.value?.trim() || '',
+      soundEffectsVolume: Number(document.getElementById('config-sfx-volume')?.value || 80)
+    };
+
+    const res = await apiClient.updateCampaignSettings(payload);
+    if (res && res.sucesso) {
+      alert("Configurações da campanha salvas com sucesso!");
+      
+      // Atualiza os dados locais e a visão geral
+      if (currentCampaignData) {
+        Object.assign(currentCampaignData, {
+          name: payload.name || currentCampaignData.name,
+          system_id: payload.systemId,
+          theme_id: payload.themeId,
+          is_public: payload.isPublic,
+          max_players: payload.maxPlayers,
+          notices: payload.notices,
+          settings: {
+            ...(currentCampaignData.settings || {}),
+            auto_approve_actions: payload.autoApproveActions,
+            scene_access_mode: payload.sceneAccessMode,
+            xp_multiplier: payload.xpMultiplier,
+            discord_voice_url: payload.discordVoiceUrl,
+            discord_webhook_url: payload.discordWebhookUrl,
+            sound_effects_volume: payload.soundEffectsVolume
+          }
+        });
+      }
+
+      // Atualiza textos do cabeçalho
+      if (payload.name) {
+        document.getElementById('campaign-title').textContent = payload.name;
+      }
+      const sysLabel = SYSTEMS_MAP[payload.systemId] || payload.systemId;
+      document.getElementById('campaign-system').textContent = sysLabel;
+      document.getElementById('campaign-notices').textContent = payload.notices || "Ainda não há avisos importantes fixados.";
+
+    } else {
+      alert(`Falha ao salvar configurações: ${res?.erro || 'Erro desconhecido.'}`);
+    }
+  } catch (err) {
+    console.error("Erro ao salvar configurações:", err);
+    alert(`Erro ao conectar ao servidor: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '💾 Salvar Configurações';
+    }
+  }
+};
+
+/**
+ * Carrega a lista de solicitações de entrada pendentes
+ */
+async function carregarSolicitacoesConfig() {
+  const container = document.getElementById('config-requests-list-container');
+  const badge = document.getElementById('badge-config-requests-count');
+  if (!container) return;
+
+  try {
+    const res = await apiClient.sync('campaigns.requests.list', { campaignId: currentCampaignId });
+    if (res && res.sucesso && Array.isArray(res.dados)) {
+      const requests = res.dados.filter(r => r.status === 'pending');
+      if (badge) badge.textContent = `${requests.length} pendente(s)`;
+
+      if (requests.length === 0) {
+        container.innerHTML = `
+          <div style="font-size: 12.5px; color: var(--text-dim); text-align: center; padding: 20px;">
+            Nenhuma solicitação pendente no momento.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = requests.map(req => {
+        const initial = (req.display_name || req.username || 'A')[0].toUpperCase();
+        const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('pt-BR') : '';
+        return `
+          <div class="manage-list-item">
+            <div class="manage-player-avatar">${initial}</div>
+            <div class="manage-player-info">
+              <div class="manage-player-name">${req.display_name || req.username} <span style="font-size: 11px; color: var(--text-dim);">@${req.username || ''}</span></div>
+              <div class="manage-player-role">Solicitou entrada em ${dateStr}</div>
+            </div>
+            <div class="manage-player-actions">
+              <button type="button" class="btn-action-sm btn-action-accept" onclick="responderSolicitacaoConfig(${req.id}, 'approved')" title="Aceitar na Mesa">
+                ✓ Aceitar
+              </button>
+              <button type="button" class="btn-action-sm btn-action-reject" onclick="responderSolicitacaoConfig(${req.id}, 'rejected')" title="Negar Entrada">
+                ✕ Negar
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  } catch (err) {
+    container.innerHTML = `<div style="color: #ef4444; font-size: 12px; padding: 12px;">Erro ao carregar solicitações: ${err.message}</div>`;
+  }
+}
+
+/**
+ * Responde a uma solicitação de entrada (aceitar ou rejeitar)
+ */
+window.responderSolicitacaoConfig = async function(requestId, status) {
+  try {
+    const res = await apiClient.sync('campaigns.requests.respond', {
+      campaignId: currentCampaignId,
+      requestId,
+      status
+    });
+
+    if (res && res.sucesso) {
+      alert(status === 'approved' ? "Jogador aceito na campanha!" : "Solicitação recusada.");
+      // Atualiza os dados da campanha e a lista
+      const campRes = await apiClient.getCampaign({ campaignId: currentCampaignId });
+      if (campRes.sucesso && campRes.dados) {
+        currentCampaignData = campRes.dados;
+        renderizarJogadoresGeral(currentCampaignData.players || []);
+      }
+      await carregarSolicitacoesConfig();
+      await carregarJogadoresConfig();
+    } else {
+      alert(`Falha ao responder solicitação: ${res?.erro || 'Erro desconhecido'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao conectar ao servidor: ${err.message}`);
+  }
+};
+
+/**
+ * Carrega a lista de jogadores da mesa com opções de moderação
+ */
+async function carregarJogadoresConfig() {
+  const container = document.getElementById('config-players-list-container');
+  if (!container) return;
+
+  const players = currentCampaignData?.players || [];
+  const user = obterUsuarioAtual();
+  const isGM = user && (currentCampaignData?.owner_id === user.userId || currentCampaignData?.gm_id === user.userId || String(currentCampaignData?.owner_id) === String(user.userId));
+  const isSuperAdmin = user && (user.role === 'superadmin' || user.role === 'admin');
+
+  if (players.length === 0) {
+    container.innerHTML = `
+      <div style="font-size: 12.5px; color: var(--text-dim); text-align: center; padding: 20px;">
+        Nenhum jogador na mesa ainda.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = players.map(p => {
+    const isPlayerGM = p.role?.toLowerCase() === 'mestre' || p.user_id === currentCampaignData?.owner_id;
+    const initial = (p.display_name || 'J')[0].toUpperCase();
+    const safeName = (p.display_name || 'Jogador').replace(/'/g, "\\'");
+    const isAssistant = p.role?.toLowerCase() === 'assistente' || p.role?.toLowerCase() === 'assistente de mestre';
+
+    return `
+      <div class="manage-list-item">
+        <div class="manage-player-avatar" style="${isPlayerGM ? 'border-color: var(--gold-primary); color: var(--gold-light);' : ''}">${initial}</div>
+        <div class="manage-player-info">
+          <div class="manage-player-name">${p.display_name} ${p.nickname ? '<span style="font-size: 11px; color: var(--text-dim);">@' + p.nickname + '</span>' : ''}</div>
+          <div class="manage-player-role">
+            ${isPlayerGM ? '<strong style="color: var(--gold-light);">👑 Mestre da Campanha</strong>' : (isAssistant ? '<span style="color: #60a5fa;">🛡️ Assistente de Mestre</span>' : 'Jogador')}
+          </div>
+        </div>
+        <div class="manage-player-actions">
+          ${isPlayerGM ? `
+            <span style="font-size: 11px; color: var(--gold-light); padding: 4px 8px; border: 1px solid var(--border-gold); border-radius: var(--radius-sm);">Criador</span>
+          ` : `
+            ${(isGM || isSuperAdmin) ? `
+              <select class="form-control" style="width: auto; padding: 4px 8px; font-size: 11.5px;" onchange="alterarCargoJogadorConfig(${p.user_id}, this.value)">
+                <option value="jogador" ${!isAssistant ? 'selected' : ''}>Jogador</option>
+                <option value="assistente" ${isAssistant ? 'selected' : ''}>Assistente de Mestre</option>
+              </select>
+              <button type="button" class="btn-action-sm btn-action-kick" onclick="expulsarJogadorConfig(${p.user_id}, '${safeName}')" title="Expulsar da Mesa">
+                🚪 Expulsar
+              </button>
+              <button type="button" class="btn-action-sm btn-action-ban" onclick="banirJogadorConfig(${p.user_id}, '${safeName}')" title="Banir de Todas as Mesas do Mestre">
+                🚫 Banir
+              </button>
+            ` : `
+              <span style="font-size: 11px; color: var(--text-dim);">${p.role || 'Jogador'}</span>
+            `}
+          `}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/**
+ * Altera o cargo de um jogador na mesa (Jogador vs Assistente de Mestre)
+ */
+window.alterarCargoJogadorConfig = async function(userId, role) {
+  try {
+    const res = await apiClient.sync('campaigns.players.setRole', {
+      campaignId: currentCampaignId,
+      userId,
+      role
+    });
+
+    if (res && res.sucesso) {
+      alert(`Cargo atualizado para "${role === 'assistente' ? 'Assistente de Mestre' : 'Jogador'}".`);
+      const campRes = await apiClient.getCampaign({ campaignId: currentCampaignId });
+      if (campRes.sucesso && campRes.dados) {
+        currentCampaignData = campRes.dados;
+        renderizarJogadoresGeral(currentCampaignData.players || []);
+      }
+      await carregarJogadoresConfig();
+    } else {
+      alert(`Falha ao alterar cargo: ${res?.erro || 'Erro desconhecido'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao conectar ao servidor: ${err.message}`);
+  }
+};
+
+/**
+ * Expulsa um jogador da mesa atual
+ */
+window.expulsarJogadorConfig = async function(userId, playerName) {
+  if (!confirm(`Tem certeza que deseja expulsar o jogador "${playerName}" desta campanha? Ele poderá solicitar entrada novamente no futuro caso a mesa seja pública.`)) {
+    return;
+  }
+
+  try {
+    const res = await apiClient.kickCampaignPlayer({
+      campaignId: currentCampaignId,
+      userId
+    });
+
+    if (res && res.sucesso) {
+      alert(`Jogador "${playerName}" foi expulso da campanha.`);
+      const campRes = await apiClient.getCampaign({ campaignId: currentCampaignId });
+      if (campRes.sucesso && campRes.dados) {
+        currentCampaignData = campRes.dados;
+        renderizarJogadoresGeral(currentCampaignData.players || []);
+      }
+      await carregarJogadoresConfig();
+    } else {
+      alert(`Falha ao expulsar jogador: ${res?.erro || 'Erro desconhecido'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao conectar ao servidor: ${err.message}`);
+  }
+};
+
+/**
+ * Bane um jogador em nível de Mestre (todas as mesas do Mestre)
+ */
+window.banirJogadorConfig = async function(userId, playerName) {
+  const confirmMsg = `ATENÇÃO: Banir "${playerName}" expulsará o jogador desta campanha e o BLOQUEARÁ PERMANENTEMENTE de ingressar ou solicitar entrada em TODAS as suas mesas de RPG.\n\nDeseja realmente aplicar o banimento de Mestre?`;
+  if (!confirm(confirmMsg)) {
+    return;
+  }
+
+  const reason = prompt("Informe o motivo do banimento (opcional):", "Violação de conduta na mesa");
+  if (reason === null) return; // Usuário cancelou
+
+  try {
+    const res = await apiClient.banPlayerFromGM({
+      campaignId: currentCampaignId,
+      playerId: userId,
+      reason: reason || "Violação de conduta"
+    });
+
+    if (res && res.sucesso) {
+      alert(`Jogador "${playerName}" foi banido com sucesso de todas as suas campanhas.`);
+      const campRes = await apiClient.getCampaign({ campaignId: currentCampaignId });
+      if (campRes.sucesso && campRes.dados) {
+        currentCampaignData = campRes.dados;
+        renderizarJogadoresGeral(currentCampaignData.players || []);
+      }
+      await carregarJogadoresConfig();
+      await carregarSolicitacoesConfig();
+    } else {
+      alert(`Falha ao banir jogador: ${res?.erro || 'Erro desconhecido'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao conectar ao servidor: ${err.message}`);
+  }
+};
+
+/**
+ * Abre o modal de jogadores banidos pelo Mestre
+ */
+window.abrirModalJogadoresBanidos = async function() {
+  const modal = document.getElementById('modal-banned-players');
+  const container = document.getElementById('banned-players-list-container');
+  if (!modal || !container) return;
+
+  modal.classList.add('active');
+  container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 20px;">Carregando lista de banidos...</div>`;
+
+  try {
+    const res = await apiClient.listGMBannedPlayers({ campaignId: currentCampaignId });
+    if (res && res.sucesso && Array.isArray(res.dados)) {
+      const list = res.dados;
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div style="font-size: 12.5px; color: var(--text-dim); text-align: center; padding: 24px;">
+            Você não possui nenhum jogador banido das suas mesas.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map(b => {
+        const initial = (b.display_name || b.username || 'B')[0].toUpperCase();
+        const safeName = (b.display_name || b.username || 'Jogador').replace(/'/g, "\\'");
+        const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString('pt-BR') : '';
+        return `
+          <div class="manage-list-item">
+            <div class="manage-player-avatar" style="border-color: #f87171; color: #f87171;">${initial}</div>
+            <div class="manage-player-info">
+              <div class="manage-player-name" style="color: #fca5a5;">${b.display_name || b.username} <span style="font-size: 11px; color: var(--text-dim);">@${b.username}</span></div>
+              <div class="manage-player-role">Motivo: <em>${b.reason || 'Sem motivo informado'}</em> • Banido em ${dateStr}</div>
+            </div>
+            <div class="manage-player-actions">
+              <button type="button" class="btn-action-sm btn-action-accept" onclick="desbanirJogadorConfig(${b.player_id}, '${safeName}')" title="Revogar Banimento">
+                Desbanir
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      container.innerHTML = `<div style="color: #ef4444; font-size: 12px; padding: 12px;">Falha ao obter lista: ${res?.erro || 'Erro'}</div>`;
+    }
+  } catch (err) {
+    container.innerHTML = `<div style="color: #ef4444; font-size: 12px; padding: 12px;">Erro ao carregar banidos: ${err.message}</div>`;
+  }
+};
+
+window.fecharModalJogadoresBanidos = function() {
+  const modal = document.getElementById('modal-banned-players');
+  if (modal) modal.classList.remove('active');
+};
+
+/**
+ * Revoga o banimento de um jogador
+ */
+window.desbanirJogadorConfig = async function(playerId, playerName) {
+  if (!confirm(`Deseja revogar o banimento de "${playerName}"? O usuário poderá voltar a interagir e solicitar vaga em suas campanhas.`)) {
+    return;
+  }
+
+  try {
+    const res = await apiClient.unbanPlayerFromGM({ playerId });
+    if (res && res.sucesso) {
+      alert(`Banimento de "${playerName}" foi revogado.`);
+      await abrirModalJogadoresBanidos();
+    } else {
+      alert(`Falha ao desbanir jogador: ${res?.erro || 'Erro desconhecido'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao conectar ao servidor: ${err.message}`);
+  }
+};
+
+/**
+ * Exclui a campanha definitivamente
+ */
+window.executarExclusaoCampanha = async function() {
+  const campName = currentCampaignData?.name || "esta campanha";
+  const confirmPrompt = prompt(`ATENÇÃO: A exclusão é PERMANENTE e IRREVERSÍVEL.\nTodas as fichas vinculadas, crônicas e dados desta mesa serão apagados.\n\nPara confirmar a exclusão, digite o nome exato da campanha abaixo:\n"${campName}"`);
+
+  if (confirmPrompt === null) return; // Cancelado
+
+  if (confirmPrompt.trim().toLowerCase() !== campName.trim().toLowerCase()) {
+    alert("O nome digitado não confere. Operação de exclusão cancelada.");
+    return;
+  }
+
+  try {
+    const res = await apiClient.deleteCampaign({ campaignId: currentCampaignId });
+    if (res && res.sucesso) {
+      alert("A campanha foi excluída com sucesso.");
+      window.location.href = "index.html";
+    } else {
+      alert(`Falha ao excluir campanha: ${res?.erro || 'Erro desconhecido'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao conectar ao servidor: ${err.message}`);
   }
 };
 

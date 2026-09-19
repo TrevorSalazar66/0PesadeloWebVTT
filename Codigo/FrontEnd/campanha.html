@@ -762,6 +762,209 @@
       color: #ffffff;
       transform: scale(1.02);
     }
+
+    /* === ESTILOS DA ABA DE CONFIGURAÇÕES & GOVERNANÇA === */
+    .config-layout-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .config-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .config-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+    }
+
+    .config-card-title {
+      font-family: var(--font-title);
+      color: var(--gold-light);
+      font-size: 1.15rem;
+      margin: 0 0 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .config-card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .config-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .config-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .config-subtext {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    .config-radio-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .config-radio-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .config-radio-card:hover {
+      border-color: var(--gold-primary);
+      background: rgba(212, 163, 75, 0.05);
+    }
+
+    .config-radio-card.selected {
+      border-color: var(--gold-primary);
+      background: rgba(212, 163, 75, 0.12);
+      box-shadow: var(--gold-glow);
+    }
+
+    .config-radio-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .config-radio-desc {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.35;
+    }
+
+    .manage-list-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .manage-player-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .manage-player-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--gold-dark);
+      border: 1px solid var(--border-gold);
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .btn-action-sm {
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all var(--transition-fast);
+      border: 1px solid transparent;
+    }
+
+    .btn-action-accept {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+    .btn-action-accept:hover {
+      background: rgba(16, 185, 129, 0.3);
+      color: #fff;
+    }
+
+    .btn-action-reject {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+    .btn-action-reject:hover {
+      background: rgba(245, 158, 11, 0.3);
+      color: #fff;
+    }
+
+    .btn-action-ban {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+    .btn-action-ban:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: #fff;
+    }
+
+    .btn-action-kick {
+      background: rgba(148, 163, 184, 0.15);
+      border-color: rgba(148, 163, 184, 0.4);
+      color: #cbd5e1;
+    }
+    .btn-action-kick:hover {
+      background: rgba(148, 163, 184, 0.3);
+      color: #fff;
+    }
+
+    .danger-zone-card {
+      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.03);
+    }
   </style>
 </head>
 
@@ -982,16 +1185,257 @@
       </div>
     </section>
 
-    <!-- ABA 6: CONFIGURAÇÕES -->
+    <!-- ABA 6: CONFIGURAÇÕES & GOVERNANÇA DA MESA -->
     <section id="view-config" class="view-section">
-      <h1 class="page-title">Configurações da Campanha</h1>
-      <div class="card">
-        <h2 style="margin-bottom: 16px; color: var(--gold-light);">Integração Discord</h2>
-        <p style="color: var(--text-muted); margin-bottom: 16px;">Vincule um canal de voz para que todos entrem na mesma
-          chamada instantaneamente.</p>
-        <button class="chat-btn" style="background: #5865F2; color: white;">Vincular Discord</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+        <div>
+          <h1 class="page-title" style="margin: 0;">Configurações & Governança da Campanha</h1>
+          <p style="color: var(--text-muted); font-size: 13px; margin: 4px 0 0 0;">
+            Ajuste as diretrizes da mesa, permissões de cena, automações de descanso, gestão de participantes e integrações.
+          </p>
+        </div>
+        <button class="btn-primary" onclick="salvarConfiguracoesCampanhaCompleta()" id="btn-save-campaign-config" style="padding: 10px 20px; font-size: 13px;">
+          💾 Salvar Configurações
+        </button>
+      </div>
+
+      <div class="config-layout-grid">
+        <!-- CARD 1: IDENTIDADE & INFORMAÇÕES DA MESA -->
+        <div class="config-card">
+          <div class="config-card-header">
+            <div>
+              <h3 class="config-card-title">🛡️ Identidade & Dados Gerais</h3>
+              <p class="config-card-desc">Defina o nome, sistema e dados visuais da campanha.</p>
+            </div>
+          </div>
+
+          <div class="config-form-group">
+            <label class="config-label">Nome da Campanha</label>
+            <input type="text" id="config-camp-name" class="form-control" placeholder="Ex: O Labirinto da Lua Negra">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="config-form-group">
+              <label class="config-label">Sistema de RPG</label>
+              <select id="config-camp-system" class="form-control">
+                <option value="alphad6">AlphaD6 RPG (Oficial)</option>
+                <option value="custom">Sistema Próprio / Livre</option>
+              </select>
+            </div>
+            <div class="config-form-group">
+              <label class="config-label">Tema Narrativo</label>
+              <select id="config-camp-theme" class="form-control">
+                <option value="dark-fantasy">Fantasia Sombria</option>
+                <option value="high-fantasy">Alta Fantasia Épica</option>
+                <option value="cosmic-horror">Terror Cósmico</option>
+                <option value="cyberpunk">Cyberpunk</option>
+                <option value="investigation">Investigação</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="config-form-group">
+              <label class="config-label">Visibilidade</label>
+              <select id="config-camp-visibility" class="form-control">
+                <option value="1">Pública (Listada na Taverna)</option>
+                <option value="0">Privada (Apenas Convite)</option>
+              </select>
+            </div>
+            <div class="config-form-group">
+              <label class="config-label">Vagas de Jogadores (Máx. 12)</label>
+              <input type="number" id="config-camp-max-players" class="form-control" min="1" max="12" value="5">
+            </div>
+          </div>
+
+          <div class="config-form-group">
+            <label class="config-label">Código de Convite</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="config-camp-simple-id" class="form-control" readonly style="font-family: monospace; color: var(--gold-light);">
+              <button type="button" class="btn-secondary" onclick="copiarCodigoConviteMesa()" style="white-space: nowrap; padding: 6px 14px;">
+                📋 Copiar
+              </button>
+            </div>
+          </div>
+
+          <div class="config-form-group">
+            <label class="config-label">Quadro de Avisos da Sessão</label>
+            <textarea id="config-camp-notices" class="form-control" rows="2" placeholder="Avisos importantes fixados no mural..."></textarea>
+          </div>
+        </div>
+
+        <!-- CARD 2: REGRAS DO JOGO & AUTOMAÇÃO -->
+        <div class="config-card">
+          <div class="config-card-header">
+            <div>
+              <h3 class="config-card-title">⚙️ Regras do Jogo & Automação</h3>
+              <p class="config-card-desc">Controle como as ações, descansos e cenas são liberados para os jogadores.</p>
+            </div>
+          </div>
+
+          <!-- Aprovação de Ações / Descansos -->
+          <div class="config-form-group">
+            <label class="config-label">Aprovação de Descansos e Curas</label>
+            <p class="config-subtext">Determina se o jogador recupera Anima diretamente ou se gera solicitação para o Mestre/Assistente.</p>
+            <div class="config-radio-group" style="margin-top: 6px;">
+              <div class="config-radio-card" id="card-opt-auto-approve-1" onclick="selecionarOpcaoAutoApprove(1)">
+                <div class="config-radio-title">⚡ Automático</div>
+                <div class="config-radio-desc">Descansos e curas são aplicados instantaneamente na Anima e no Relógio.</div>
+              </div>
+              <div class="config-radio-card" id="card-opt-auto-approve-0" onclick="selecionarOpcaoAutoApprove(0)">
+                <div class="config-radio-title">✋ Moderação Manual</div>
+                <div class="config-radio-desc">Gera card de aprovação no chat para o Mestre ou Assistente aceitar/recusar.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modo de Acesso a Cenas Ativas -->
+          <div class="config-form-group" style="margin-top: 8px;">
+            <label class="config-label">Permissão de Entrada em Cenas Ativas</label>
+            <p class="config-subtext">Define se os jogadores podem transitar livremente pelas cenas ou se precisam de autorização.</p>
+            <div class="config-radio-group" style="margin-top: 6px;">
+              <div class="config-radio-card" id="card-opt-scene-free" onclick="selecionarOpcaoSceneAccess('free')">
+                <div class="config-radio-title">🚪 Acesso Livre</div>
+                <div class="config-radio-desc">Qualquer jogador pode entrar e visualizar qualquer cena ativa a qualquer hora.</div>
+              </div>
+              <div class="config-radio-card" id="card-opt-scene-approval" onclick="selecionarOpcaoSceneAccess('approval_required')">
+                <div class="config-radio-title">🔒 Sob Permissão</div>
+                <div class="config-radio-desc">Jogadores só entram na cena quando convocados ou autorizados pelo Mestre.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Multiplicador de XP -->
+          <div class="config-form-group" style="margin-top: 8px;">
+            <label class="config-label">Ritmo de Progressão & Multiplicador de XP</label>
+            <select id="config-camp-xp-mult" class="form-control">
+              <option value="0.75">⚡ Rápido / Épico (0.75x XP necessário)</option>
+              <option value="1.0" selected>🛡️ Canônico / Padrão (1.0x XP necessário)</option>
+              <option value="1.5">💀 Lento / Sobrevivência (1.5x XP necessário)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- CARD 3: SOLICITAÇÕES DE ENTRADA PENDENTES -->
+        <div class="config-card">
+          <div class="config-card-header">
+            <div>
+              <h3 class="config-card-title">✋ Solicitações de Entrada</h3>
+              <p class="config-card-desc">Aventureiros que pediram para ingressar nesta campanha.</p>
+            </div>
+            <span class="badge-players-count" id="badge-config-requests-count">0 pendentes</span>
+          </div>
+
+          <div class="manage-list-box" id="config-requests-list-container">
+            <div style="font-size: 12.5px; color: var(--text-dim); text-align: center; padding: 16px;">
+              Nenhuma solicitação pendente no momento.
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 4: GESTÃO DE JOGADORES & CARGOS DA MESA -->
+        <div class="config-card">
+          <div class="config-card-header">
+            <div>
+              <h3 class="config-card-title">👥 Jogadores na Mesa & Cargos</h3>
+              <p class="config-card-desc">Promova a Assistente de Mestre, expulse ou bana jogadores da sua mesa.</p>
+            </div>
+            <button type="button" class="btn-action-sm btn-action-ban" onclick="abrirModalJogadoresBanidos()" title="Ver lista de banidos pelo Mestre">
+              🚫 Ver Banidos
+            </button>
+          </div>
+
+          <div class="manage-list-box" id="config-players-list-container">
+            <!-- Renderizado dinamicamente -->
+          </div>
+        </div>
+
+        <!-- CARD 5: COMUNICAÇÃO & DISCORD -->
+        <div class="config-card">
+          <div class="config-card-header">
+            <div>
+              <h3 class="config-card-title">🎧 Conexão & Integração Discord</h3>
+              <p class="config-card-desc">Vincule a chamada de voz da mesa para entrada instantânea.</p>
+            </div>
+          </div>
+
+          <div class="config-form-group">
+            <label class="config-label">Link do Canal de Voz / Servidor Discord</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="url" id="config-discord-voice" class="form-control" placeholder="https://discord.gg/exemplo">
+              <button type="button" class="btn-primary" onclick="testarCanalVozDiscord()" style="background: #5865F2; border-color: #5865F2; white-space: nowrap; padding: 6px 14px;">
+                📞 Entrar na Voz
+              </button>
+            </div>
+          </div>
+
+          <div class="config-form-group">
+            <label class="config-label">URL do Webhook do Discord (Opcional)</label>
+            <input type="url" id="config-discord-webhook" class="form-control" placeholder="https://discord.com/api/webhooks/...">
+            <span class="config-subtext">Envia avisos de início de sessão e rolagens críticas direto no seu servidor.</span>
+          </div>
+        </div>
+
+        <!-- CARD 6: PREFERÊNCIAS DE ÁUDIO & SOM -->
+        <div class="config-card">
+          <div class="config-card-header">
+            <div>
+              <h3 class="config-card-title">🔊 Preferências Pessoais & Efeitos</h3>
+              <p class="config-card-desc">Ajuste o volume dos sons de dados e notificações da taverna.</p>
+            </div>
+          </div>
+
+          <div class="config-form-group">
+            <div style="display: flex; justify-content: space-between;">
+              <label class="config-label">Volume dos Efeitos Sonoros (SFX)</label>
+              <span id="config-sfx-val" style="font-size: 12px; color: var(--gold-light); font-weight: 700;">80%</span>
+            </div>
+            <input type="range" id="config-sfx-volume" min="0" max="100" value="80" oninput="atualizarVolumePreview(this.value)" class="form-control" style="cursor: pointer;">
+          </div>
+        </div>
+
+        <!-- CARD 7: ZONA DE PERIGO (APENAS MESTRE) -->
+        <div class="config-card danger-zone-card" id="card-danger-zone">
+          <div class="config-card-header">
+            <div>
+              <h3 class="config-card-title" style="color: #f87171;">⚠️ Zona de Perigo</h3>
+              <p class="config-card-desc" style="color: #fca5a5;">Ações destrutivas e irreversíveis da campanha.</p>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <div style="font-weight: 700; font-size: 13px; color: #fff;">Excluir Campanha Permanentemente</div>
+              <div style="font-size: 11.5px; color: var(--text-dim);">Todas as crônicas, fichas vinculadas e cenas desta mesa serão apagadas.</div>
+            </div>
+            <button type="button" class="btn-action-sm btn-action-ban" onclick="executarExclusaoCampanha()" style="padding: 8px 16px; font-size: 12px;">
+              🗑️ Excluir Mesa
+            </button>
+          </div>
+        </div>
       </div>
     </section>
+
+    <!-- MODAL DE JOGADORES BANIDOS PELO MESTRE -->
+    <div class="modal-overlay" id="modal-banned-players" onclick="if(event.target === this) fecharModalJogadoresBanidos()">
+      <div class="modal-content" style="max-width: 580px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+          <h2 class="modal-title" style="margin: 0; color: #f87171; display: flex; align-items: center; gap: 8px;">
+            <span>🚫</span> Jogadores Banidos das Suas Mesas
+          </h2>
+          <button type="button" class="btn-secondary" onclick="fecharModalJogadoresBanidos()" style="padding: 4px 10px; font-size: 12px;">✕</button>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+          Jogadores banidos estão permanentemente bloqueados de ingressar ou solicitar entrada em <strong>todas as suas campanhas</strong>. Você pode revogar o banimento a qualquer momento.
+        </p>
+        <div id="banned-players-list-container" class="manage-list-box" style="max-height: 320px;">
+          <div style="text-align: center; color: var(--text-dim); padding: 20px;">Carregando lista de banidos...</div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+          <button type="button" class="btn-secondary" onclick="fecharModalJogadoresBanidos()">Fechar</button>
+        </div>
+      </div>
+    </div>
 
   </main>
 

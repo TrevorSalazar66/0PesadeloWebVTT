@@ -164,8 +164,18 @@ CREATE TABLE IF NOT EXISTS admin_audit_logs (
     details TEXT NOT NULL DEFAULT '{}',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+-- 11. Tabela de Jogadores Banidos por Mestre (gm_banned_players)
+CREATE TABLE IF NOT EXISTS gm_banned_players (
+    gm_id TEXT NOT NULL,
+    player_id TEXT NOT NULL,
+    reason TEXT NOT NULL DEFAULT '',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (gm_id, player_id),
+    FOREIGN KEY (gm_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (player_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_gm_banned_gm ON gm_banned_players(gm_id);
+CREATE INDEX IF NOT EXISTS idx_gm_banned_player ON gm_banned_players(player_id);
 CREATE INDEX IF NOT EXISTS idx_audit_admin ON admin_audit_logs(admin_id);
 CREATE INDEX IF NOT EXISTS idx_audit_created ON admin_audit_logs(created_at);
 CREATE INDEX IF NOT EXISTS idx_audit_action ON admin_audit_logs(action);
-
-
