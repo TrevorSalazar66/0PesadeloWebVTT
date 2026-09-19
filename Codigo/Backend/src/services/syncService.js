@@ -1533,11 +1533,6 @@ export async function handleSyncRequest(request, env, clientIp) {
         }), { status: 200, headers });
       }
 
-      case 'rpg.compendium.items': {
-        const { slot, categoria, riquezaMax } = data || {};
-        const items = rpgEngineService.getCompendiumItems({ slot, categoria, riquezaMax });
-        return new Response(JSON.stringify({ sucesso: true, dados: items }), { status: 200, headers });
-      }
 
       case 'rpg.character.equipSlot': {
         const { characterId, slotKey, item } = data;
