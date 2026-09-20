@@ -335,9 +335,74 @@ function iniciarChatPolling() {
   }, 3500);
 }
 
+export function verificarSeUsuarioEMestre() {
+  const user = obterUsuarioAtual();
+  if (!user) return false;
+  const uid = user.userId || user.id;
+  const uRole = String(user.role || '').toLowerCase();
+
+  // 1. Roles administrativos globais
+  if (['admin', 'superadmin'].includes(uRole)) return true;
+
+  // 2. Se a campanha carregada tiver este usuário como owner, gm ou criador
+  if (currentCampaignData) {
+    if (currentCampaignData.owner_id && (currentCampaignData.owner_id === uid || String(currentCampaignData.owner_id) === String(uid))) return true;
+    if (currentCampaignData.gm_id && (currentCampaignData.gm_id === uid || String(currentCampaignData.gm_id) === String(uid))) return true;
+    if (currentCampaignData.created_by && (currentCampaignData.created_by === uid || String(currentCampaignData.created_by) === String(uid))) return true;
+
+    // 3. Checa lista de jogadores na campanha
+    if (Array.isArray(currentCampaignData.players)) {
+      const pRec = currentCampaignData.players.find(p => p.user_id === uid || String(p.user_id) === String(uid));
+      if (pRec) {
+        const prRole = String(pRec.role || '').toLowerCase();
+        if (['mestre', 'assistente de mestre', 'gm', 'dm'].includes(prRole)) return true;
+      }
+    }
+  }
+
+  // 4. Role da sessão / chat
+  if (['mestre', 'assistente de mestre', 'gm', 'dm'].includes(String(userCampaignRole || '').toLowerCase())) return true;
+  
+  // 5. Se o papel global do usuário for 'mestre'
+  if (uRole === 'mestre') return true;
+
+  return false;
+}
+
+export function atualizarVisibilidadeControlesMestre() {
+  const isGM = verificarSeUsuarioEMestre();
+
+  // 1. Botão da Oficina na Sidebar Desktop
+  const navBtnOficina = document.getElementById('nav-btn-oficina');
+  if (navBtnOficina) {
+    navBtnOficina.style.display = isGM ? 'flex' : 'none';
+  }
+
+  // 2. Botão da Oficina na Barra Móvel Inferior
+  const cnavOficina = document.getElementById('cnav-oficina');
+  if (cnavOficina) {
+    cnavOficina.style.display = isGM ? 'flex' : 'none';
+  }
+
+  // 3. Card de Acesso Rápido na Aba Geral
+  const quickCard = document.getElementById('gm-quick-oficina-card');
+  if (quickCard) {
+    quickCard.style.display = isGM ? 'block' : 'none';
+  }
+
+  // 4. Botão de Editar Estatísticas da Campanha
+  const btnEditStats = document.getElementById('btn-edit-stats');
+  if (btnEditStats) {
+    btnEditStats.style.display = isGM ? 'inline-flex' : 'none';
+  }
+
+  // 5. Botões do Chat (Limpar Histórico, Opção de Falar como GM/NPC)
+  atualizarControlesMestreChat();
+}
+
 function atualizarControlesMestreChat() {
   const user = obterUsuarioAtual();
-  const isGM = (userCampaignRole === 'mestre' || userCampaignRole === 'assistente de mestre' || user?.userId === currentCampaignData?.owner_id);
+  const isGM = verificarSeUsuarioEMestre();
 
   const btnClearHistory = document.getElementById('btn-chat-clear-history');
   if (btnClearHistory) {
@@ -352,7 +417,7 @@ function atualizarControlesMestreChat() {
   // Configura o nome do personagem do jogador se disponível
   const charOptName = document.getElementById('persona-menu-char-name');
   if (charOptName) {
-    const userChar = currentPartyCharacters.find(c => c.userId === user?.userId);
+    const userChar = currentPartyCharacters.find(c => c.userId === (user?.userId || user?.id));
     if (userChar && userChar.nome) {
       charOptName.textContent = userChar.nome;
       if (!currentPersona.name && currentPersona.type === 'ic') {
@@ -387,7 +452,7 @@ function renderizarListaMensagensChat(messages) {
   }
 
   const user = obterUsuarioAtual();
-  const isGM = (userCampaignRole === 'mestre' || userCampaignRole === 'assistente de mestre' || user?.userId === currentCampaignData?.owner_id);
+  const isGM = verificarSeUsuarioEMestre();
 
   container.innerHTML = messages.map(msg => renderChatMessageHTML(msg, user, isGM)).join('');
 }
@@ -1109,10 +1174,14 @@ async function loadCampaignData() {
       // Renderiza os jogadores no quadro geral
       renderizarJogadoresGeral(camp.players || []);
 
+      // Atualiza controles e visibilidade de Mestre
+      atualizarVisibilidadeControlesMestre();
+
     } else {
       document.getElementById('campaign-title').textContent = "Campanha";
       document.getElementById('campaign-summary').textContent = "Campanha oficial utilizando o sistema AlphaD6.";
       document.getElementById('campaign-system').textContent = "AlphaD6 RPG";
+      atualizarVisibilidadeControlesMestre();
     }
 
   } catch (error) {
@@ -1120,6 +1189,7 @@ async function loadCampaignData() {
     document.getElementById('campaign-title').textContent = "Aventura Arcano";
     document.getElementById('campaign-summary').textContent = "Falha ao sincronizar dados da mesa.";
     document.getElementById('campaign-system').textContent = "AlphaD6 RPG";
+    atualizarVisibilidadeControlesMestre();
   }
 }
 
@@ -3542,6 +3612,7 @@ window.escolherOpcaoDialogo = async function(opcao) {
 
 document.addEventListener('DOMContentLoaded', () => {
   loadCampaignData();
+  atualizarVisibilidadeControlesMestre();
   setupChatAutocomplete();
   loadChatHistory(false);
   iniciarChatPolling();

@@ -894,10 +894,12 @@ export async function handleSyncRequest(request, env, clientIp) {
           return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
         }
 
-        const isOwner = campaign.owner_id === user.userId;
-        const isAdmin = ['admin', 'superadmin'].includes(user.role);
-        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, campaignId, user.userId) || 'jogador');
-        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+        const currentUid = user.userId || user.id;
+        const isOwner = campaign.owner_id === currentUid || String(campaign.owner_id) === String(currentUid) || campaign.created_by === currentUid || String(campaign.created_by) === String(currentUid);
+        const isAdmin = ['admin', 'superadmin'].includes(String(user.role || '').toLowerCase());
+        const isMasterRole = String(user.role || '').toLowerCase() === 'mestre';
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, campaignId, currentUid) || 'jogador');
+        const isGm = isOwner || isAdmin || isMasterRole || String(playerRole).toLowerCase().includes('mestre') || String(playerRole).toLowerCase().includes('assistente') || String(playerRole).toLowerCase().includes('gm');
 
         if (!isGm) {
           return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o Mestre pode criar cenas nesta campanha.' }), { status: 403, headers });
@@ -956,10 +958,12 @@ export async function handleSyncRequest(request, env, clientIp) {
         }
 
         const campaign = await dbQueries.getCampaignById(db, scene.campaign_id);
-        const isOwner = campaign && campaign.owner_id === user.userId;
-        const isAdmin = ['admin', 'superadmin'].includes(user.role);
-        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, scene.campaign_id, user.userId) || 'jogador');
-        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+        const currentUid = user.userId || user.id;
+        const isOwner = campaign && (campaign.owner_id === currentUid || String(campaign.owner_id) === String(currentUid) || campaign.created_by === currentUid || String(campaign.created_by) === String(currentUid));
+        const isAdmin = ['admin', 'superadmin'].includes(String(user.role || '').toLowerCase());
+        const isMasterRole = String(user.role || '').toLowerCase() === 'mestre';
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, scene.campaign_id, currentUid) || 'jogador');
+        const isGm = isOwner || isAdmin || isMasterRole || String(playerRole).toLowerCase().includes('mestre') || String(playerRole).toLowerCase().includes('assistente') || String(playerRole).toLowerCase().includes('gm');
 
         if (!isGm) {
           return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o Mestre pode editar esta cena.' }), { status: 403, headers });
@@ -999,10 +1003,12 @@ export async function handleSyncRequest(request, env, clientIp) {
         }
 
         const campaign = await dbQueries.getCampaignById(db, scene.campaign_id);
-        const isOwner = campaign && campaign.owner_id === user.userId;
-        const isAdmin = ['admin', 'superadmin'].includes(user.role);
-        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, scene.campaign_id, user.userId) || 'jogador');
-        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+        const currentUid = user.userId || user.id;
+        const isOwner = campaign && (campaign.owner_id === currentUid || String(campaign.owner_id) === String(currentUid) || campaign.created_by === currentUid || String(campaign.created_by) === String(currentUid));
+        const isAdmin = ['admin', 'superadmin'].includes(String(user.role || '').toLowerCase());
+        const isMasterRole = String(user.role || '').toLowerCase() === 'mestre';
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, scene.campaign_id, currentUid) || 'jogador');
+        const isGm = isOwner || isAdmin || isMasterRole || String(playerRole).toLowerCase().includes('mestre') || String(playerRole).toLowerCase().includes('assistente') || String(playerRole).toLowerCase().includes('gm');
 
         if (!isGm) {
           return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o Mestre pode excluir esta cena.' }), { status: 403, headers });
@@ -1026,10 +1032,12 @@ export async function handleSyncRequest(request, env, clientIp) {
           return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
         }
 
-        const isOwner = campaign.owner_id === user.userId;
-        const isAdmin = ['admin', 'superadmin'].includes(user.role);
-        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, campaignId, user.userId) || 'jogador');
-        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+        const currentUid = user.userId || user.id;
+        const isOwner = campaign.owner_id === currentUid || String(campaign.owner_id) === String(currentUid) || campaign.created_by === currentUid || String(campaign.created_by) === String(currentUid);
+        const isAdmin = ['admin', 'superadmin'].includes(String(user.role || '').toLowerCase());
+        const isMasterRole = String(user.role || '').toLowerCase() === 'mestre';
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, campaignId, currentUid) || 'jogador');
+        const isGm = isOwner || isAdmin || isMasterRole || String(playerRole).toLowerCase().includes('mestre') || String(playerRole).toLowerCase().includes('assistente') || String(playerRole).toLowerCase().includes('gm');
 
         if (!isGm) {
           return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o Mestre pode definir a cena ativa da mesa.' }), { status: 403, headers });

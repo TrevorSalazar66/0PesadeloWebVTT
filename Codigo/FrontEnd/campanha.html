@@ -2475,7 +2475,7 @@
     </button>
 
     <!-- 4. Oficina (Apenas Mestre) -->
-    <button class="nav-btn" onclick="changeTab('oficina')" title="Oficina">
+    <button class="nav-btn" id="nav-btn-oficina" onclick="changeTab('oficina')" title="Oficina do Mestre">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
         <polyline points="2 17 12 22 22 17"></polyline>
@@ -2537,6 +2537,14 @@
       </svg>
       <span>Cenas</span>
     </button>
+    <button class="bottom-nav-btn" id="cnav-oficina" onclick="changeTab('oficina')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+        <polyline points="2 17 12 22 22 17"></polyline>
+        <polyline points="2 12 12 17 22 12"></polyline>
+      </svg>
+      <span>Oficina</span>
+    </button>
     <button class="bottom-nav-btn" id="cnav-diario" onclick="changeTab('diario')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -2558,6 +2566,23 @@
     <!-- ABA 1: GERAL -->
     <section id="view-geral" class="view-section active">
       <h1 class="page-title" id="campaign-title">Mina de Phandelver</h1>
+      
+      <!-- Card de Acesso Rápido da Oficina (Visível para o Mestre) -->
+      <div class="card" id="gm-quick-oficina-card" style="display: none; border-color: var(--gold-primary); background: linear-gradient(135deg, rgba(212, 163, 75, 0.1) 0%, rgba(16, 16, 29, 0.98) 100%); margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h2 style="color: var(--gold-light); font-size: 18px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+              <span>🎨</span> Oficina do Mestre & Criação de Cenas
+            </h2>
+            <p style="color: var(--text-muted); font-size: 13px; margin: 0;">
+              Você possui permissão de Mestre nesta campanha. Construa masmorras interativas, tabuleiros táticos e quebra-cabeças.
+            </p>
+          </div>
+          <button type="button" class="btn-primary" onclick="changeTab('oficina')" style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; padding: 10px 20px;">
+            <span>⚙️</span> Abrir Oficina de Cenas
+          </button>
+        </div>
+      </div>
       <div class="dashboard-grid">
         <div>
           <div class="card">
