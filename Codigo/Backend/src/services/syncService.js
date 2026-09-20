@@ -889,7 +889,9 @@ export async function handleSyncRequest(request, env, clientIp) {
 
         return new Response(JSON.stringify({
           sucesso: true,
+          dados: messages,
           mensagens: messages,
+          userRole: playerRole,
           isGm,
           campaignId
         }), { status: 200, headers });
@@ -905,7 +907,8 @@ export async function handleSyncRequest(request, env, clientIp) {
           authorRole = null,
           characterId = null,
           replyTo = null,
-          whisperTarget = null
+          whisperTarget = null,
+          persona = null
         } = data;
 
         if (!campaignId) {
@@ -932,11 +935,11 @@ export async function handleSyncRequest(request, env, clientIp) {
         const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, campaignId, user.userId) || 'jogador');
         const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
 
-        let finalAuthorName = authorName;
-        let finalAuthorAvatar = authorAvatar || '';
+        let finalAuthorName = authorName || (persona?.name || null);
+        let finalAuthorAvatar = authorAvatar || (persona?.avatar || '');
         let finalAuthorRole = authorRole || (isGm ? 'mestre' : 'jogador');
         let finalCharacterId = characterId;
-        let finalMsgType = msgType;
+        let finalMsgType = (persona?.type && persona.type !== 'ic' && msgType === 'ic') ? persona.type : msgType;
         let finalMetadata = replyTo ? { reply_to: replyTo } : {};
         let finalWhisperTargetId = null;
         let rawContent = content.trim();
@@ -1151,6 +1154,7 @@ export async function handleSyncRequest(request, env, clientIp) {
 
         return new Response(JSON.stringify({
           sucesso: true,
+          dados: savedMsg,
           mensagem: savedMsg
         }), { status: 200, headers });
       }

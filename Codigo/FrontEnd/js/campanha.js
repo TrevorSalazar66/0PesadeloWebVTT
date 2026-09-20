@@ -273,8 +273,11 @@ window.loadChatHistory = async function(forceScroll = false) {
 
   try {
     const res = await apiClient.sync('chat.getHistory', { campaignId: currentCampaignId });
-    if (res && res.sucesso && Array.isArray(res.dados)) {
-      const messages = res.dados;
+    const messages = Array.isArray(res?.dados) 
+      ? res.dados 
+      : (Array.isArray(res?.mensagens) ? res.mensagens : (Array.isArray(res) ? res : null));
+
+    if (res && res.sucesso && messages !== null) {
       userCampaignRole = res.userRole || userCampaignRole || 'jogador';
 
       // Atualiza visibilidade de ferramentas exclusivas de Mestre
@@ -283,7 +286,7 @@ window.loadChatHistory = async function(forceScroll = false) {
       // Checa se o cache mudou para evitar repinturas desnecessárias
       const hasChanged = JSON.stringify(messages) !== JSON.stringify(chatMessagesCache);
       if (hasChanged || forceScroll) {
-        const wasAtBottom = (chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight) < 60;
+        const wasAtBottom = (chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight) < 80;
         chatMessagesCache = messages;
         renderizarListaMensagensChat(messages);
 
