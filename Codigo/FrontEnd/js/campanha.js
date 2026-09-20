@@ -1264,7 +1264,7 @@ window.loadConfigData = async function() {
     if (!camp) return;
 
     const user = obterUsuarioAtual();
-    const isGM = user && (camp.owner_id === user.userId || camp.gm_id === user.userId || String(camp.owner_id) === String(user.userId));
+    const isGM = user && (camp.owner_id === user.userId || camp.owner_id === user.id || camp.gm_id === user.userId || camp.gm_id === user.id || String(camp.owner_id) === String(user.userId || user.id));
     const isSuperAdmin = user && (user.role === 'superadmin' || user.role === 'admin');
 
     // Preenche campos de identidade
@@ -1414,7 +1414,7 @@ async function carregarSolicitacoesConfig() {
   try {
     const res = await apiClient.sync('campaigns.requests.list', { campaignId: currentCampaignId });
     if (res && res.sucesso && Array.isArray(res.dados)) {
-      const requests = res.dados.filter(r => r.status === 'pending');
+      const requests = res.dados.filter(r => r.status === 'pendente' || r.status === 'pending');
       if (badge) badge.textContent = `${requests.length} pendente(s)`;
 
       if (requests.length === 0) {
@@ -1427,20 +1427,22 @@ async function carregarSolicitacoesConfig() {
       }
 
       container.innerHTML = requests.map(req => {
-        const initial = (req.display_name || req.username || 'A')[0].toUpperCase();
+        const initial = (req.display_name || req.username || req.name || 'A')[0].toUpperCase();
         const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('pt-BR') : '';
+        const name = req.display_name || req.username || req.name || 'Aventureiro';
+        const nick = req.nickname || req.username || '';
         return `
           <div class="manage-list-item">
             <div class="manage-player-avatar">${initial}</div>
             <div class="manage-player-info">
-              <div class="manage-player-name">${req.display_name || req.username} <span style="font-size: 11px; color: var(--text-dim);">@${req.username || ''}</span></div>
-              <div class="manage-player-role">Solicitou entrada em ${dateStr}</div>
+              <div class="manage-player-name">${name} ${nick ? `<span style="font-size: 11px; color: var(--text-dim);">@${nick}</span>` : ''}</div>
+              <div class="manage-player-role">Solicitou entrada ${dateStr ? `em ${dateStr}` : ''}</div>
             </div>
             <div class="manage-player-actions">
-              <button type="button" class="btn-action-sm btn-action-accept" onclick="responderSolicitacaoConfig(${req.id}, 'approved')" title="Aceitar na Mesa">
+              <button type="button" class="btn-action-sm btn-action-accept" onclick="responderSolicitacaoConfig('${req.id}', 'aceito')" title="Aceitar na Mesa">
                 ✓ Aceitar
               </button>
-              <button type="button" class="btn-action-sm btn-action-reject" onclick="responderSolicitacaoConfig(${req.id}, 'rejected')" title="Negar Entrada">
+              <button type="button" class="btn-action-sm btn-action-reject" onclick="responderSolicitacaoConfig('${req.id}', 'recusado')" title="Negar Entrada">
                 ✕ Negar
               </button>
             </div>
@@ -1465,7 +1467,7 @@ window.responderSolicitacaoConfig = async function(requestId, status) {
     });
 
     if (res && res.sucesso) {
-      alert(status === 'approved' ? "Jogador aceito na campanha!" : "Solicitação recusada.");
+      alert(status === 'aceito' || status === 'approved' ? "Jogador aceito na campanha!" : "Solicitação recusada.");
       // Atualiza os dados da campanha e a lista
       const campRes = await apiClient.getCampaign({ campaignId: currentCampaignId });
       if (campRes.sucesso && campRes.dados) {
@@ -1491,7 +1493,7 @@ async function carregarJogadoresConfig() {
 
   const players = currentCampaignData?.players || [];
   const user = obterUsuarioAtual();
-  const isGM = user && (currentCampaignData?.owner_id === user.userId || currentCampaignData?.gm_id === user.userId || String(currentCampaignData?.owner_id) === String(user.userId));
+  const isGM = user && (currentCampaignData?.owner_id === user.userId || currentCampaignData?.owner_id === user.id || currentCampaignData?.gm_id === user.userId || currentCampaignData?.gm_id === user.id || String(currentCampaignData?.owner_id) === String(user.userId || user.id));
   const isSuperAdmin = user && (user.role === 'superadmin' || user.role === 'admin');
 
   if (players.length === 0) {
