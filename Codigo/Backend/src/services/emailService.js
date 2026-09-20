@@ -174,38 +174,82 @@ export async function sendEmailVerificationCode(db, email, env) {
     expiresAt
   });
 
-  // Disparo de E-mail via Resend (Se a chave estiver configurada em produção)
+  let emailSent = false;
+  let providerUsed = 'none';
+
+  // 1. Tentativa de Disparo via Resend (se chave API presente)
   const resendApiKey = env?.RESEND_API_KEY;
   if (resendApiKey) {
     try {
-      await fetch('https://api.resend.com/emails', {
+      const fromAddress = env?.RESEND_FROM || env?.EMAIL_FROM || 'Arcana VTT <onboarding@resend.dev>';
+      const resendRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${resendApiKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: 'Arcana VTT <taverna@arcana.pages.dev>',
+          from: fromAddress,
           to: [email],
           subject: `${code} é o seu código de confirmação na Taverna Arcana`,
           html: `
-            <div style="font-family: sans-serif; background: #0b0b14; color: #f5f5f7; padding: 24px; border-radius: 12px;">
-              <h2 style="color: #d4a34b;">Saudações, aventureiro!</h2>
+            <div style="font-family: sans-serif; background: #0b0b14; color: #f5f5f7; padding: 24px; border-radius: 12px; border: 1px solid #d4a34b;">
+              <h2 style="color: #d4a34b; margin-top: 0;">Saudações, aventureiro!</h2>
               <p>Seu código de ativação na Taverna Arcana VTT é:</p>
-              <div style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #e5b758; margin: 20px 0;">${code}</div>
+              <div style="font-size: 36px; font-weight: bold; letter-spacing: 6px; color: #e5b758; margin: 20px 0; font-family: monospace;">${code}</div>
               <p style="color: #8e8ea6; font-size: 13px;">Este código expira em 10 minutos. Se você não solicitou esta conta, ignore este e-mail.</p>
             </div>
           `
         })
       });
+
+      if (resendRes.ok) {
+        emailSent = true;
+        providerUsed = 'resend';
+      } else {
+        const errJson = await resendRes.json().catch(() => ({}));
+        console.warn('[EmailService] Resend retornou status não-200:', resendRes.status, errJson);
+      }
     } catch (e) {
-      console.warn('[EmailService] Falha ao enviar via Resend:', e.message);
+      console.warn('[EmailService] Falha na requisição Resend:', e.message);
     }
-  } else {
-    // Modo Desenvolvimento / Teste Local: Registro transparente no console
-    console.log(`\n📧 [EMAIL SIMULADO] Para: ${email}`);
-    console.log(`🔑 CÓDIGO DE VERIFICAÇÃO OTP (6 DÍGITOS): [ ${code} ] (Válido por 10 min)\n`);
   }
 
-  return { code, expiresAt };
+  // 2. Fallback: Tentativa via MailChannels (Nativo em Cloudflare Workers)
+  if (!emailSent) {
+    try {
+      const mcRes = await fetch('https://api.mailchannels.net/tx/v1/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email }] }],
+          from: { email: env?.MAILCHANNELS_FROM || 'noreply@arcana-vtt.pages.dev', name: 'Arcana VTT' },
+          subject: `${code} é o seu código de confirmação na Taverna Arcana`,
+          content: [{
+            type: 'text/html',
+            value: `
+              <div style="font-family: sans-serif; background: #0b0b14; color: #f5f5f7; padding: 24px; border-radius: 12px; border: 1px solid #d4a34b;">
+                <h2 style="color: #d4a34b; margin-top: 0;">Saudações, aventureiro!</h2>
+                <p>Seu código de ativação na Taverna Arcana VTT é:</p>
+                <div style="font-size: 36px; font-weight: bold; letter-spacing: 6px; color: #e5b758; margin: 20px 0; font-family: monospace;">${code}</div>
+                <p style="color: #8e8ea6; font-size: 13px;">Este código expira em 10 minutos. Se você não solicitou esta conta, ignore este e-mail.</p>
+              </div>
+            `
+          }]
+        })
+      });
+      if (mcRes.status === 202 || mcRes.ok) {
+        emailSent = true;
+        providerUsed = 'mailchannels';
+      }
+    } catch (e) {
+      console.warn('[EmailService] Falha no MailChannels:', e.message);
+    }
+  }
+
+  // Registro em log para rastreabilidade
+  console.log(`\n📧 [EMAIL STATUS] Para: ${email} | Enviado: ${emailSent} (${providerUsed})`);
+  console.log(`🔑 CÓDIGO DE VERIFICAÇÃO OTP (6 DÍGITOS): [ ${code} ] (Válido por 10 min)\n`);
+
+  return { code, expiresAt, emailSent, providerUsed };
 }

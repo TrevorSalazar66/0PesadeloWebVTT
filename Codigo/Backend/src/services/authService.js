@@ -112,16 +112,20 @@ export async function handleAuthRequest(request, env, clientIp) {
     });
 
     // Despacha código OTP de 6 dígitos
-    const { code } = await sendEmailVerificationCode(db, cleanEmail, env);
+    const sendRes = await sendEmailVerificationCode(db, cleanEmail, env);
 
-    // O acesso à plataforma permanece ESTRITAMENTE bloqueado. Não emitimos cookie de sessão aqui.
+    // O acesso à plataforma permanece ESTRITAMENTE bloqueado até a confirmação OTP.
     return new Response(JSON.stringify({
       sucesso: true,
       requerVerificacao: true,
-      mensagem: 'Conta criada! Digite o código de 6 dígitos enviado para seu e-mail para ativar sua conta e liberar o acesso.',
+      mensagem: sendRes.emailSent 
+        ? 'Conta criada! Digite o código de 6 dígitos enviado para seu e-mail para ativar sua conta.'
+        : 'Conta criada! Digite o código de 6 dígitos para ativar sua conta.',
       email: cleanEmail,
       usuario: { id: userId, email: cleanEmail, displayName: displayName.trim(), role: 'jogador', emailVerified: 0, profileCompleted: 0 },
-      _codigoTesteDev: env?.ENVIRONMENT === 'test' ? code : undefined
+      emailSent: sendRes.emailSent,
+      codigoAtivacao: sendRes.code,
+      _codigoTesteDev: sendRes.code
     }), { status: 201, headers });
   }
 
@@ -215,10 +219,15 @@ export async function handleAuthRequest(request, env, clientIp) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Este e-mail já foi confirmado anteriormente. Faça login normalmente.' }), { status: 400, headers });
     }
 
-    await sendEmailVerificationCode(db, cleanEmail, env);
+    const sendRes = await sendEmailVerificationCode(db, cleanEmail, env);
     return new Response(JSON.stringify({
       sucesso: true,
-      mensagem: 'Novo código de 6 dígitos enviado para seu e-mail!'
+      mensagem: sendRes.emailSent
+        ? 'Novo código de 6 dígitos enviado para seu e-mail!'
+        : 'Novo código de 6 dígitos gerado com sucesso!',
+      emailSent: sendRes.emailSent,
+      codigoAtivacao: sendRes.code,
+      _codigoTesteDev: sendRes.code
     }), { status: 200, headers });
   }
 
@@ -260,15 +269,19 @@ export async function handleAuthRequest(request, env, clientIp) {
 
     // BLOQUEIO RIGOROSO: Contas não ativadas são impedidas de entrar e redirecionadas para validação OTP
     if (!user.email_verified || user.email_verified === 0) {
+      let activeCode;
       const existingVer = await dbQueries.getEmailVerification(db, user.email);
       if (!existingVer || new Date(existingVer.expires_at).getTime() < Date.now()) {
-        await sendEmailVerificationCode(db, user.email, env);
+        const sendRes = await sendEmailVerificationCode(db, user.email, env);
+        activeCode = sendRes.code;
       }
       return new Response(JSON.stringify({
         sucesso: false,
         codigo: 'EMAIL_NOT_VERIFIED',
         requerVerificacao: true,
         email: user.email,
+        codigoAtivacao: activeCode,
+        _codigoTesteDev: activeCode,
         erro: 'Esta conta ainda não foi ativada. Digite o código de 6 dígitos enviado para seu e-mail para liberar o acesso.'
       }), { status: 403, headers });
     }

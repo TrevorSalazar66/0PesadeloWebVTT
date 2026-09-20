@@ -113,7 +113,7 @@ export async function processGoogleCallback(request, env) {
     }
   }
 
-  // 3. Emite Cookie Seguro de Sessão
+  // 3. Emite Cookie Seguro de Sessão e Token para o Frontend
   const isProfileCompleted = user.profile_completed === 1;
   const exp = Math.floor(Date.now() / 1000) + LIMITS.JWT_EXPIRATION_SECONDS;
   const token = await signJWT({
@@ -127,10 +127,29 @@ export async function processGoogleCallback(request, env) {
     exp
   }, jwtSecret);
 
+  const userPayload = {
+    id: user.id,
+    userId: user.id,
+    email: user.email,
+    displayName: user.display_name,
+    name: user.display_name,
+    nickname: user.nickname || '',
+    role: user.role,
+    avatarUrl: user.avatar_url,
+    emailVerified: 1,
+    profileCompleted: isProfileCompleted ? 1 : 0
+  };
+
   const headers = new Headers();
   headers.set('Set-Cookie', createAuthCookie(token, LIMITS.JWT_EXPIRATION_SECONDS));
   const loginStatus = isProfileCompleted ? 'google_success' : 'google_profile_setup';
-  headers.set('Location', `${frontendBase}?login=${loginStatus}`);
 
+  // Redireciona com token e dados do usuário serializados para o frontend salvar em localStorage
+  const redirectUrl = new URL(frontendBase);
+  redirectUrl.searchParams.set('login', loginStatus);
+  redirectUrl.searchParams.set('token', token);
+  redirectUrl.searchParams.set('user', JSON.stringify(userPayload));
+
+  headers.set('Location', redirectUrl.toString());
   return new Response(null, { status: 302, headers });
 }

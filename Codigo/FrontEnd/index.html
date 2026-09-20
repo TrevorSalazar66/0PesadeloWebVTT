@@ -3132,6 +3132,9 @@
             <label for="otp-code-input" class="form-label">Código de Verificação (6 dígitos)</label>
             <input type="text" id="otp-code-input" class="form-input otp-input-field" placeholder="123456" maxlength="6"
               pattern="[0-9]{6}" required autocomplete="one-time-code">
+            <div id="otp-code-hint-box" style="display: none; margin-top: 8px; padding: 8px 12px; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold-primary); border-radius: var(--radius-sm); font-size: 12px; color: var(--gold-light);">
+              🔑 Código de ativação gerado: <strong id="otp-code-hint-val" style="font-family: monospace; font-size: 14px; letter-spacing: 2px;"></strong>
+            </div>
           </div>
 
           <button type="submit" id="btn-submit-otp" class="btn-gold">
@@ -6079,7 +6082,18 @@
           alternarAuthView('otp');
           const sub = document.getElementById('otp-subtitle-text');
           if (sub) sub.textContent = `Esta conta ainda não foi confirmada. Digite o código de 6 dígitos enviado para ${email}.`;
-          mostrarToast('Acesso bloqueado: confirme seu e-mail com o código de 6 dígitos.');
+          
+          const codeVal = err.payload?.codigoAtivacao || err.payload?._codigoTesteDev;
+          const hintBox = document.getElementById('otp-code-hint-box');
+          const hintVal = document.getElementById('otp-code-hint-val');
+          const codeInp = document.getElementById('otp-code-input');
+          if (codeVal && hintBox && hintVal) {
+            hintVal.textContent = codeVal;
+            hintBox.style.display = 'block';
+            if (codeInp && !codeInp.value) codeInp.value = codeVal;
+          }
+          
+          mostrarToast('Acesso pendente: confirme seu e-mail com o código de 6 dígitos.');
           return;
         }
         if (err.codigo === 'DEVICE_BLOCKED') {
@@ -6146,6 +6160,17 @@
           alternarAuthView('otp');
           const sub = document.getElementById('otp-subtitle-text');
           if (sub) sub.textContent = `Código de 6 dígitos enviado para ${email}. Digite-o para ativar sua conta.`;
+
+          const codeVal = res.codigoAtivacao || res._codigoTesteDev;
+          const hintBox = document.getElementById('otp-code-hint-box');
+          const hintVal = document.getElementById('otp-code-hint-val');
+          const codeInp = document.getElementById('otp-code-input');
+          if (codeVal && hintBox && hintVal) {
+            hintVal.textContent = codeVal;
+            hintBox.style.display = 'block';
+            if (codeInp && !codeInp.value) codeInp.value = codeVal;
+          }
+
           mostrarToast(res.mensagem || 'Conta criada! Digite o código de 6 dígitos enviado para seu e-mail.');
         }
       } catch (err) {
@@ -6232,11 +6257,17 @@
 
       try {
         const res = await window.apiClient.resendCode(currentOtpEmail);
-        if (res._codigoTesteDev) {
-          mostrarToast(`[DEV/TESTE] Novo código gerado: ${res._codigoTesteDev}`);
-        } else {
-          mostrarToast('Novo código de 6 dígitos enviado para seu e-mail!');
+        const codeVal = res.codigoAtivacao || res._codigoTesteDev;
+        const hintBox = document.getElementById('otp-code-hint-box');
+        const hintVal = document.getElementById('otp-code-hint-val');
+        const codeInp = document.getElementById('otp-code-input');
+        if (codeVal && hintBox && hintVal) {
+          hintVal.textContent = codeVal;
+          hintBox.style.display = 'block';
+          if (codeInp) codeInp.value = codeVal;
         }
+
+        mostrarToast(res.mensagem || 'Novo código de 6 dígitos gerado/enviado para seu e-mail!');
       } catch (err) {
         const msg = (err.message || '').toLowerCase();
         if (msg.includes('failed to fetch') || msg.includes('networkerror') || !err.status) {
@@ -8716,15 +8747,63 @@
     // Inicialização ao carregar a página
     window.addEventListener('DOMContentLoaded', () => {
       try {
-        // 1. Detecta retorno do Google com perfil pendente
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('login') === 'google_profile_setup') {
+
+        // 1. Trata erros retornados pelo fluxo OAuth do Google
+        const authError = urlParams.get('auth_error');
+        if (authError) {
           window.history.replaceState({}, document.title, window.location.pathname);
           document.getElementById('auth-container').style.display = 'flex';
           document.getElementById('app-container').style.display = 'none';
-          alternarAuthView('profile-setup');
-          mostrarToast('Conta do Google conectada! Complete seu perfil de aventureiro.');
+          alternarAuthView('login');
+          mostrarToast(`⚠️ Autenticação com o Google: ${decodeURIComponent(authError)}`);
           return;
+        }
+
+        // 2. Detecta retorno com sucesso do Google OAuth (com token e dados do usuário)
+        const loginParam = urlParams.get('login');
+        const tokenParam = urlParams.get('token');
+        const userParam = urlParams.get('user');
+
+        if (loginParam === 'google_success' || loginParam === 'google_profile_setup') {
+          if (tokenParam) {
+            localStorage.setItem('arcana_token', tokenParam);
+            localStorage.setItem('arcana_user_logged', 'true');
+          }
+
+          let usuario = null;
+          if (userParam) {
+            try {
+              usuario = JSON.parse(userParam);
+              localStorage.setItem('arcana_user_data', JSON.stringify(usuario));
+            } catch (_) {}
+          }
+
+          window.history.replaceState({}, document.title, window.location.pathname);
+
+          if (loginParam === 'google_profile_setup') {
+            document.getElementById('auth-container').style.display = 'flex';
+            document.getElementById('app-container').style.display = 'none';
+            alternarAuthView('profile-setup');
+            const setupName = document.getElementById('setup-name');
+            if (setupName && usuario && (usuario.displayName || usuario.name)) {
+              setupName.value = usuario.displayName || usuario.name;
+            }
+            mostrarToast('Conta do Google conectada! Forje seu perfil de aventureiro para entrar.');
+            return;
+          }
+
+          if (loginParam === 'google_success') {
+            if (usuario) {
+              aplicarSessaoUsuario(usuario);
+            } else {
+              document.getElementById('auth-container').style.display = 'none';
+              document.getElementById('app-container').style.display = 'flex';
+              navegarPara('inicio');
+            }
+            mostrarToast(`Bem-vindo à Taverna, ${usuario?.displayName || 'aventureiro'}!`);
+            return;
+          }
         }
 
         const estaLogado = localStorage.getItem('arcana_user_logged') === 'true';
