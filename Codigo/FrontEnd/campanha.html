@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -2915,234 +2915,44 @@
 
 
     <!-- ABA 4: OFICINA DO MESTRE -->
+    <!-- ABA 4: OFICINA DO MESTRE (HUB CENTRAL) -->
     <section id="view-oficina" class="view-section">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-        <div>
-          <h1 class="page-title" style="margin: 0;">Oficina do Mestre</h1>
-          <p style="color: var(--text-muted); font-size: 13px; margin: 4px 0 0 0;">
-            Crie e edite cenários táticos, masmorras interativas, quebra-cabeças, cofres e árvores de diálogo.
-          </p>
-        </div>
-        <div style="display: flex; gap: 10px;">
-          <button type="button" class="btn-secondary" onclick="criarNovaCenaOficina()">
-            ➕ Nova Cena
-          </button>
-          <button type="button" class="btn-primary" onclick="salvarCenaAtualOficina()" id="btn-save-oficina-scene">
-            💾 Salvar Alterações
-          </button>
-        </div>
+      <div style="margin-bottom: 30px;">
+        <h1 class="page-title" style="margin: 0 0 6px 0;">Oficina do Mestre</h1>
+        <p style="color: var(--text-muted); font-size: 13px; margin: 0;">
+          Hub Central de Criação. Gerencie cenas, compêndio homebrew e o lore do mundo da campanha.
+        </p>
       </div>
 
-      <div class="oficina-container">
-        <!-- BARRA LATERAL DA OFICINA: LISTA DE CENAS -->
-        <div class="oficina-sidebar-scenes">
-          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--gold-light); letter-spacing: 0.5px;">Cenas da Campanha</span>
-            <span class="badge-players-count" id="oficina-scenes-count">0 Cenas</span>
-          </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 10px;">
 
-          <div class="oficina-scenes-list" id="oficina-scenes-list">
-            <div style="text-align: center; color: var(--text-dim); padding: 30px 10px; font-size: 12.5px;">
-              Carregando lista de cenas...
-            </div>
-          </div>
+        <!-- Módulo 1: Cenas -->
+        <div class="card" style="text-align: center; cursor: pointer; padding: 40px 24px; transition: transform 0.2s, box-shadow 0.2s;" onclick="abrirModalHub('hub-modal-cenas')" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 12px 32px rgba(255,193,7,0.15)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
+          <div style="font-size: 52px; margin-bottom: 18px;">🎬</div>
+          <h2 style="font-family: var(--font-title); color: var(--gold-light); font-size: 1.1rem; margin-bottom: 10px;">Gerenciamento de Cenas</h2>
+          <p style="color: var(--text-muted); font-size: 13px; line-height: 1.6;">
+            Crie mapas táticos, puzzles, diálogos e configure eventos no-code para desafiar os jogadores.
+          </p>
         </div>
 
-        <!-- ÁREA PRINCIPAL DO EDITOR -->
-        <div class="oficina-editor-main" id="oficina-editor-main">
-          <!-- CABEÇALHO DO EDITOR -->
-          <div class="oficina-editor-header">
-            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-              <input type="text" id="oficina-scene-name-input" class="form-control" style="font-size: 16px; font-weight: 700; color: var(--gold-light); max-width: 320px;" placeholder="Nome da Cena...">
-              
-              <select id="oficina-scene-model-select" class="form-control" style="width: auto;" onchange="aoMudarModeloCenaOficina(this.value)">
-                <option value="tactical_grid">🗺️ Grid Tático (3 Camadas)</option>
-                <option value="puzzle_mahjong">🃏 Puzzle: Memória / Mahjong</option>
-                <option value="puzzle_password">🔢 Puzzle: Senha / Cofre</option>
-                <option value="dialogue_tree">💬 Árvore de Diálogos (Visual Novel)</option>
-                <option value="turn_combat">⚔️ Combate por Turnos</option>
-              </select>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <button type="button" class="btn-secondary" id="btn-toggle-active-scene" onclick="tornarCenaAtivaOficina()" title="Ativar para todos os jogadores na mesa">
-                ⭐ Tornar Ativa
-              </button>
-              <button type="button" class="btn-delete-char-party" onclick="excluirCenaOficina()" title="Excluir esta cena">
-                🗑️
-              </button>
-            </div>
-          </div>
-
-          <!-- ABAS INTERNAS DO EDITOR DA CENA -->
-          <div style="display: flex; gap: 4px; padding: 0 16px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface);">
-            <button type="button" class="btn-secondary active" id="tab-btn-oficina-visual" onclick="trocarAbaInternaOficina('visual')" style="border-radius: var(--radius-sm) var(--radius-sm) 0 0; padding: 8px 16px; font-size: 12.5px;">
-              🎨 Editor Visual / Grid
-            </button>
-            <button type="button" class="btn-secondary" id="tab-btn-oficina-config" onclick="trocarAbaInternaOficina('config')" style="border-radius: var(--radius-sm) var(--radius-sm) 0 0; padding: 8px 16px; font-size: 12.5px;">
-              ⚙️ Regras do Modelo
-            </button>
-            <button type="button" class="btn-secondary" id="tab-btn-oficina-triggers" onclick="trocarAbaInternaOficina('triggers')" style="border-radius: var(--radius-sm) var(--radius-sm) 0 0; padding: 8px 16px; font-size: 12.5px;">
-              ⚡ Gatilhos & No-Code
-            </button>
-          </div>
-
-          <!-- CONTEÚDO DO EDITOR -->
-          <div class="oficina-editor-body" style="padding: 16px; overflow-y: auto; flex: 1;">
-            
-            <!-- ABA INTERNA 1: EDITOR VISUAL DE GRID (Para Grid Tático) -->
-            <div id="oficina-pane-visual">
-              <!-- TOOLBAR DO PINCEL -->
-              <div class="paint-toolbar-container">
-                <!-- Seletor de Camadas -->
-                <div style="display: flex; gap: 6px; align-items: center;">
-                  <span style="font-size: 11px; font-weight: 700; color: var(--gold-light); text-transform: uppercase;">Camada:</span>
-                  <button type="button" class="layer-btn active" id="layer-btn-1" onclick="selecionarCamadaPintura(1)">1: Chão</button>
-                  <button type="button" class="layer-btn" id="layer-btn-2" onclick="selecionarCamadaPintura(2)">2: Obstáculo</button>
-                  <button type="button" class="layer-btn" id="layer-btn-3" onclick="selecionarCamadaPintura(3)">3: Teto/Luz</button>
-                </div>
-
-                <!-- Seletor de Ferramenta -->
-                <div style="display: flex; gap: 6px; align-items: center;">
-                  <button type="button" class="btn-secondary active" id="tool-btn-brush" onclick="selecionarFerramentaPintura('brush')">🖌️ Pincel</button>
-                  <button type="button" class="btn-secondary" id="tool-btn-eraser" onclick="selecionarFerramentaPintura('eraser')">🧹 Borracha</button>
-                  <button type="button" class="btn-secondary" id="tool-btn-fill" onclick="selecionarFerramentaPintura('fill')">🪣 Preencher</button>
-                </div>
-
-                <!-- Dimensões do Grid -->
-                <div style="display: flex; gap: 6px; align-items: center;">
-                  <span style="font-size: 11px; color: var(--text-dim);">Tam:</span>
-                  <input type="number" id="grid-dim-rows" class="form-control" style="width: 54px; padding: 4px 6px; font-size: 12px;" min="3" max="50" value="12">
-                  <span style="font-size: 11px; color: var(--text-dim);">x</span>
-                  <input type="number" id="grid-dim-cols" class="form-control" style="width: 54px; padding: 4px 6px; font-size: 12px;" min="3" max="50" value="16">
-                  <button type="button" class="btn-secondary" onclick="redimensionarGridOficina()" style="padding: 4px 8px; font-size: 11px;">Redim</button>
-                </div>
-              </div>
-
-              <!-- PALETA DE ASSETS / TILES -->
-              <div style="margin-bottom: 12px;">
-                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Paleta de Elementos (Dark Fantasy):</div>
-                <div class="asset-palette-grid" id="asset-palette-grid">
-                  <!-- Gerado dinamicamente via JS com SVGs e emojis -->
-                </div>
-              </div>
-
-              <!-- CANVAS / VIEWPORT DE PINTURA DO GRID -->
-              <div class="grid-paint-viewport" id="grid-paint-viewport">
-                <table class="grid-board-table" id="grid-paint-table">
-                  <!-- Grade gerada dinamicamente via JS -->
-                </table>
-              </div>
-            </div>
-
-            <!-- ABA INTERNA 2: REGRAS E CONFIGURAÇÕES ESPECÍFICAS DO MODELO -->
-            <div id="oficina-pane-config" style="display: none;">
-              <!-- Configuração para Puzzle Mahjong -->
-              <div id="config-box-mahjong" style="display: none;" class="config-card">
-                <h3 class="config-card-title">🃏 Parâmetros do Mahjong / Memória</h3>
-                <div class="config-form-group">
-                  <label class="config-label">Tamanho da Grade</label>
-                  <select id="mahjong-cfg-size" class="form-control">
-                    <option value="4x3">12 Cartas (4x3 - Fácil)</option>
-                    <option value="4x4" selected>16 Cartas (4x4 - Padrão)</option>
-                    <option value="5x4">20 Cartas (5x4 - Desafiador)</option>
-                  </select>
-                </div>
-                <div class="config-form-group">
-                  <label class="config-label">Quantidade de Bombas Ocultas (Causam Dano na Anima)</label>
-                  <input type="number" id="mahjong-cfg-bombs" class="form-control" min="0" max="6" value="2">
-                </div>
-                <div class="config-form-group">
-                  <label class="config-label">Dano por Bomba</label>
-                  <input type="number" id="mahjong-cfg-damage" class="form-control" min="1" max="20" value="4">
-                </div>
-              </div>
-
-              <!-- Configuração para Puzzle Senha -->
-              <div id="config-box-password" style="display: none;" class="config-card">
-                <h3 class="config-card-title">🔢 Parâmetros do Cofre / Senha</h3>
-                <div class="config-form-group">
-                  <label class="config-label">Tipo de Senha</label>
-                  <select id="password-cfg-type" class="form-control" onchange="aoMudarTipoSenhaCfg(this.value)">
-                    <option value="numeric">Numérica (0 a 9)</option>
-                    <option value="symbols">Símbolos Rúnicos (Ícones)</option>
-                    <option value="letters">Letras / Palavra Arcana</option>
-                  </select>
-                </div>
-                <div class="config-form-group">
-                  <label class="config-label">Comprimento da Senha (Dígitos / Slots)</label>
-                  <input type="number" id="password-cfg-length" class="form-control" min="3" max="8" value="4">
-                </div>
-                <div class="config-form-group">
-                  <label class="config-label">Combinação Secreta Correta</label>
-                  <input type="text" id="password-cfg-secret" class="form-control" value="1337" placeholder="Ex: 1337">
-                </div>
-                <div class="config-form-group">
-                  <label class="config-label">Feedback por Cor (Verde = Exato, Azul = Menor, Vermelho = Maior)</label>
-                  <select id="password-cfg-hints" class="form-control">
-                    <option value="1">Ativado (Dicas estilo Cofre/Mastermind)</option>
-                    <option value="0">Desativado (Apenas Certo ou Errado)</option>
-                  </select>
-                </div>
-                <div class="config-form-group">
-                  <label class="config-label">Dano por Tentativa Incorreta</label>
-                  <input type="number" id="password-cfg-damage" class="form-control" min="0" max="20" value="2">
-                </div>
-              </div>
-
-              <!-- Configuração para Árvore de Diálogos -->
-              <div id="config-box-dialogue" style="display: none;" class="config-card">
-                <h3 class="config-card-title">💬 Parâmetros da Árvore de Diálogos</h3>
-                <div class="config-form-group">
-                  <label class="config-label">Nome do Interlocutor / NPC</label>
-                  <input type="text" id="dialogue-cfg-speaker" class="form-control" value="Guardião Misterioso">
-                </div>
-                <div class="config-form-group">
-                  <label class="config-label">Título / Função</label>
-                  <input type="text" id="dialogue-cfg-title" class="form-control" value="Espectro Ancestral">
-                </div>
-                <div class="config-form-group">
-                  <label class="config-label">Avatar (Emoji ou URL de Imagem)</label>
-                  <input type="text" id="dialogue-cfg-avatar" class="form-control" value="🧙">
-                </div>
-                <div class="config-form-group">
-                  <label class="config-label">Texto Inicial da Conversa</label>
-                  <textarea id="dialogue-cfg-text" class="form-control" rows="3">Quem ousa perturbar o repouso das eras?</textarea>
-                </div>
-              </div>
-
-              <!-- Mensagem padrão para Grid Tático -->
-              <div id="config-box-tactical" class="config-card">
-                <h3 class="config-card-title">🗺️ Configurações Gerais do Grid</h3>
-                <div class="config-form-group">
-                  <label class="config-label">Modo de Visibilidade & Névoa de Guerra</label>
-                  <select id="tactical-cfg-fog" class="form-control">
-                    <option value="none">Totalmente Descoberto</option>
-                    <option value="player_sight">Campo de Visão do Jogador (Raio 4 tiles)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- ABA INTERNA 3: CONSTRUTOR NO-CODE DE GATILHOS -->
-            <div id="oficina-pane-triggers" style="display: none;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <div>
-                  <h3 style="font-family: var(--font-title); color: var(--gold-light); font-size: 1.1rem; margin: 0;">Motor de Regras [QUANDO ➔ ENTÃO]</h3>
-                  <p style="color: var(--text-muted); font-size: 12px; margin: 2px 0 0 0;">Crie automações que reagem a cliques, movimentação, acertos de enigma e alteram o mundo.</p>
-                </div>
-                <button type="button" class="btn-secondary" onclick="adicionarRegraGatilhoOficina()">
-                  ➕ Adicionar Regra
-                </button>
-              </div>
-
-              <div class="triggers-container" id="triggers-rules-list">
-                <!-- Regras dinâmicas renderizadas via JavaScript -->
-              </div>
-            </div>
-
-          </div>
+        <!-- Módulo 2: Compêndio -->
+        <div class="card" style="text-align: center; cursor: pointer; padding: 40px 24px; transition: transform 0.2s, box-shadow 0.2s;" onclick="abrirModalHub('hub-modal-compendio')" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 12px 32px rgba(255,193,7,0.15)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
+          <div style="font-size: 52px; margin-bottom: 18px;">📚</div>
+          <h2 style="font-family: var(--font-title); color: var(--gold-light); font-size: 1.1rem; margin-bottom: 10px;">Gerenciamento de Compêndio</h2>
+          <p style="color: var(--text-muted); font-size: 13px; line-height: 1.6;">
+            Desenvolva homebrew, itens, criaturas e poderes que estendem o AlphaD6.
+          </p>
         </div>
+
+        <!-- Módulo 3: Mundo -->
+        <div class="card" style="text-align: center; cursor: pointer; padding: 40px 24px; transition: transform 0.2s, box-shadow 0.2s;" onclick="abrirModalHub('hub-modal-mundo')" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 12px 32px rgba(255,193,7,0.15)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
+          <div style="font-size: 52px; margin-bottom: 18px;">🌍</div>
+          <h2 style="font-family: var(--font-title); color: var(--gold-light); font-size: 1.1rem; margin-bottom: 10px;">Gerenciamento de Mundo</h2>
+          <p style="color: var(--text-muted); font-size: 13px; line-height: 1.6;">
+            Controle calendários, lore, facções e construa o Overworld de hexágonos.
+          </p>
+        </div>
+
       </div>
     </section>
 
