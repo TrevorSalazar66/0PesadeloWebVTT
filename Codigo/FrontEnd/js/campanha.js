@@ -98,6 +98,7 @@ window.sairCampanha = function() {
 let userCampaignRole = 'jogador';
 let chatMessagesCache = [];
 let chatPollingTimer = null;
+let cenaPollingTimer = null;
 let currentPersona = { type: 'ic', name: '', avatar: '🗡️' };
 let currentReplyTo = null;
 
@@ -333,6 +334,30 @@ function iniciarChatPolling() {
       }
     }
   }, 3500);
+}
+
+function iniciarCenaPolling() {
+  if (cenaPollingTimer) clearInterval(cenaPollingTimer);
+  cenaPollingTimer = setInterval(async () => {
+    // Apenas Seguidores (não líderes) precisam do fallback P2P
+    const isFollower = (typeof isP2PLeader !== 'undefined' && !isP2PLeader);
+    if (!isFollower) return;
+
+    try {
+      const res = await apiClient.listScenes(currentCampaignId);
+      if (!res || !res.sucesso) return;
+
+      const cenas = res.cenas || [];
+      const cenaAlvo = cenas.find(s => s.is_active == 1) || cenas[0] || null;
+
+      if (cenaAlvo && (!palcoActiveSceneData || cenaAlvo.id !== palcoActiveSceneData.id)) {
+        console.log("[Fallback P2P] Cena ativa divergente encontrada via fallback. Atualizando para:", cenaAlvo.name);
+        loadActiveScenePalco(cenaAlvo.id);
+      }
+    } catch (e) {
+      console.error("[Fallback P2P] Erro ao checar cena ativa:", e);
+    }
+  }, 10000); // Executa a cada 10s
 }
 
 export function verificarSeUsuarioEMestre() {
@@ -2208,9 +2233,10 @@ function renderOficinaScenesList() {
   const modelLabels = {
     tactical_grid: '🗺️ Grid Tático',
     puzzle_mahjong: '🃏 Mahjong',
-    puzzle_password: '🔢 Senha/Cofre',
+    puzzle_password: '❓ Senha/Cofre',
     dialogue_tree: '💬 Diálogo',
-    turn_combat: '⚔️ Combate'
+    turn_combat: '⚔️ Combate',
+    terminal_hacking: '🖥️ Terminal'
   };
 
   container.innerHTML = oficinaScenesList.map(sc => {
@@ -2892,9 +2918,10 @@ export async function loadActiveScenePalco(forcarSceneId) {
     const modelIcons = {
       tactical_grid: '🗺️',
       puzzle_mahjong: '🃏',
-      puzzle_password: '🔢',
+      puzzle_password: '❓',
       dialogue_tree: '💬',
-      turn_combat: '⚔️'
+      turn_combat: '⚔️',
+      terminal_hacking: '🖥️'
     };
 
     const modelLabels = {
@@ -2902,7 +2929,8 @@ export async function loadActiveScenePalco(forcarSceneId) {
       puzzle_mahjong: 'Enigma das Relíquias (Memória)',
       puzzle_password: 'Cofre Rúnico Secreto',
       dialogue_tree: 'Conversa & Ramificação',
-      turn_combat: 'Arena de Batalha'
+      turn_combat: 'Arena de Batalha',
+      terminal_hacking: 'Terminal Arcano'
     };
 
     if (hudTitle) hudTitle.innerText = cenaAlvo.name;
@@ -2916,21 +2944,34 @@ export async function loadActiveScenePalco(forcarSceneId) {
     const mahjongView = document.getElementById('scene-mahjong-viewport');
     const passwordView = document.getElementById('scene-password-viewport');
     const dialogueView = document.getElementById('scene-dialogue-viewport');
+    const combatView = document.getElementById('scene-combat-viewport');
+    const terminalView = document.getElementById('scene-terminal-viewport');
 
     if (gridView) gridView.style.display = (cenaAlvo.model === 'tactical_grid') ? 'flex' : 'none';
     if (mahjongView) mahjongView.style.display = (cenaAlvo.model === 'puzzle_mahjong') ? 'flex' : 'none';
     if (passwordView) passwordView.style.display = (cenaAlvo.model === 'puzzle_password') ? 'flex' : 'none';
     if (dialogueView) dialogueView.style.display = (cenaAlvo.model === 'dialogue_tree') ? 'flex' : 'none';
+    if (combatView) combatView.style.display = (cenaAlvo.model === 'turn_combat') ? 'flex' : 'none';
+    if (terminalView) terminalView.style.display = (cenaAlvo.model === 'terminal_hacking') ? 'flex' : 'none';
 
     if (cenaAlvo.model === 'tactical_grid') {
-      renderTacticalGridPalco(cenaAlvo);
-      initPalcoKeyControls();
+      window.activeSceneInstance = new window.GridTaticoScene('scene-grid-viewport', cenaAlvo, window.engineNoCode, window.syncService);
+      window.activeSceneInstance.render();
     } else if (cenaAlvo.model === 'puzzle_mahjong') {
-      renderMahjongPalco(cenaAlvo);
+      window.activeSceneInstance = new window.MahjongMinasScene('scene-mahjong-viewport', cenaAlvo, window.engineNoCode);
+      window.activeSceneInstance.render();
     } else if (cenaAlvo.model === 'puzzle_password') {
-      renderPasswordPalco(cenaAlvo);
+      window.activeSceneInstance = new window.CofreRunicoScene('scene-password-viewport', cenaAlvo, window.engineNoCode);
+      window.activeSceneInstance.render();
     } else if (cenaAlvo.model === 'dialogue_tree') {
-      renderDialoguePalco(cenaAlvo);
+      window.activeSceneInstance = new window.DialogosScene('scene-dialogue-viewport', cenaAlvo, window.engineNoCode);
+      window.activeSceneInstance.render();
+    } else if (cenaAlvo.model === 'turn_combat') {
+      window.activeSceneInstance = new window.CombateTurnosScene('scene-combat-viewport', cenaAlvo, window.engineNoCode, window.syncService);
+      window.activeSceneInstance.render();
+    } else if (cenaAlvo.model === 'terminal_hacking') {
+      window.activeSceneInstance = new window.TerminalHackingScene('scene-terminal-viewport', cenaAlvo, window.engineNoCode);
+      window.activeSceneInstance.render();
     }
 
   } catch (e) {
@@ -2959,108 +3000,8 @@ function atualizarHudPersonagemPalco() {
   }
 }
 
-// --- Renderizador do Grid Tático no Palco ---
-function renderTacticalGridPalco(scene) {
-  const table = document.getElementById('scene-interactive-grid');
-  const placeholder = document.getElementById('scene-grid-placeholder');
-  if (!table) return;
-
-  if (placeholder) placeholder.style.display = 'none';
-  table.style.display = 'table';
-  table.innerHTML = '';
-
-  let modelData = {};
-  try {
-    modelData = typeof scene.model_data === 'string' ? JSON.parse(scene.model_data) : (scene.model_data || {});
-  } catch (e) {
-    modelData = {};
-  }
-
-  const rows = modelData.rows || 12;
-  const cols = modelData.cols || 16;
-  const matrix = modelData.matrix || [];
-
-  const user = obterUsuarioAtual();
-  const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
-
-  for (let r = 0; r < rows; r++) {
-    const tr = document.createElement('tr');
-    for (let c = 0; c < cols; c++) {
-      const cellData = (matrix[r] && matrix[r][c]) ? matrix[r][c] : { l1: 'floor_stone', l2: null, l3: null };
-      const td = document.createElement('td');
-      td.dataset.row = r;
-      td.dataset.col = c;
-
-      // Camada 1
-      const l1Asset = getAssetById(cellData.l1);
-      const l1Div = document.createElement('div');
-      l1Div.className = 'cell-l1';
-      l1Div.innerHTML = l1Asset ? l1Asset.icon : '🪨';
-      td.appendChild(l1Div);
-
-      // Camada 2
-      if (cellData.l2) {
-        const l2Asset = getAssetById(cellData.l2);
-        if (l2Asset) {
-          const l2Div = document.createElement('div');
-          l2Div.className = 'cell-l2';
-          l2Div.innerHTML = l2Asset.icon;
-          td.appendChild(l2Div);
-        }
-      }
-
-      // Camada 3
-      if (cellData.l3) {
-        const l3Asset = getAssetById(cellData.l3);
-        if (l3Asset) {
-          const l3Div = document.createElement('div');
-          l3Div.className = 'cell-l3';
-          l3Div.innerHTML = l3Asset.icon;
-          td.appendChild(l3Div);
-        }
-      }
-
-      // Token do Jogador Local
-      if (palcoPlayerPosition.x === c && palcoPlayerPosition.y === r) {
-        const tokenDiv = document.createElement('div');
-        tokenDiv.className = 'grid-token-entity token-player';
-        tokenDiv.innerHTML = meuChar ? (meuChar.avatar || '🗡️') : '🛡️';
-
-        const nameTag = document.createElement('div');
-        nameTag.className = 'grid-token-name';
-        nameTag.innerText = meuChar ? meuChar.nome : (user ? user.username : 'Você');
-        tokenDiv.appendChild(nameTag);
-
-        td.appendChild(tokenDiv);
-      }
-
-      // Tokens de outros jogadores remotos via P2P
-      Object.keys(palcoRemoteTokens).forEach(peerCharId => {
-        const remoteToken = palcoRemoteTokens[peerCharId];
-        if (remoteToken.x === c && remoteToken.y === r) {
-          const rTokenDiv = document.createElement('div');
-          rTokenDiv.className = 'grid-token-entity';
-          rTokenDiv.innerHTML = remoteToken.avatar || '🧙';
-
-          const rNameTag = document.createElement('div');
-          rNameTag.className = 'grid-token-name';
-          rNameTag.innerText = remoteToken.charName || 'Herói';
-          rTokenDiv.appendChild(rNameTag);
-
-          td.appendChild(rTokenDiv);
-        }
-      });
-
-      // Evento de Clique na Célula
-      td.addEventListener('click', () => {
-        onPalcoCellClick(r, c, cellData);
-      });
-
-      tr.appendChild(td);
-    }
-    table.appendChild(tr);
-  }
-}
+// --- Renderizador e Lógica do Grid Tático no Palco ---
+// Modularizado na Fase 3: Agora roda 100% instanciado via GridTaticoScene (js/scenes/GridTatico.js)
 
 function initPalcoKeyControls() {
   if (keyListenersInitialized) return;
@@ -3071,100 +3012,13 @@ function initPalcoKeyControls() {
     if (!viewCenas || !viewCenas.classList.contains('active')) return;
     if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
 
-    if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      moverTokenDirecao(0, -1);
-    } else if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      moverTokenDirecao(0, 1);
-    } else if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') {
-      e.preventDefault();
-      moverTokenDirecao(-1, 0);
-    } else if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
-      e.preventDefault();
-      moverTokenDirecao(1, 0);
-    } else if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      interagirTileAtual();
+    if (window.activeSceneInstance && typeof window.activeSceneInstance.handleKeyDown === 'function') {
+      window.activeSceneInstance.handleKeyDown(e);
     }
   });
 }
 
-window.moverTokenDirecao = async function(dx, dy) {
-  if (!palcoActiveSceneData || palcoActiveSceneData.model !== 'tactical_grid') return;
 
-  let modelData = {};
-  try {
-    modelData = typeof palcoActiveSceneData.model_data === 'string' ? JSON.parse(palcoActiveSceneData.model_data) : (palcoActiveSceneData.model_data || {});
-  } catch (e) {
-    modelData = {};
-  }
-
-  const rows = modelData.rows || 12;
-  const cols = modelData.cols || 16;
-  const matrix = modelData.matrix || [];
-
-  const targetX = palcoPlayerPosition.x + dx;
-  const targetY = palcoPlayerPosition.y + dy;
-
-  // Verifica limites do mapa
-  if (targetX < 0 || targetX >= cols || targetY < 0 || targetY >= rows) {
-    return;
-  }
-
-  // Verifica colisão na Camada 2 (Obstáculos)
-  const cellData = (matrix[targetY] && matrix[targetY][targetX]) ? matrix[targetY][targetX] : null;
-  if (cellData && cellData.l2) {
-    const l2Asset = getAssetById(cellData.l2);
-    if (l2Asset && l2Asset.solid) {
-      console.log("Movimento bloqueado por obstáculo:", l2Asset.name);
-      return;
-    }
-  }
-
-  // Movimenta o token
-  palcoPlayerPosition.x = targetX;
-  palcoPlayerPosition.y = targetY;
-  renderTacticalGridPalco(palcoActiveSceneData);
-
-  // Broadcast P2P do movimento
-  const user = obterUsuarioAtual();
-  const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
-  if (p2pNetManager) {
-    p2pNetManager.broadcast('token_move', {
-      charId: meuChar ? meuChar.id : (user ? user.id : 'anon'),
-      charName: meuChar ? meuChar.nome : (user ? user.username : 'Herói'),
-      avatar: meuChar ? meuChar.avatar : '🗡️',
-      x: targetX,
-      y: targetY
-    });
-  }
-
-  // Verifica gatilho on_tile_enter
-  if (cellData) {
-    await testarEDispararGatilhos('on_tile_enter', targetX, targetY, cellData);
-  }
-};
-
-window.interagirTileAtual = async function() {
-  if (!palcoActiveSceneData) return;
-  let modelData = {};
-  try {
-    modelData = typeof palcoActiveSceneData.model_data === 'string' ? JSON.parse(palcoActiveSceneData.model_data) : (palcoActiveSceneData.model_data || {});
-  } catch (e) {
-    modelData = {};
-  }
-  const matrix = modelData.matrix || [];
-  const cellData = (matrix[palcoPlayerPosition.y] && matrix[palcoPlayerPosition.y][palcoPlayerPosition.x]) ? matrix[palcoPlayerPosition.y][palcoPlayerPosition.x] : null;
-  if (cellData) {
-    await testarEDispararGatilhos('on_tile_click', palcoPlayerPosition.x, palcoPlayerPosition.y, cellData);
-  }
-};
-
-async function onPalcoCellClick(r, c, cellData) {
-  if (!palcoActiveSceneData) return;
-  await testarEDispararGatilhos('on_tile_click', c, r, cellData);
-}
 
 async function testarEDispararGatilhos(triggerType, x, y, cellData) {
   let rules = [];
@@ -3236,7 +3090,9 @@ function aoReceberMovimentoP2P(data) {
     y: data.y
   };
   if (palcoActiveSceneData && palcoActiveSceneData.model === 'tactical_grid') {
-    renderTacticalGridPalco(palcoActiveSceneData);
+    if (window.activeSceneInstance && window.activeSceneInstance.updateRemoteTokens) {
+      window.activeSceneInstance.updateRemoteTokens(palcoRemoteTokens);
+    }
   }
 }
 
@@ -3247,365 +3103,16 @@ function aoReceberEstadoCenaP2P(data) {
 }
 
 // =========================================================================
-// MINIJOGO: MAHJONG / MEMÓRIA COM BOMBAS
+// =========================================================================
+// MINIJOGO: MAHJONG / MEMÓRIA COM BOMBAS (Migrado para js/scenes/MahjongMinas.js)
 // =========================================================================
 
-function renderMahjongPalco(scene) {
-  const board = document.getElementById('mahjong-grid-board');
-  const scorePill = document.getElementById('mahjong-score-pill');
-  const bombsPill = document.getElementById('mahjong-bombs-pill');
-  if (!board) return;
-
-  board.innerHTML = '';
-  let modelData = {};
-  try {
-    modelData = typeof scene.model_data === 'string' ? JSON.parse(scene.model_data) : (scene.model_data || {});
-  } catch (e) {
-    modelData = {};
-  }
-
-  const bombCount = modelData.bombCount || 2;
-  const bombDamage = modelData.bombDamage || 4;
-
-  const ICONS_POOL = ['💎', '🔮', '📜', '🗝️', '🗡️', '🛡️', '👑', '⚡', '🌙', '🩸'];
-  const pairsNeeded = 6;
-  const selectedIcons = ICONS_POOL.slice(0, pairsNeeded);
-
-  let deck = [];
-  selectedIcons.forEach(icon => {
-    deck.push({ icon: icon, isBomb: false, id: Math.random() });
-    deck.push({ icon: icon, isBomb: false, id: Math.random() });
-  });
-
-  for (let b = 0; b < bombCount; b++) {
-    deck.push({ icon: '💣', isBomb: true, id: Math.random() });
-  }
-
-  // Embaralha
-  deck.sort(() => Math.random() - 0.5);
-
-  mahjongState = {
-    cards: deck.map(c => ({ ...c, matched: false, flipped: false })),
-    revealedIndices: [],
-    matchedPairs: 0,
-    totalPairs: pairsNeeded,
-    bombsHit: 0,
-    bombDamage: bombDamage,
-    isBusy: false
-  };
-
-  if (scorePill) scorePill.innerText = `Pares: 0/${pairsNeeded}`;
-  if (bombsPill) bombsPill.innerText = `Bombas: 0`;
-
-  renderMahjongCards();
-}
-
-function renderMahjongCards() {
-  const board = document.getElementById('mahjong-grid-board');
-  if (!board) return;
-
-  board.innerHTML = mahjongState.cards.map((card, idx) => {
-    let content = '❓';
-    let extraClass = 'hidden';
-
-    if (card.flipped || card.matched) {
-      content = card.icon;
-      extraClass = card.isBomb ? 'bomb' : 'revealed';
-    }
-
-    return `
-      <div class="mahjong-tile-card ${extraClass}" onclick="onMahjongCardClick(${idx})">
-        ${content}
-      </div>
-    `;
-  }).join('');
-}
-
-window.onMahjongCardClick = async function(idx) {
-  if (mahjongState.isBusy) return;
-  const card = mahjongState.cards[idx];
-  if (!card || card.matched || card.flipped) return;
-
-  // Vira a carta
-  card.flipped = true;
-  mahjongState.revealedIndices.push(idx);
-  renderMahjongCards();
-
-  // Se for bomba, explode e causa dano imediato
-  if (card.isBomb) {
-    mahjongState.bombsHit++;
-    const bombsPill = document.getElementById('mahjong-bombs-pill');
-    if (bombsPill) bombsPill.innerText = `Bombas: ${mahjongState.bombsHit}`;
-
-    const user = obterUsuarioAtual();
-    const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
-    if (meuChar) {
-      await apiClient.triggerSceneAction(currentCampaignId, palcoActiveSceneData.id, {
-        trigger: 'on_password_fail',
-        actionType: 'apply_damage',
-        actionParams: mahjongState.bombDamage,
-        characterId: meuChar.id
-      });
-      await loadDiarioData();
-      atualizarHudPersonagemPalco();
-    }
-    return;
-  }
-
-  // Compara par
-  const nonBombRevealed = mahjongState.revealedIndices.filter(i => !mahjongState.cards[i].isBomb && !mahjongState.cards[i].matched);
-  if (nonBombRevealed.length === 2) {
-    mahjongState.isBusy = true;
-    const [firstIdx, secondIdx] = nonBombRevealed;
-    const firstCard = mahjongState.cards[firstIdx];
-    const secondCard = mahjongState.cards[secondIdx];
-
-    if (firstCard.icon === secondCard.icon) {
-      firstCard.matched = true;
-      secondCard.matched = true;
-      mahjongState.matchedPairs++;
-      mahjongState.revealedIndices = [];
-      mahjongState.isBusy = false;
-
-      const scorePill = document.getElementById('mahjong-score-pill');
-      if (scorePill) scorePill.innerText = `Pares: ${mahjongState.matchedPairs}/${mahjongState.totalPairs}`;
-
-      renderMahjongCards();
-
-      // Se venceu
-      if (mahjongState.matchedPairs === mahjongState.totalPairs) {
-        setTimeout(async () => {
-          alert("Parabéns! Você desvendou todas as relíquias do enigma!");
-          const user = obterUsuarioAtual();
-          const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
-          await apiClient.triggerSceneAction(currentCampaignId, palcoActiveSceneData.id, {
-            trigger: 'on_score_reach',
-            actionType: 'award_xp',
-            actionParams: 50,
-            characterId: meuChar ? meuChar.id : null
-          });
-          await loadDiarioData();
-          atualizarHudPersonagemPalco();
-        }, 300);
-      }
-    } else {
-      setTimeout(() => {
-        firstCard.flipped = false;
-        secondCard.flipped = false;
-        mahjongState.revealedIndices = [];
-        mahjongState.isBusy = false;
-        renderMahjongCards();
-      }, 900);
-    }
-  }
-};
-
 // =========================================================================
-// MINIJOGO: SENHA / COFRE RÚNICO
+// =========================================================================
+// MINIJOGO: SENHA / COFRE RÚNICO (Migrado para js/scenes/CofreRunico.js)
 // =========================================================================
 
-function renderPasswordPalco(scene) {
-  let modelData = {};
-  try {
-    modelData = typeof scene.model_data === 'string' ? JSON.parse(scene.model_data) : (scene.model_data || {});
-  } catch (e) {
-    modelData = {};
-  }
-
-  passwordState = {
-    secret: modelData.secret || '1337',
-    currentGuess: '',
-    length: modelData.length || 4,
-    type: modelData.passwordType || 'numeric',
-    hints: modelData.hintsEnabled !== undefined ? modelData.hintsEnabled : true,
-    damage: modelData.failDamage || 2
-  };
-
-  const container = document.getElementById('password-slots-container');
-  if (!container) return;
-
-  container.innerHTML = '';
-  for (let i = 0; i < passwordState.length; i++) {
-    const slot = document.createElement('div');
-    slot.className = 'password-slot-box';
-    slot.id = `pwd-slot-${i}`;
-    slot.innerText = '_';
-    container.appendChild(slot);
-  }
-
-  // Teclado numérico ou de entrada se for numérico
-  let keypad = document.getElementById('password-keypad');
-  if (!keypad) {
-    keypad = document.createElement('div');
-    keypad.id = 'password-keypad';
-    keypad.style.display = 'grid';
-    keypad.style.gridTemplateColumns = 'repeat(3, 54px)';
-    keypad.style.gap = '8px';
-    keypad.style.margin = '16px auto';
-    container.parentNode.insertBefore(keypad, container.nextSibling);
-  }
-
-  keypad.innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(num => `
-    <button type="button" class="btn-secondary" style="font-size: 18px; font-weight: 700; height: 48px;" onclick="digitarDigitoCofre('${num}')">
-      ${num}
-    </button>
-  `).join('');
-}
-
-window.digitarDigitoCofre = function(digito) {
-  if (passwordState.currentGuess.length >= passwordState.length) return;
-  passwordState.currentGuess += digito;
-
-  for (let i = 0; i < passwordState.length; i++) {
-    const slot = document.getElementById(`pwd-slot-${i}`);
-    if (slot) {
-      slot.innerText = passwordState.currentGuess[i] || '_';
-      slot.className = 'password-slot-box';
-    }
-  }
-};
-
-window.limparSenhaCofre = function() {
-  passwordState.currentGuess = '';
-  for (let i = 0; i < passwordState.length; i++) {
-    const slot = document.getElementById(`pwd-slot-${i}`);
-    if (slot) {
-      slot.innerText = '_';
-      slot.className = 'password-slot-box';
-    }
-  }
-  const fb = document.getElementById('password-feedback-msg');
-  if (fb) fb.innerText = "Insira a combinação e pressione Confirmar";
-};
-
-window.submeterSenhaCofre = async function() {
-  if (passwordState.currentGuess.length !== passwordState.length) {
-    alert(`Preencha todos os ${passwordState.length} dígitos da combinação.`);
-    return;
-  }
-
-  const guess = passwordState.currentGuess;
-  const secret = passwordState.secret;
-  const fb = document.getElementById('password-feedback-msg');
-
-  if (guess === secret) {
-    for (let i = 0; i < passwordState.length; i++) {
-      const slot = document.getElementById(`pwd-slot-${i}`);
-      if (slot) slot.className = 'password-slot-box hint-exact';
-    }
-    if (fb) fb.innerHTML = `<span style="color: #34d399; font-weight: 700;">🔓 ACESSO PERMITIDO! O mecanismo ancestral se destrancou.</span>`;
-
-    const user = obterUsuarioAtual();
-    const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
-    await apiClient.triggerSceneAction(currentCampaignId, palcoActiveSceneData.id, {
-      trigger: 'on_password_correct',
-      actionType: 'award_xp',
-      actionParams: 40,
-      characterId: meuChar ? meuChar.id : null
-    });
-    await loadDiarioData();
-    atualizarHudPersonagemPalco();
-  } else {
-    // Aplica dicas por cor se ativado
-    if (passwordState.hints) {
-      for (let i = 0; i < passwordState.length; i++) {
-        const slot = document.getElementById(`pwd-slot-${i}`);
-        if (slot) {
-          const g = parseInt(guess[i]);
-          const s = parseInt(secret[i]);
-          if (g === s) slot.className = 'password-slot-box hint-exact';
-          else if (g > s) slot.className = 'password-slot-box hint-high';
-          else slot.className = 'password-slot-box hint-low';
-        }
-      }
-    }
-    if (fb) fb.innerHTML = `<span style="color: #f87171;">❌ Combinação incorreta! O cofre liberou uma descarga mágica (${passwordState.damage} Dano).</span>`;
-
-    const user = obterUsuarioAtual();
-    const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
-    if (meuChar) {
-      await apiClient.triggerSceneAction(currentCampaignId, palcoActiveSceneData.id, {
-        trigger: 'on_password_fail',
-        actionType: 'apply_damage',
-        actionParams: passwordState.damage,
-        characterId: meuChar.id
-      });
-      await loadDiarioData();
-      atualizarHudPersonagemPalco();
-    }
-  }
-};
-
 // =========================================================================
-// MINIJOGO: ÁRVORE DE DIÁLOGOS (VISUAL NOVEL)
-// =========================================================================
-
-function renderDialoguePalco(scene) {
-  let modelData = {};
-  try {
-    modelData = typeof scene.model_data === 'string' ? JSON.parse(scene.model_data) : (scene.model_data || {});
-  } catch (e) {
-    modelData = {};
-  }
-
-  const avatar = document.getElementById('dialogue-avatar');
-  const name = document.getElementById('dialogue-speaker-name');
-  const title = document.getElementById('dialogue-speaker-title');
-  const textBubble = document.getElementById('dialogue-text-bubble');
-  const optionsList = document.getElementById('dialogue-options-list');
-
-  if (avatar) avatar.innerText = modelData.avatar || '🧙';
-  if (name) name.innerText = modelData.speaker || 'Guardião da Cripta';
-  if (title) title.innerText = modelData.speakerTitle || 'Entidade Antiga';
-  if (textBubble) textBubble.innerText = `"${modelData.text || 'Quem ousa perturbar o repouso das eras?'}"`;
-
-  if (optionsList) {
-    optionsList.innerHTML = `
-      <button type="button" class="dialogue-choice-btn" onclick="escolherOpcaoDialogo(1)">
-        <span>1.</span> "Buscamos apenas passagem para o templo subterrâneo."
-      </button>
-      <button type="button" class="dialogue-choice-btn" onclick="escolherOpcaoDialogo(2)">
-        <span>2.</span> "Fomos enviados pela Ordem Arcana para purificar estas terras."
-      </button>
-      <button type="button" class="dialogue-choice-btn" onclick="escolherOpcaoDialogo(3)">
-        <span>3.</span> [Sacar a arma e preparar-se para o combate]
-      </button>
-    `;
-  }
-}
-
-window.escolherOpcaoDialogo = async function(opcao) {
-  const textBubble = document.getElementById('dialogue-text-bubble');
-  const optionsList = document.getElementById('dialogue-options-list');
-
-  if (opcao === 1) {
-    if (textBubble) textBubble.innerText = `"Passagem? Apenas aqueles dignos de sacrifício cruzam os portais. Demonstrem sua fibra ou retornem ao pó."`;
-    if (optionsList) {
-      optionsList.innerHTML = `
-        <button type="button" class="dialogue-choice-btn" onclick="escolherOpcaoDialogo(4)">
-          <span>➔</span> Aceitar a provação e avançar.
-        </button>
-      `;
-    }
-  } else if (opcao === 2) {
-    if (textBubble) textBubble.innerText = `"A Ordem Arcana... faz séculos que não ouço este nome. Se são seus herdeiros, concedo-lhes minha bênção."`;
-    const user = obterUsuarioAtual();
-    const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
-    await apiClient.triggerSceneAction(currentCampaignId, palcoActiveSceneData.id, {
-      trigger: 'on_tile_click',
-      actionType: 'heal_anima',
-      actionParams: 5,
-      characterId: meuChar ? meuChar.id : null
-    });
-    await loadDiarioData();
-    atualizarHudPersonagemPalco();
-  } else if (opcao === 3) {
-    if (textBubble) textBubble.innerText = `"Audácia tola! As sombras consumirão seus ossos!"`;
-  } else if (opcao === 4) {
-    alert("Você avança para o próximo estágio da masmorra!");
-  }
-};
-
 // =========================================================================
 // INICIALIZAÇÃO GERAL DO FRONTEND
 // =========================================================================
@@ -3616,6 +3123,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupChatAutocomplete();
   loadChatHistory(false);
   iniciarChatPolling();
+  iniciarCenaPolling();
+  initPalcoKeyControls();
   initSyncP2P();
 });
 

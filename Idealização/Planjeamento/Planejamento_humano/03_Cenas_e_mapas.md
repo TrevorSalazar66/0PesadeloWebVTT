@@ -37,3 +37,5 @@ Os modelos padrão são:
 4. Mecanica de conversa: O mestre cria mensagems, e pode vincular imagens (via link) e opções de resposta, assim podendo fazer uma arvore de dialogos com varias rotas possiveis pré definidas, e gatilhos que podem ter efeitos a depender das escolhas do jogador nessa cena.Essa é uma cena que aceita apenas um jogador ativo por vez, e é assincrona.
 
 5. Mecanica de Combate essa cena se baseia nos combates de jogos classicos como final fantasy e pokemon, combate por turnos. usando as informações reais da ficha do jogador e do compendio (pra npcs, bestiario, itens, armas, etc).
+
+6. mecanica de terminal: abre um haba similar a um terminal com a opção de escrever algo e enviar, pode-se setar outros alfabetos e simbolos para o terminal, onde o usario pode escreve algo, e o mestre cria textos especificos que devem ter uma resposta no terminal, na logica de if. Essa é uma cena assincrona e só aceita uma pessoa por vez.

@@ -3100,6 +3100,96 @@ export async function handleSyncRequest(request, env, clientIp) {
         }), { status: 200, headers });
       }
 
+      // === MÉTODOS DE CENAS & OFICINA VTT ===
+      case 'campaigns.scenes.list': {
+        const { campaignId } = data;
+        const scenes = await dbQueries.getScenesByCampaign(db, campaignId);
+        return new Response(JSON.stringify({ sucesso: true, dados: scenes }), { status: 200, headers });
+      }
+      
+      case 'campaigns.scenes.get': {
+        const { sceneId } = data;
+        const scene = await dbQueries.getSceneById(db, sceneId);
+        return new Response(JSON.stringify({ sucesso: true, dados: scene }), { status: 200, headers });
+      }
+      
+      case 'campaigns.scenes.create': {
+        await dbQueries.createScene(db, data);
+        return new Response(JSON.stringify({ sucesso: true, mensagem: 'Cena criada.' }), { status: 200, headers });
+      }
+      
+      case 'campaigns.scenes.update': {
+        const { sceneId, ...sceneData } = data;
+        await dbQueries.updateScene(db, sceneId, sceneData);
+        return new Response(JSON.stringify({ sucesso: true, mensagem: 'Cena atualizada.' }), { status: 200, headers });
+      }
+      
+      case 'campaigns.scenes.delete': {
+        const { sceneId } = data;
+        await dbQueries.deleteScene(db, sceneId);
+        return new Response(JSON.stringify({ sucesso: true, mensagem: 'Cena removida.' }), { status: 200, headers });
+      }
+      
+      case 'campaigns.scenes.setActive': {
+        const { campaignId, sceneId } = data;
+        await dbQueries.setActiveScene(db, campaignId, sceneId);
+        return new Response(JSON.stringify({ sucesso: true, mensagem: 'Cena ativada.' }), { status: 200, headers });
+      }
+      
+      case 'campaigns.scenes.updateState': {
+        const { sceneId, stateData } = data;
+        await dbQueries.updateSceneState(db, sceneId, stateData);
+        return new Response(JSON.stringify({ sucesso: true, mensagem: 'Estado da cena salvo.' }), { status: 200, headers });
+      }
+      
+      case 'campaigns.scenes.triggerAction': {
+        const { campaignId, sceneId, trigger, actionType, actionParams, characterId } = data;
+        
+        let resultData = { success: true, message: 'Action executed' };
+        
+        // Motor No-Code Backend Lógico
+        if (actionType === 'apply_damage' && characterId) {
+            const char = await dbQueries.getCharacterById(db, characterId);
+            if (char) {
+               let sheet = typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data) : char.sheet_data;
+               let dmg = Number(actionParams) || 0;
+               if (!sheet.sistema_estado) sheet.sistema_estado = {};
+               let hp = sheet.sistema_estado.estado_vital?.hp_atual ?? 20;
+               hp -= dmg;
+               if (hp < 0) hp = 0;
+               sheet.sistema_estado.estado_vital = { ...sheet.sistema_estado.estado_vital, hp_atual: hp };
+               await dbQueries.updateCharacterSheet(db, characterId, sheet);
+               resultData.message = `Aplicado ${dmg} de dano.`;
+            }
+        }
+        else if (actionType === 'award_xp' && characterId) {
+             const char = await dbQueries.getCharacterById(db, characterId);
+             if (char) {
+                 let sheet = typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data) : char.sheet_data;
+                 let xp = Number(actionParams) || 0;
+                 if (!sheet.sistema_estado) sheet.sistema_estado = {};
+                 sheet.sistema_estado.xp = (sheet.sistema_estado.xp || 0) + xp;
+                 await dbQueries.updateCharacterSheet(db, characterId, sheet);
+                 resultData.message = `Concedido ${xp} XP.`;
+             }
+        }
+        else if (actionType === 'heal_anima' && characterId) {
+             const char = await dbQueries.getCharacterById(db, characterId);
+             if (char) {
+                 let sheet = typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data) : char.sheet_data;
+                 let heal = Number(actionParams) || 0;
+                 if (!sheet.sistema_estado) sheet.sistema_estado = {};
+                 let hp = sheet.sistema_estado.estado_vital?.hp_atual ?? 20;
+                 hp += heal;
+                 sheet.sistema_estado.estado_vital = { ...sheet.sistema_estado.estado_vital, hp_atual: hp };
+                 await dbQueries.updateCharacterSheet(db, characterId, sheet);
+                 resultData.message = `Recuperado ${heal} de Anima.`;
+             }
+        }
+        
+        return new Response(JSON.stringify({ sucesso: true, dados: resultData }), { status: 200, headers });
+      }
+
       // GOVERNANÇA E ADMINISTRAÇÃO (EXCLUSIVO PARA ROLE === 'admin' / 'superadmin')
       case 'admin.stats': {
         const result = await adminService.getPlatformStats(db, user);
