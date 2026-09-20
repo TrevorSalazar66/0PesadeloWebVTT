@@ -79,8 +79,6 @@ window.changeTab = function(tabId) {
     loadDiarioData();
   } else if (tabId === 'config') {
     loadConfigData();
-  } else if (tabId === 'oficina') {
-    loadOficinaScenes();
   } else if (tabId === 'cenas') {
     loadActiveScenePalco();
   }

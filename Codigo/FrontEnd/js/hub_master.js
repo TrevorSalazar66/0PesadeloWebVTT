@@ -3,16 +3,21 @@
  * Gerencia a abertura e fechamento dos modais do Hub do Mestre: Cenas, Compêndio e Mundo.
  */
 
+/**
+ * Navega para a aba da Oficina do Mestre (Hub Central com 3 cards).
+ * Chamado pelo botão de nav lateral/inferior.
+ */
 window.abrirHubMestre = function() {
-  // Por padrão, ao clicar no botão "Hub do Mestre", abre a Oficina de Cenas
-  window.abrirModalHub('hub-modal-cenas');
+  if (typeof window.changeTab === 'function') {
+    window.changeTab('oficina');
+  }
 };
 
 window.abrirModalHub = function(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
     modal.style.display = 'flex';
-    
+
     // Se estiver abrindo a Oficina de Cenas, força o recarregamento da lista de cenas
     if (modalId === 'hub-modal-cenas' && typeof window.loadOficinaScenes === 'function') {
       window.loadOficinaScenes();
@@ -33,6 +38,3 @@ window.addEventListener('click', function(event) {
     window.fecharModalHub(event.target.id);
   }
 });
-
-// Ajuste para evitar conflitos com a lógica antiga da Oficina que estava em changeTab
-// Se existir algo no loadOficinaScenes, ele já atualizará o DOM apropriado no modal.
