@@ -51,12 +51,12 @@ export const apiClient = {
     if (json && json.token) {
       try {
         localStorage.setItem('arcana_token', json.token);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     if (!res.ok) {
       if (res.status === 401) {
-        try { localStorage.removeItem('arcana_token'); } catch (e) {}
+        try { localStorage.removeItem('arcana_token'); } catch (e) { }
       }
       const error = new Error(json.erro || `Erro HTTP ${res.status}`);
       error.status = res.status;
@@ -83,12 +83,12 @@ export const apiClient = {
     if (json && json.token) {
       try {
         localStorage.setItem('arcana_token', json.token);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     if (!res.ok) {
       if (res.status === 401) {
-        try { localStorage.removeItem('arcana_token'); } catch (e) {}
+        try { localStorage.removeItem('arcana_token'); } catch (e) { }
       }
       const error = new Error(json.erro || `Erro HTTP ${res.status}`);
       error.status = res.status;
@@ -205,6 +205,66 @@ export const apiClient = {
 
   createCharacter(name, sheetData = {}) {
     return this.sync('characters.create', { name, sheetData });
+  },
+
+  // === MÉTODOS DE CHAT & CRÔNICA VTT ===
+
+  getChatHistory(campaignId) {
+    return this.sync('chat.getHistory', { campaignId });
+  },
+
+  sendChatMessage(payload = {}) {
+    return this.sync('chat.send', payload);
+  },
+
+  editChatMessage(campaignId, messageId, content) {
+    return this.sync('chat.editMessage', { campaignId, messageId, content });
+  },
+
+  deleteChatMessage(campaignId, messageId) {
+    return this.sync('chat.deleteMessage', { campaignId, messageId });
+  },
+
+  clearChatHistory(campaignId) {
+    return this.sync('chat.clearHistory', { campaignId });
+  },
+
+  respondActionCard(campaignId, messageId, action) {
+    return this.sync('campaigns.actions.respond', { campaignId, messageId, action });
+  },
+
+  // === MÉTODOS DE CENAS & OFICINA VTT ===
+
+  listScenes(campaignId) {
+    return this.sync('campaigns.scenes.list', { campaignId });
+  },
+
+  getScene(sceneId) {
+    return this.sync('campaigns.scenes.get', { sceneId });
+  },
+
+  createScene(data = {}) {
+    return this.sync('campaigns.scenes.create', data);
+  },
+
+  updateScene(sceneId, data = {}) {
+    return this.sync('campaigns.scenes.update', { sceneId, ...data });
+  },
+
+  deleteScene(sceneId) {
+    return this.sync('campaigns.scenes.delete', { sceneId });
+  },
+
+  setActiveScene(campaignId, sceneId) {
+    return this.sync('campaigns.scenes.setActive', { campaignId, sceneId });
+  },
+
+  updateSceneState(sceneId, stateData) {
+    return this.sync('campaigns.scenes.updateState', { sceneId, stateData });
+  },
+
+  triggerSceneAction(data = {}) {
+    return this.sync('campaigns.scenes.triggerAction', data);
   },
 
   // === MÉTODOS DE ADMINISTRAÇÃO & SEGURANÇA ===

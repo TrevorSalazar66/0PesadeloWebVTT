@@ -833,6 +833,344 @@ export async function handleSyncRequest(request, env, clientIp) {
         }), { status: 200, headers });
       }
 
+      // ==========================================
+      // CENAS DA CAMPANHA (MODULARES & INTERATIVAS)
+      // ==========================================
+
+      case 'campaigns.scenes.list': {
+        const { campaignId } = data;
+        if (!campaignId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha obrigatório.' }), { status: 400, headers });
+        }
+
+        const scenes = await dbQueries.getScenesByCampaign(db, campaignId);
+        return new Response(JSON.stringify({
+          sucesso: true,
+          dados: scenes
+        }), { status: 200, headers });
+      }
+
+      case 'campaigns.scenes.get': {
+        const { sceneId } = data;
+        if (!sceneId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da cena obrigatório.' }), { status: 400, headers });
+        }
+
+        const scene = await dbQueries.getSceneById(db, sceneId);
+        if (!scene) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Cena não encontrada.' }), { status: 404, headers });
+        }
+
+        return new Response(JSON.stringify({
+          sucesso: true,
+          dados: scene
+        }), { status: 200, headers });
+      }
+
+      case 'campaigns.scenes.create': {
+        const {
+          campaignId,
+          name,
+          description = '',
+          imageUrl = '',
+          model = 'grid',
+          modelData = {},
+          rulesData = [],
+          styleData = {},
+          stateData = {},
+          maxPlayers = 10,
+          xpTriggers = [],
+          isActive = 0
+        } = data;
+
+        if (!campaignId || !name || !name.trim()) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha e Nome da cena são obrigatórios.' }), { status: 400, headers });
+        }
+
+        const campaign = await dbQueries.getCampaignById(db, campaignId);
+        if (!campaign) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
+        }
+
+        const isOwner = campaign.owner_id === user.userId;
+        const isAdmin = ['admin', 'superadmin'].includes(user.role);
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, campaignId, user.userId) || 'jogador');
+        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+
+        if (!isGm) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o Mestre pode criar cenas nesta campanha.' }), { status: 403, headers });
+        }
+
+        const sceneId = randomUUID();
+        await dbQueries.createScene(db, {
+          id: sceneId,
+          campaignId,
+          name: name.trim(),
+          description: description.trim(),
+          imageUrl: imageUrl.trim(),
+          model: model.trim(),
+          modelData,
+          rulesData,
+          styleData,
+          stateData,
+          maxPlayers,
+          xpTriggers,
+          isActive
+        });
+
+        const createdScene = await dbQueries.getSceneById(db, sceneId);
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: 'Cena criada com sucesso!',
+          dados: createdScene
+        }), { status: 200, headers });
+      }
+
+      case 'campaigns.scenes.update': {
+        const {
+          sceneId,
+          name,
+          description,
+          imageUrl,
+          model,
+          modelData,
+          rulesData,
+          styleData,
+          stateData,
+          maxPlayers,
+          xpTriggers,
+          isActive
+        } = data;
+
+        if (!sceneId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da cena obrigatório.' }), { status: 400, headers });
+        }
+
+        const scene = await dbQueries.getSceneById(db, sceneId);
+        if (!scene) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Cena não encontrada.' }), { status: 404, headers });
+        }
+
+        const campaign = await dbQueries.getCampaignById(db, scene.campaign_id);
+        const isOwner = campaign && campaign.owner_id === user.userId;
+        const isAdmin = ['admin', 'superadmin'].includes(user.role);
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, scene.campaign_id, user.userId) || 'jogador');
+        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+
+        if (!isGm) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o Mestre pode editar esta cena.' }), { status: 403, headers });
+        }
+
+        await dbQueries.updateScene(db, sceneId, {
+          name,
+          description,
+          imageUrl,
+          model,
+          modelData,
+          rulesData,
+          styleData,
+          stateData,
+          maxPlayers,
+          xpTriggers,
+          isActive
+        });
+
+        const updatedScene = await dbQueries.getSceneById(db, sceneId);
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: 'Cena atualizada com sucesso!',
+          dados: updatedScene
+        }), { status: 200, headers });
+      }
+
+      case 'campaigns.scenes.delete': {
+        const { sceneId } = data;
+        if (!sceneId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da cena obrigatório.' }), { status: 400, headers });
+        }
+
+        const scene = await dbQueries.getSceneById(db, sceneId);
+        if (!scene) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Cena não encontrada.' }), { status: 404, headers });
+        }
+
+        const campaign = await dbQueries.getCampaignById(db, scene.campaign_id);
+        const isOwner = campaign && campaign.owner_id === user.userId;
+        const isAdmin = ['admin', 'superadmin'].includes(user.role);
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, scene.campaign_id, user.userId) || 'jogador');
+        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+
+        if (!isGm) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o Mestre pode excluir esta cena.' }), { status: 403, headers });
+        }
+
+        await dbQueries.deleteScene(db, sceneId);
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: 'Cena excluída com sucesso.'
+        }), { status: 200, headers });
+      }
+
+      case 'campaigns.scenes.setActive': {
+        const { campaignId, sceneId } = data;
+        if (!campaignId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha obrigatório.' }), { status: 400, headers });
+        }
+
+        const campaign = await dbQueries.getCampaignById(db, campaignId);
+        if (!campaign) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
+        }
+
+        const isOwner = campaign.owner_id === user.userId;
+        const isAdmin = ['admin', 'superadmin'].includes(user.role);
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, campaignId, user.userId) || 'jogador');
+        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+
+        if (!isGm) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o Mestre pode definir a cena ativa da mesa.' }), { status: 403, headers });
+        }
+
+        await dbQueries.setActiveScene(db, campaignId, sceneId);
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: 'Cena ativa definida com sucesso!'
+        }), { status: 200, headers });
+      }
+
+      case 'campaigns.scenes.updateState': {
+        const { sceneId, stateData } = data;
+        if (!sceneId || !stateData) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da cena e estado são obrigatórios.' }), { status: 400, headers });
+        }
+
+        await dbQueries.updateSceneState(db, sceneId, stateData);
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: 'Estado da cena sincronizado.'
+        }), { status: 200, headers });
+      }
+
+      case 'campaigns.scenes.triggerAction': {
+        const { sceneId, triggerType, triggerParams = {}, characterId } = data;
+        if (!sceneId || !triggerType) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da cena e tipo de gatilho são obrigatórios.' }), { status: 400, headers });
+        }
+
+        const scene = await dbQueries.getSceneById(db, sceneId);
+        if (!scene) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Cena não encontrada.' }), { status: 404, headers });
+        }
+
+        let rules = [];
+        try {
+          rules = typeof scene.rules_data === 'string' ? JSON.parse(scene.rules_data) : (scene.rules_data || []);
+        } catch (_) {}
+
+        // Encontra regras que combinam com o gatilho
+        const matchingRules = rules.filter(r => {
+          if (r.when !== triggerType) return false;
+          if (triggerType === 'on_tile_click' || triggerType === 'on_tile_enter') {
+            return (r.params?.x === triggerParams.x && r.params?.y === triggerParams.y) || (!r.params?.x && !r.params?.y);
+          }
+          return true;
+        });
+
+        const executedEffects = [];
+        let updatedSheet = null;
+
+        // Se houver personagem associado, podemos aplicar efeitos na ficha
+        let char = null;
+        if (characterId) {
+          char = await dbQueries.getCharacterById(db, characterId);
+        }
+
+        for (const rule of matchingRules) {
+          const effect = rule.then;
+          const effectParams = rule.effectParams || {};
+
+          // 1. Dano / Cura na Anima
+          if (effect === 'apply_damage' || effect === 'heal_anima') {
+            const amount = Number(effectParams.amount) || 1;
+            if (char) {
+              let sheet = {};
+              try { sheet = typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data) : (char.sheet_data || {}); } catch(_) {}
+              const curAnima = sheet.anima !== undefined ? sheet.anima : (sheet.max_anima || 10);
+              const maxAnima = sheet.max_anima || 10;
+              
+              const newAnima = effect === 'apply_damage' 
+                ? Math.max(0, curAnima - amount) 
+                : Math.min(maxAnima, curAnima + amount);
+              
+              sheet.anima = newAnima;
+              await dbQueries.updateCharacterSheet(db, char.id, sheet);
+              updatedSheet = sheet;
+              executedEffects.push({ effect, amount, newAnima });
+            }
+          }
+          // 2. Concessão de XP
+          else if (effect === 'award_xp') {
+            const xpAmount = Number(effectParams.amount) || 1;
+            if (char) {
+              let sheet = {};
+              try { sheet = typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data) : (char.sheet_data || {}); } catch(_) {}
+              sheet.xp = (Number(sheet.xp) || 0) + xpAmount;
+              await dbQueries.updateCharacterSheet(db, char.id, sheet);
+              updatedSheet = sheet;
+              executedEffects.push({ effect, amount: xpAmount, totalXp: sheet.xp });
+            }
+          }
+          // 3. Concessão de Item
+          else if (effect === 'award_item') {
+            const itemName = effectParams.itemName || 'Item Encontrado';
+            if (char) {
+              let sheet = {};
+              try { sheet = typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data) : (char.sheet_data || {}); } catch(_) {}
+              sheet.inventario = Array.isArray(sheet.inventario) ? sheet.inventario : [];
+              sheet.inventario.push({
+                nome: itemName,
+                descricao: effectParams.itemDesc || 'Item obtido em cena',
+                quantidade: Number(effectParams.quantidade) || 1
+              });
+              await dbQueries.updateCharacterSheet(db, char.id, sheet);
+              updatedSheet = sheet;
+              executedEffects.push({ effect, itemName });
+            }
+          }
+          // 4. Deletar ou Alterar Tile da Cena
+          else if (effect === 'delete_tile' || effect === 'change_tile') {
+            let modelData = {};
+            try { modelData = typeof scene.model_data === 'string' ? JSON.parse(scene.model_data) : (scene.model_data || {}); } catch(_) {}
+            const layer = effectParams.layer || 'layer2';
+            const x = effectParams.x !== undefined ? effectParams.x : triggerParams.x;
+            const y = effectParams.y !== undefined ? effectParams.y : triggerParams.y;
+            const newTileVal = effect === 'delete_tile' ? 0 : (effectParams.newTileId || 0);
+
+            if (modelData[layer] && Array.isArray(modelData[layer][y])) {
+              modelData[layer][y][x] = newTileVal;
+              await dbQueries.updateScene(db, sceneId, { modelData });
+              executedEffects.push({ effect, layer, x, y, newTileVal });
+            }
+          }
+          // 5. Transição / Teleporte para outra Cena
+          else if (effect === 'transfer_scene') {
+            const targetSceneId = effectParams.targetSceneId;
+            executedEffects.push({ effect: 'transfer_scene', targetSceneId });
+          }
+          // 6. Registro no Diário
+          else if (effect === 'log_diary') {
+            const logText = effectParams.text || 'Acontecimento registrado na cena.';
+            executedEffects.push({ effect: 'log_diary', text: logText });
+          }
+        }
+
+        return new Response(JSON.stringify({
+          sucesso: true,
+          executedEffects,
+          updatedSheet
+        }), { status: 200, headers });
+      }
+
       // PERSONAGENS: As ações 'characters.list', 'characters.create', 'characters.get', 'characters.listHierarchical'
       // e 'campaigns.characters.list' estão integradas na seção do AlphaD6 / Motor RPG abaixo.
 
@@ -1201,6 +1539,44 @@ export async function handleSyncRequest(request, env, clientIp) {
           sucesso: true,
           dados: savedMsg,
           mensagem: savedMsg
+        }), { status: 200, headers });
+      }
+
+      case 'chat.editMessage': {
+        const { campaignId, messageId, content } = data;
+        if (!campaignId || !messageId || !content || !content.trim()) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha, da mensagem e conteúdo são obrigatórios.' }), { status: 400, headers });
+        }
+
+        const campaign = await dbQueries.getCampaignById(db, campaignId);
+        if (!campaign) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Campanha não encontrada.' }), { status: 404, headers });
+        }
+
+        const msg = await dbQueries.getCampaignMessageById(db, messageId);
+        if (!msg || msg.campaign_id !== campaignId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Mensagem não encontrada.' }), { status: 404, headers });
+        }
+
+        const isOwner = campaign.owner_id === user.userId;
+        const isAdmin = ['admin', 'superadmin'].includes(user.role);
+        const playerRole = isOwner ? 'mestre' : (await dbQueries.getCampaignPlayerRole(db, campaignId, user.userId) || 'jogador');
+        const isGm = isOwner || isAdmin || playerRole.toLowerCase().includes('mestre') || playerRole.toLowerCase().includes('assistente');
+        const isAuthor = msg.user_id === user.userId;
+
+        if (!isAuthor && !isGm) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Você não tem permissão para editar esta mensagem.' }), { status: 403, headers });
+        }
+
+        // Não permite editar mensagens de dados ou cards de ação para preservar histórico íntegro
+        if (msg.msg_type === 'roll' || msg.msg_type === 'action_card') {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Rolagens de dados e cartas de ação não podem ser editadas.' }), { status: 400, headers });
+        }
+
+        await dbQueries.updateCampaignMessageContent(db, messageId, campaignId, sanitizeText(content.trim(), 2000));
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: 'Mensagem editada com sucesso.'
         }), { status: 200, headers });
       }
 

@@ -441,60 +441,29 @@
     }
 
     .msg-card:hover {
-      border-color: rgba(212, 163, 75, 0.3);
+      border-color: rgba(212, 163, 75, 0.35);
       background: var(--bg-card-hover);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     }
 
-    /* Toolbar Flutuante de Ações na Mensagem */
-    .msg-card-toolbar {
-      position: absolute;
-      top: 8px;
-      right: 12px;
-      display: none;
-      align-items: center;
-      gap: 4px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      padding: 2px 4px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      z-index: 5;
-    }
-
-    .msg-card:hover .msg-card-toolbar {
-      display: flex;
-    }
-
-    .msg-action-icon-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      padding: 3px 6px;
-      font-size: 11px;
-      border-radius: 4px;
-      transition: all var(--transition-fast);
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-    }
-
-    .msg-action-icon-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-    }
-
-    .msg-action-icon-btn.btn-del:hover {
-      background: rgba(239, 68, 68, 0.2);
-      color: #f87171;
+    .msg-card.msg-mine {
+      background: rgba(25, 25, 45, 0.7);
     }
 
     /* Cabeçalho da Mensagem */
     .msg-card-header {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 10px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+    }
+
+    .msg-author-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .msg-avatar {
@@ -510,13 +479,7 @@
       font-size: 11px;
       font-weight: 700;
       flex-shrink: 0;
-    }
-
-    .msg-author-box {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
+      overflow: hidden;
     }
 
     .msg-author-name {
@@ -530,40 +493,113 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      padding: 2px 6px;
+      padding: 2px 7px;
       border-radius: var(--radius-pill);
       background: rgba(255, 255, 255, 0.06);
       color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .msg-role-tag.tag-mestre {
-      background: rgba(212, 163, 75, 0.2);
-      border: 1px solid var(--border-gold);
+      background: rgba(212, 163, 75, 0.18);
+      border-color: var(--border-gold);
       color: var(--gold-light);
     }
 
     .msg-role-tag.tag-npc {
       background: rgba(168, 85, 247, 0.2);
-      border: 1px solid rgba(168, 85, 247, 0.4);
+      border-color: rgba(168, 85, 247, 0.4);
       color: #c084fc;
     }
 
     .msg-role-tag.tag-ooc {
       background: rgba(100, 116, 139, 0.2);
+      border-color: rgba(100, 116, 139, 0.4);
       color: #94a3b8;
     }
 
     .msg-role-tag.tag-whisper {
       background: rgba(168, 85, 247, 0.25);
-      border: 1px solid rgba(168, 85, 247, 0.5);
+      border-color: rgba(168, 85, 247, 0.5);
       color: #d8b4fe;
+    }
+
+    .msg-role-tag.tag-secret {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+
+    .msg-role-tag.tag-action {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: rgba(245, 158, 11, 0.5);
+      color: #fcd34d;
+    }
+
+    /* Meta & Toolbar de Ações na Mensagem */
+    .msg-meta-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .msg-timestamp {
       font-size: 10.5px;
       color: var(--text-dim);
-      margin-left: auto;
-      margin-right: 48px; /* Espaço para toolbar */
+      white-space: nowrap;
+    }
+
+    .msg-card-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.85;
+      transition: opacity var(--transition-fast);
+    }
+
+    .msg-card:hover .msg-card-toolbar {
+      opacity: 1;
+    }
+
+    .msg-action-icon-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 7px;
+      font-size: 11px;
+      border-radius: var(--radius-sm);
+      transition: all var(--transition-fast);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      line-height: 1;
+    }
+
+    .msg-action-icon-btn:hover {
+      background: rgba(212, 163, 75, 0.15);
+      color: var(--gold-light);
+      border-color: var(--gold-primary);
+      transform: translateY(-1px);
+    }
+
+    .msg-action-icon-btn.btn-edit:hover {
+      background: rgba(212, 163, 75, 0.2);
+      color: var(--gold-light);
+      border-color: var(--gold-primary);
+    }
+
+    .msg-action-icon-btn.btn-del:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    .msg-action-icon-btn.btn-reply:hover {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.5);
     }
 
     /* Bloco de Citação / Resposta */
@@ -605,7 +641,7 @@
     .msg-card.msg-ooc {
       background: rgba(15, 15, 26, 0.7);
       border-left: 3px solid #64748b;
-      opacity: 0.9;
+      opacity: 0.92;
     }
     .msg-card.msg-ooc .msg-card-content {
       color: var(--text-muted);
@@ -656,9 +692,106 @@
       border-left: 3px solid #10b981;
       background: rgba(16, 185, 129, 0.04);
     }
-    .msg-card.msg-roll .msg-card-content {
-      font-size: 13.5px;
-      color: #f1f5f9;
+
+    .roll-result-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.07) 0%, rgba(12, 12, 24, 0.9) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      margin-top: 4px;
+    }
+
+    .roll-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .roll-title {
+      font-size: 13px;
+      color: var(--gold-light);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .roll-formula {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: monospace;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .roll-dice-pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .die-face {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #19192e;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      font-weight: 800;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 3px 6px rgba(0, 0, 0, 0.4);
+      transition: all var(--transition-fast);
+    }
+
+    .die-face.success {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      color: #ffffff;
+      border-color: #34d399;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.4);
+      transform: scale(1.05);
+    }
+
+    .die-face.fail {
+      background: #18141f;
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      opacity: 0.75;
+    }
+
+    .roll-total-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .roll-total-pill.roll-success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    .roll-total-pill.roll-partial {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    .roll-total-pill.roll-fail {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
     }
 
     /* 7. Card de Ação Interativa (action_card) */
@@ -667,13 +800,12 @@
       border-left: 4px solid #f59e0b;
       background: rgba(245, 158, 11, 0.05);
     }
-    .action-card-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(245, 158, 11, 0.2);
+
+    .action-card-box {
+      background: rgba(18, 18, 30, 0.8);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
     }
 
     /* BANNER DE RESPOSTA ATIVA */
@@ -1407,6 +1539,706 @@
       background: rgba(239, 68, 68, 0.03);
     }
 
+    /* ========================================================
+       ESTILOS DA OFICINA DO MESTRE (VIEW-OFICINA)
+       ======================================================== */
+    .oficina-container {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      height: 100%;
+      min-height: calc(100vh - 120px);
+    }
+
+    .oficina-sidebar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+    }
+
+    .oficina-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .oficina-title {
+      font-family: var(--font-title);
+      font-size: 16px;
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .oficina-scene-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 4px;
+    }
+
+    .scene-card-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+    }
+
+    .scene-card-item:hover {
+      border-color: rgba(212, 163, 75, 0.4);
+      background: var(--bg-card-hover);
+      transform: translateX(2px);
+    }
+
+    .scene-card-item.selected {
+      border-color: var(--gold-primary);
+      background: rgba(212, 163, 75, 0.1);
+      box-shadow: 0 0 14px rgba(212, 163, 75, 0.15);
+    }
+
+    .scene-card-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .scene-card-title {
+      font-weight: 700;
+      font-size: 13.5px;
+      color: #fff;
+    }
+
+    .scene-badge-model {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+    }
+
+    .scene-badge-model.badge-grid { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .scene-badge-model.badge-mahjong { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+    .scene-badge-model.badge-password { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .scene-badge-model.badge-dialogue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+
+    .scene-active-pill {
+      font-size: 10px;
+      color: #34d399;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .oficina-editor {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .editor-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .editor-tabs-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 10px;
+    }
+
+    .editor-tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition-fast);
+    }
+
+    .editor-tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .editor-tab-btn.active {
+      color: var(--gold-light);
+      background: rgba(212, 163, 75, 0.12);
+      border-color: var(--border-gold);
+    }
+
+    /* Ferramenta de Pintura de Mapas (Paint Tool & Layers) */
+    .paint-toolbar-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: var(--bg-card);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .layer-selector-group {
+      display: flex;
+      gap: 6px;
+      background: var(--bg-surface);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .layer-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .layer-btn.active {
+      background: var(--gold-primary);
+      color: var(--text-dark);
+    }
+
+    .paint-tools-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tool-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all var(--transition-fast);
+    }
+
+    .tool-btn:hover {
+      border-color: var(--gold-primary);
+      color: var(--gold-light);
+    }
+
+    .tool-btn.active {
+      background: rgba(212, 163, 75, 0.2);
+      border-color: var(--gold-primary);
+      color: var(--gold-light);
+    }
+
+    .asset-palette-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .asset-palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+      gap: 6px;
+      max-height: 140px;
+      overflow-y: auto;
+      padding: 6px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+    }
+
+    .asset-palette-item {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      position: relative;
+    }
+
+    .asset-palette-item:hover {
+      border-color: var(--gold-primary);
+      transform: scale(1.08);
+    }
+
+    .asset-palette-item.active {
+      border-color: var(--gold-primary);
+      background: rgba(212, 163, 75, 0.2);
+      box-shadow: 0 0 10px rgba(212, 163, 75, 0.3);
+    }
+
+    /* Grade de Pintura / Canvas do Grid */
+    .grid-paint-viewport {
+      width: 100%;
+      height: 460px;
+      background: #0d0d18;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      overflow: auto;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: crosshair;
+    }
+
+    .grid-board-table {
+      border-collapse: collapse;
+      user-select: none;
+    }
+
+    .grid-board-cell {
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: #11111d;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 16px;
+      position: relative;
+      transition: background var(--transition-fast);
+    }
+
+    .grid-board-cell:hover {
+      background: rgba(212, 163, 75, 0.15);
+      outline: 1px solid var(--gold-primary);
+    }
+
+    .grid-board-cell .cell-l1,
+    .grid-board-cell .cell-l2,
+    .grid-board-cell .cell-l3 {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .grid-board-cell .cell-l2 { z-index: 2; }
+    .grid-board-cell .cell-l3 { z-index: 3; opacity: 0.9; }
+
+    /* Construtor No-Code de Gatilhos */
+    .triggers-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .trigger-rule-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-left: 4px solid var(--gold-primary);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .trigger-rule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .trigger-rule-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--gold-light);
+    }
+
+    .trigger-rule-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* ========================================================
+       ESTILOS DO PALCO DE CENAS ATIVAS (VIEW-CENAS)
+       ======================================================== */
+    .scene-stage-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      background: #080811;
+    }
+
+    .scene-top-hud {
+      position: absolute;
+      top: 16px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .scene-hud-card {
+      background: rgba(16, 16, 29, 0.92);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-md);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      pointer-events: auto;
+    }
+
+    .scene-hud-title {
+      font-family: var(--font-title);
+      font-size: 14px;
+      color: var(--gold-light);
+      font-weight: 700;
+    }
+
+    /* Grid Canvas Interativo no Palco */
+    .scene-grid-viewport {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+      background-color: #0b0b14;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .scene-interactive-grid {
+      position: relative;
+      border-collapse: collapse;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+      user-select: none;
+    }
+
+    .scene-interactive-grid td {
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(212, 163, 75, 0.12);
+      background: #11111e;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 20px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .scene-interactive-grid td:hover {
+      background: rgba(212, 163, 75, 0.2);
+    }
+
+    /* Token do Personagem no Grid */
+    .grid-token-entity {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--gold-dark);
+      border: 2px solid var(--gold-primary);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      z-index: 10;
+      box-shadow: 0 0 12px rgba(212, 163, 75, 0.6);
+      transition: all 0.18s ease-out;
+      pointer-events: none;
+    }
+
+    .grid-token-entity.token-player {
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    }
+
+    .grid-token-name {
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 1px 4px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    /* Gamepad Virtual Mobile */
+    .mobile-virtual-dpad {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      display: none;
+      grid-template-columns: repeat(3, 46px);
+      grid-template-rows: repeat(3, 46px);
+      gap: 4px;
+      z-index: 50;
+    }
+
+    .dpad-btn {
+      background: rgba(16, 16, 29, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-sm);
+      color: var(--gold-light);
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .dpad-btn:active {
+      background: var(--gold-primary);
+      color: var(--text-dark);
+    }
+
+    /* Minijogo: Mahjong / Memória */
+    .mahjong-stage-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 40px 20px;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .mahjong-grid-board {
+      display: grid;
+      grid-template-columns: repeat(4, 70px);
+      gap: 12px;
+    }
+
+    .mahjong-tile-card {
+      width: 70px;
+      height: 90px;
+      background: linear-gradient(135deg, #1e1e32 0%, #121220 100%);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+      transition: all var(--transition-fast);
+      user-select: none;
+    }
+
+    .mahjong-tile-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--gold-light);
+      box-shadow: 0 8px 20px rgba(212, 163, 75, 0.25);
+    }
+
+    .mahjong-tile-card.bomb {
+      background: linear-gradient(135deg, #ef4444 0%, #c084fc 100%);
+      border-color: #f87171;
+    }
+
+    .mahjong-tile-card.hidden {
+      background: #141424;
+      color: var(--gold-light);
+      font-weight: 700;
+    }
+
+    /* Minijogo: Senha / Cofre */
+    .password-stage-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 40px 20px;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .password-slots-container {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .password-slot-box {
+      width: 64px;
+      height: 74px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-card);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      transition: all var(--transition-fast);
+    }
+
+    .password-slot-box.hint-exact {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+
+    .password-slot-box.hint-high {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+
+    .password-slot-box.hint-low {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+    }
+
+    /* Minijogo: Árvore de Diálogos */
+    .dialogue-stage-box {
+      width: 100%;
+      max-width: 680px;
+      background: rgba(16, 16, 29, 0.95);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin: 40px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
+    }
+
+    .dialogue-speaker-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dialogue-speaker-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid var(--gold-primary);
+      background: var(--bg-deep);
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dialogue-speaker-name {
+      font-family: var(--font-title);
+      font-size: 16px;
+      color: var(--gold-light);
+    }
+
+    .dialogue-text-bubble {
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: #e2e8f0;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--gold-primary);
+    }
+
+    .dialogue-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .dialogue-choice-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 13.5px;
+      text-align: left;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dialogue-choice-btn:hover {
+      border-color: var(--gold-primary);
+      background: rgba(212, 163, 75, 0.15);
+      transform: translateX(4px);
+    }
+
     /* Responsividade e Otimizações Mobile (Gaveta & Barra Inferior) em campanha.html */
     .mobile-header-bar {
       display: none;
@@ -1419,8 +2251,13 @@
     }
 
     @media (max-width: 768px) {
-      .mobile-header-bar {
-        display: flex;
+      .oficina-container {
+        grid-template-columns: 1fr;
+      }
+      .mobile-virtual-dpad {
+        display: grid;
+      }
+    }
         align-items: center;
         justify-content: space-between;
         position: fixed;
@@ -1869,22 +2706,346 @@
       </div>
     </section>
 
-    <!-- ABA 3: CENAS -->
-    <section id="view-cenas" class="view-section">
-      <div class="vtt-canvas">
-        [ Renderizador de Grid VTT e Imagens da Cena ]
+    <!-- ABA 3: CENAS (PALCO INTERATIVO) -->
+    <section id="view-cenas" class="view-section" style="padding: 0; position: relative; height: 100%; overflow: hidden;">
+      <div class="scene-stage-container" id="scene-stage-container">
+        
+        <!-- HUD SUPERIOR DO PALCO -->
+        <div class="scene-top-hud">
+          <div class="scene-hud-card">
+            <span style="font-size: 18px;" id="scene-hud-model-icon">🗺️</span>
+            <div>
+              <div class="scene-hud-title" id="scene-hud-title">Sem Cena Ativa</div>
+              <div style="font-size: 11px; color: var(--text-dim);" id="scene-hud-model-name">Nenhuma cena selecionada</div>
+            </div>
+            <select id="scene-player-selector" class="form-control" style="padding: 4px 8px; font-size: 12px; width: auto; display: none;" onchange="aoTrocarCenaNoPalco(this.value)">
+              <!-- Opções de cenas preenchidas dinamicamente -->
+            </select>
+          </div>
+
+          <div class="scene-hud-card" id="scene-hud-stats-box" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 14px;">❤️ Anima:</span>
+              <span id="scene-hud-anima-val" style="font-weight: 700; color: #f87171;">--/--</span>
+            </div>
+            <span style="color: var(--border-card);">|</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 14px;">⚡ XP:</span>
+              <span id="scene-hud-xp-val" style="font-weight: 700; color: var(--gold-light);">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEWPORT PRINCIPAL (MODELO 1: GRID TÁTICO) -->
+        <div class="scene-grid-viewport" id="scene-grid-viewport">
+          <div id="scene-grid-placeholder" style="text-align: center; color: var(--text-dim);">
+            <div style="font-size: 36px; margin-bottom: 8px;">🌌</div>
+            <p>Nenhuma cena ativa no momento.</p>
+            <p style="font-size: 12px; color: var(--text-dim);">O Mestre pode ativar uma cena na Oficina.</p>
+          </div>
+          <table class="scene-interactive-grid" id="scene-interactive-grid" style="display: none;">
+            <!-- Células geradas via JavaScript -->
+          </table>
+        </div>
+
+        <!-- CONTAINER MODELO 2: MAHJONG / MEMÓRIA -->
+        <div class="mahjong-stage-box" id="scene-mahjong-viewport" style="display: none;">
+          <div style="text-align: center;">
+            <h2 style="font-family: var(--font-title); color: var(--gold-light); font-size: 1.3rem; margin-bottom: 4px;" id="mahjong-title">Desafio de Memória & Minas</h2>
+            <p style="color: var(--text-muted); font-size: 13px;" id="mahjong-desc">Encontre os pares das relíquias arcanas. Cuidado com as bombas ocultas!</p>
+            <div style="display: flex; justify-content: center; gap: 16px; margin-top: 10px;">
+              <span class="pill-stat pill-defense" id="mahjong-score-pill">Pares: 0/0</span>
+              <span class="pill-stat pill-anima" id="mahjong-bombs-pill">Bombas: 0</span>
+            </div>
+          </div>
+          <div class="mahjong-grid-board" id="mahjong-grid-board">
+            <!-- Cartas geradas via JavaScript -->
+          </div>
+        </div>
+
+        <!-- CONTAINER MODELO 3: SENHA / COFRE -->
+        <div class="password-stage-box" id="scene-password-viewport" style="display: none;">
+          <div style="text-align: center;">
+            <h2 style="font-family: var(--font-title); color: var(--gold-light); font-size: 1.3rem; margin-bottom: 4px;" id="password-title">Cofre Rúnico</h2>
+            <p style="color: var(--text-muted); font-size: 13px;" id="password-desc">Decifre o código para abrir o mecanismo ancestral.</p>
+            <div style="margin-top: 8px; font-size: 12px; color: var(--gold-primary);" id="password-feedback-msg">Insira a combinação e pressione Confirmar</div>
+          </div>
+
+          <div class="password-slots-container" id="password-slots-container">
+            <!-- Slots gerados via JavaScript -->
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <button type="button" class="btn-secondary" onclick="limparSenhaCofre()">Limpar</button>
+            <button type="button" class="btn-primary" onclick="submeterSenhaCofre()">Confirmar Combinação</button>
+          </div>
+        </div>
+
+        <!-- CONTAINER MODELO 4: ÁRVORE DE DIÁLOGOS -->
+        <div class="dialogue-stage-box" id="scene-dialogue-viewport" style="display: none;">
+          <div class="dialogue-speaker-row">
+            <div class="dialogue-speaker-avatar" id="dialogue-avatar">🧙</div>
+            <div>
+              <div class="dialogue-speaker-name" id="dialogue-speaker-name">Guardião da Cripta</div>
+              <div style="font-size: 11px; color: var(--text-dim);" id="dialogue-speaker-title">Entidade Antiga</div>
+            </div>
+          </div>
+
+          <div class="dialogue-text-bubble" id="dialogue-text-bubble">
+            "Quem ousa perturbar o sono eterno dos fundadores? Diga-me o que busca ou pereça nas sombras..."
+          </div>
+
+          <div class="dialogue-options-list" id="dialogue-options-list">
+            <!-- Botões de escolha gerados via JavaScript -->
+          </div>
+        </div>
+
+        <!-- GAMEPAD VIRTUAL MOBILE PARA O GRID -->
+        <div class="mobile-virtual-dpad" id="mobile-virtual-dpad">
+          <div></div>
+          <button class="dpad-btn" onclick="moverTokenDirecao(0, -1)" title="Mover para Cima">▲</button>
+          <div></div>
+          <button class="dpad-btn" onclick="moverTokenDirecao(-1, 0)" title="Mover para Esquerda">◀</button>
+          <button class="dpad-btn" onclick="interagirTileAtual()" title="Interagir" style="font-size: 14px; font-weight: 700;">OK</button>
+          <button class="dpad-btn" onclick="moverTokenDirecao(1, 0)" title="Mover para Direita">▶</button>
+          <div></div>
+          <button class="dpad-btn" onclick="moverTokenDirecao(0, 1)" title="Mover para Baixo">▼</button>
+          <div></div>
+        </div>
+
       </div>
     </section>
 
 
-    <!-- ABA 4: OFICINA -->
+    <!-- ABA 4: OFICINA DO MESTRE -->
     <section id="view-oficina" class="view-section">
-      <h1 class="page-title">Oficina do Mestre</h1>
-      <div class="card">
-        <p style="color: var(--text-muted);">Área exclusiva para o Mestre. Aqui você gerencia cenas, lógicas da campanha
-          e edita o compêndio do sistema.</p>
-        <br>
-        <button class="chat-btn" style="padding: 12px 24px;">Carregar Editor de Fluxo de Cenas</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h1 class="page-title" style="margin: 0;">Oficina do Mestre</h1>
+          <p style="color: var(--text-muted); font-size: 13px; margin: 4px 0 0 0;">
+            Crie e edite cenários táticos, masmorras interativas, quebra-cabeças, cofres e árvores de diálogo.
+          </p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-secondary" onclick="criarNovaCenaOficina()">
+            ➕ Nova Cena
+          </button>
+          <button type="button" class="btn-primary" onclick="salvarCenaAtualOficina()" id="btn-save-oficina-scene">
+            💾 Salvar Alterações
+          </button>
+        </div>
+      </div>
+
+      <div class="oficina-container">
+        <!-- BARRA LATERAL DA OFICINA: LISTA DE CENAS -->
+        <div class="oficina-sidebar-scenes">
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--gold-light); letter-spacing: 0.5px;">Cenas da Campanha</span>
+            <span class="badge-players-count" id="oficina-scenes-count">0 Cenas</span>
+          </div>
+
+          <div class="oficina-scenes-list" id="oficina-scenes-list">
+            <div style="text-align: center; color: var(--text-dim); padding: 30px 10px; font-size: 12.5px;">
+              Carregando lista de cenas...
+            </div>
+          </div>
+        </div>
+
+        <!-- ÁREA PRINCIPAL DO EDITOR -->
+        <div class="oficina-editor-main" id="oficina-editor-main">
+          <!-- CABEÇALHO DO EDITOR -->
+          <div class="oficina-editor-header">
+            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+              <input type="text" id="oficina-scene-name-input" class="form-control" style="font-size: 16px; font-weight: 700; color: var(--gold-light); max-width: 320px;" placeholder="Nome da Cena...">
+              
+              <select id="oficina-scene-model-select" class="form-control" style="width: auto;" onchange="aoMudarModeloCenaOficina(this.value)">
+                <option value="tactical_grid">🗺️ Grid Tático (3 Camadas)</option>
+                <option value="puzzle_mahjong">🃏 Puzzle: Memória / Mahjong</option>
+                <option value="puzzle_password">🔢 Puzzle: Senha / Cofre</option>
+                <option value="dialogue_tree">💬 Árvore de Diálogos (Visual Novel)</option>
+                <option value="turn_combat">⚔️ Combate por Turnos</option>
+              </select>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" class="btn-secondary" id="btn-toggle-active-scene" onclick="tornarCenaAtivaOficina()" title="Ativar para todos os jogadores na mesa">
+                ⭐ Tornar Ativa
+              </button>
+              <button type="button" class="btn-delete-char-party" onclick="excluirCenaOficina()" title="Excluir esta cena">
+                🗑️
+              </button>
+            </div>
+          </div>
+
+          <!-- ABAS INTERNAS DO EDITOR DA CENA -->
+          <div style="display: flex; gap: 4px; padding: 0 16px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface);">
+            <button type="button" class="btn-secondary active" id="tab-btn-oficina-visual" onclick="trocarAbaInternaOficina('visual')" style="border-radius: var(--radius-sm) var(--radius-sm) 0 0; padding: 8px 16px; font-size: 12.5px;">
+              🎨 Editor Visual / Grid
+            </button>
+            <button type="button" class="btn-secondary" id="tab-btn-oficina-config" onclick="trocarAbaInternaOficina('config')" style="border-radius: var(--radius-sm) var(--radius-sm) 0 0; padding: 8px 16px; font-size: 12.5px;">
+              ⚙️ Regras do Modelo
+            </button>
+            <button type="button" class="btn-secondary" id="tab-btn-oficina-triggers" onclick="trocarAbaInternaOficina('triggers')" style="border-radius: var(--radius-sm) var(--radius-sm) 0 0; padding: 8px 16px; font-size: 12.5px;">
+              ⚡ Gatilhos & No-Code
+            </button>
+          </div>
+
+          <!-- CONTEÚDO DO EDITOR -->
+          <div class="oficina-editor-body" style="padding: 16px; overflow-y: auto; flex: 1;">
+            
+            <!-- ABA INTERNA 1: EDITOR VISUAL DE GRID (Para Grid Tático) -->
+            <div id="oficina-pane-visual">
+              <!-- TOOLBAR DO PINCEL -->
+              <div class="paint-toolbar-container">
+                <!-- Seletor de Camadas -->
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <span style="font-size: 11px; font-weight: 700; color: var(--gold-light); text-transform: uppercase;">Camada:</span>
+                  <button type="button" class="layer-btn active" id="layer-btn-1" onclick="selecionarCamadaPintura(1)">1: Chão</button>
+                  <button type="button" class="layer-btn" id="layer-btn-2" onclick="selecionarCamadaPintura(2)">2: Obstáculo</button>
+                  <button type="button" class="layer-btn" id="layer-btn-3" onclick="selecionarCamadaPintura(3)">3: Teto/Luz</button>
+                </div>
+
+                <!-- Seletor de Ferramenta -->
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <button type="button" class="btn-secondary active" id="tool-btn-brush" onclick="selecionarFerramentaPintura('brush')">🖌️ Pincel</button>
+                  <button type="button" class="btn-secondary" id="tool-btn-eraser" onclick="selecionarFerramentaPintura('eraser')">🧹 Borracha</button>
+                  <button type="button" class="btn-secondary" id="tool-btn-fill" onclick="selecionarFerramentaPintura('fill')">🪣 Preencher</button>
+                </div>
+
+                <!-- Dimensões do Grid -->
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <span style="font-size: 11px; color: var(--text-dim);">Tam:</span>
+                  <input type="number" id="grid-dim-rows" class="form-control" style="width: 54px; padding: 4px 6px; font-size: 12px;" min="3" max="50" value="12">
+                  <span style="font-size: 11px; color: var(--text-dim);">x</span>
+                  <input type="number" id="grid-dim-cols" class="form-control" style="width: 54px; padding: 4px 6px; font-size: 12px;" min="3" max="50" value="16">
+                  <button type="button" class="btn-secondary" onclick="redimensionarGridOficina()" style="padding: 4px 8px; font-size: 11px;">Redim</button>
+                </div>
+              </div>
+
+              <!-- PALETA DE ASSETS / TILES -->
+              <div style="margin-bottom: 12px;">
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Paleta de Elementos (Dark Fantasy):</div>
+                <div class="asset-palette-grid" id="asset-palette-grid">
+                  <!-- Gerado dinamicamente via JS com SVGs e emojis -->
+                </div>
+              </div>
+
+              <!-- CANVAS / VIEWPORT DE PINTURA DO GRID -->
+              <div class="grid-paint-viewport" id="grid-paint-viewport">
+                <table class="grid-board-table" id="grid-paint-table">
+                  <!-- Grade gerada dinamicamente via JS -->
+                </table>
+              </div>
+            </div>
+
+            <!-- ABA INTERNA 2: REGRAS E CONFIGURAÇÕES ESPECÍFICAS DO MODELO -->
+            <div id="oficina-pane-config" style="display: none;">
+              <!-- Configuração para Puzzle Mahjong -->
+              <div id="config-box-mahjong" style="display: none;" class="config-card">
+                <h3 class="config-card-title">🃏 Parâmetros do Mahjong / Memória</h3>
+                <div class="config-form-group">
+                  <label class="config-label">Tamanho da Grade</label>
+                  <select id="mahjong-cfg-size" class="form-control">
+                    <option value="4x3">12 Cartas (4x3 - Fácil)</option>
+                    <option value="4x4" selected>16 Cartas (4x4 - Padrão)</option>
+                    <option value="5x4">20 Cartas (5x4 - Desafiador)</option>
+                  </select>
+                </div>
+                <div class="config-form-group">
+                  <label class="config-label">Quantidade de Bombas Ocultas (Causam Dano na Anima)</label>
+                  <input type="number" id="mahjong-cfg-bombs" class="form-control" min="0" max="6" value="2">
+                </div>
+                <div class="config-form-group">
+                  <label class="config-label">Dano por Bomba</label>
+                  <input type="number" id="mahjong-cfg-damage" class="form-control" min="1" max="20" value="4">
+                </div>
+              </div>
+
+              <!-- Configuração para Puzzle Senha -->
+              <div id="config-box-password" style="display: none;" class="config-card">
+                <h3 class="config-card-title">🔢 Parâmetros do Cofre / Senha</h3>
+                <div class="config-form-group">
+                  <label class="config-label">Tipo de Senha</label>
+                  <select id="password-cfg-type" class="form-control" onchange="aoMudarTipoSenhaCfg(this.value)">
+                    <option value="numeric">Numérica (0 a 9)</option>
+                    <option value="symbols">Símbolos Rúnicos (Ícones)</option>
+                    <option value="letters">Letras / Palavra Arcana</option>
+                  </select>
+                </div>
+                <div class="config-form-group">
+                  <label class="config-label">Comprimento da Senha (Dígitos / Slots)</label>
+                  <input type="number" id="password-cfg-length" class="form-control" min="3" max="8" value="4">
+                </div>
+                <div class="config-form-group">
+                  <label class="config-label">Combinação Secreta Correta</label>
+                  <input type="text" id="password-cfg-secret" class="form-control" value="1337" placeholder="Ex: 1337">
+                </div>
+                <div class="config-form-group">
+                  <label class="config-label">Feedback por Cor (Verde = Exato, Azul = Menor, Vermelho = Maior)</label>
+                  <select id="password-cfg-hints" class="form-control">
+                    <option value="1">Ativado (Dicas estilo Cofre/Mastermind)</option>
+                    <option value="0">Desativado (Apenas Certo ou Errado)</option>
+                  </select>
+                </div>
+                <div class="config-form-group">
+                  <label class="config-label">Dano por Tentativa Incorreta</label>
+                  <input type="number" id="password-cfg-damage" class="form-control" min="0" max="20" value="2">
+                </div>
+              </div>
+
+              <!-- Configuração para Árvore de Diálogos -->
+              <div id="config-box-dialogue" style="display: none;" class="config-card">
+                <h3 class="config-card-title">💬 Parâmetros da Árvore de Diálogos</h3>
+                <div class="config-form-group">
+                  <label class="config-label">Nome do Interlocutor / NPC</label>
+                  <input type="text" id="dialogue-cfg-speaker" class="form-control" value="Guardião Misterioso">
+                </div>
+                <div class="config-form-group">
+                  <label class="config-label">Título / Função</label>
+                  <input type="text" id="dialogue-cfg-title" class="form-control" value="Espectro Ancestral">
+                </div>
+                <div class="config-form-group">
+                  <label class="config-label">Avatar (Emoji ou URL de Imagem)</label>
+                  <input type="text" id="dialogue-cfg-avatar" class="form-control" value="🧙">
+                </div>
+                <div class="config-form-group">
+                  <label class="config-label">Texto Inicial da Conversa</label>
+                  <textarea id="dialogue-cfg-text" class="form-control" rows="3">Quem ousa perturbar o repouso das eras?</textarea>
+                </div>
+              </div>
+
+              <!-- Mensagem padrão para Grid Tático -->
+              <div id="config-box-tactical" class="config-card">
+                <h3 class="config-card-title">🗺️ Configurações Gerais do Grid</h3>
+                <div class="config-form-group">
+                  <label class="config-label">Modo de Visibilidade & Névoa de Guerra</label>
+                  <select id="tactical-cfg-fog" class="form-control">
+                    <option value="none">Totalmente Descoberto</option>
+                    <option value="player_sight">Campo de Visão do Jogador (Raio 4 tiles)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- ABA INTERNA 3: CONSTRUTOR NO-CODE DE GATILHOS -->
+            <div id="oficina-pane-triggers" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div>
+                  <h3 style="font-family: var(--font-title); color: var(--gold-light); font-size: 1.1rem; margin: 0;">Motor de Regras [QUANDO ➔ ENTÃO]</h3>
+                  <p style="color: var(--text-muted); font-size: 12px; margin: 2px 0 0 0;">Crie automações que reagem a cliques, movimentação, acertos de enigma e alteram o mundo.</p>
+                </div>
+                <button type="button" class="btn-secondary" onclick="adicionarRegraGatilhoOficina()">
+                  ➕ Adicionar Regra
+                </button>
+              </div>
+
+              <div class="triggers-container" id="triggers-rules-list">
+                <!-- Regras dinâmicas renderizadas via JavaScript -->
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
     </section>
 
@@ -2249,6 +3410,46 @@
           <button type="submit" class="btn-primary" style="background: #a855f7; border-color: #a855f7; color: #fff;">Ativar Persona NPC</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE EDIÇÃO DE MENSAGEM DO CHAT -->
+  <div class="modal-overlay" id="modal-edit-chat-msg" onclick="if(event.target === this) fecharModalEdicaoMensagem()">
+    <div class="modal-content" style="max-width: 480px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+        <h2 class="modal-title" style="font-size: 18px; color: var(--gold-light); margin: 0; display: flex; align-items: center; gap: 8px;">
+          <span>✏️</span> Editar Mensagem
+        </h2>
+        <button type="button" class="btn-secondary" onclick="fecharModalEdicaoMensagem()" style="padding: 4px 10px; font-size: 12px;">✕</button>
+      </div>
+      <form onsubmit="salvarEdicaoMensagemSubmit(event)">
+        <input type="hidden" id="edit-msg-id">
+        <div class="form-group">
+          <label style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px; display: block;">Conteúdo da Mensagem</label>
+          <textarea id="edit-msg-content" class="form-control" rows="4" style="resize: vertical; font-size: 13.5px;" required></textarea>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn-secondary" onclick="fecharModalEdicaoMensagem()">Cancelar</button>
+          <button type="submit" class="btn-primary" style="padding: 8px 20px;">Salvar Edição</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE MENSAGEM -->
+  <div class="modal-overlay" id="modal-delete-chat-msg" onclick="if(event.target === this) fecharModalExcluirMensagem()">
+    <div class="modal-content" style="max-width: 420px;">
+      <h2 class="modal-title" style="color: #f87171; font-size: 19px; margin-bottom: 12px;">🗑️ Excluir Mensagem</h2>
+      <p style="color: var(--text-muted); font-size: 13.5px; line-height: 1.5; margin-bottom: 20px;">
+        Tem certeza que deseja apagar esta mensagem do histórico da mesa? Esta ação não pode ser desfeita.
+      </p>
+      <input type="hidden" id="delete-msg-id">
+      <div class="btn-group">
+        <button type="button" class="btn-secondary" onclick="fecharModalExcluirMensagem()">Cancelar</button>
+        <button type="button" class="btn-action-sm btn-action-ban" onclick="confirmarExclusaoMensagem()" style="padding: 10px 18px; font-size: 13px;">
+          Sim, Excluir
+        </button>
+      </div>
     </div>
   </div>
 

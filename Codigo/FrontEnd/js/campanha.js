@@ -79,6 +79,10 @@ window.changeTab = function(tabId) {
     loadDiarioData();
   } else if (tabId === 'config') {
     loadConfigData();
+  } else if (tabId === 'oficina') {
+    loadOficinaScenes();
+  } else if (tabId === 'cenas') {
+    loadActiveScenePalco();
   }
 };
 
@@ -391,9 +395,10 @@ function renderizarListaMensagensChat(messages) {
 function renderChatMessageHTML(msg, currentUser, isGM) {
   const isMine = currentUser && (msg.user_id === currentUser.userId);
   const canDelete = isMine || isGM;
+  const canEdit = isMine && (msg.msg_type !== 'roll' && msg.msg_type !== 'action_card');
   const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
   
-  const typeClass = `msg-card-${msg.msg_type || 'ic'}`;
+  const typeClass = `msg-${msg.msg_type || 'ic'}`;
   const roleBadge = formatarBadgePapel(msg.author_role, msg.msg_type, msg.is_secret);
 
   // Avatar do autor
@@ -412,9 +417,9 @@ function renderChatMessageHTML(msg, currentUser, isGM) {
   if (meta && meta.reply_to) {
     const rep = meta.reply_to;
     replyHTML = `
-      <div class="chat-msg-quote">
-        <span class="quote-author">💬 ${escapeHtml(rep.author || 'Alguém')}:</span>
-        <span>${escapeHtml(rep.text || '')}</span>
+      <div class="msg-quote-preview">
+        <div class="msg-quote-author">💬 ${escapeHtml(rep.author || 'Alguém')}:</div>
+        <div>${escapeHtml(rep.text || '')}</div>
       </div>
     `;
   }
@@ -427,44 +432,49 @@ function renderChatMessageHTML(msg, currentUser, isGM) {
     bodyHTML = renderActionCardBody(msg, meta, isGM);
   } else if (msg.msg_type === 'whisper') {
     const target = msg.whisper_target_name ? ` (para @${escapeHtml(msg.whisper_target_name)})` : '';
-    bodyHTML = `<div class="chat-msg-text" style="color: #c4b5fd;">🔒 <em>${escapeHtml(msg.content)}${target}</em></div>`;
+    bodyHTML = `<div class="msg-card-content" style="color: #c4b5fd;">🔒 <em>${escapeHtml(msg.content)}${target}</em></div>`;
   } else if (msg.msg_type === 'acao') {
-    bodyHTML = `<div class="chat-msg-text" style="color: #c084fc; font-style: italic;">* ${escapeHtml(msg.content)} *</div>`;
+    bodyHTML = `<div class="msg-card-content" style="color: #c084fc; font-style: italic;">* ${escapeHtml(msg.content)} *</div>`;
   } else if (msg.msg_type === 'narracao') {
-    bodyHTML = `<div class="chat-msg-text" style="color: #fef08a; font-family: Georgia, serif; font-size: 14.5px; line-height: 1.6;">${escapeHtml(msg.content)}</div>`;
+    bodyHTML = `<div class="msg-card-content" style="color: #fef08a; font-family: Georgia, serif; font-size: 14.5px; line-height: 1.6;">${escapeHtml(msg.content)}</div>`;
   } else if (msg.msg_type === 'ooc') {
-    bodyHTML = `<div class="chat-msg-text" style="color: #94a3b8; font-style: italic;">(( ${escapeHtml(msg.content)} ))</div>`;
+    bodyHTML = `<div class="msg-card-content" style="color: #94a3b8; font-style: italic;">(( ${escapeHtml(msg.content)} ))</div>`;
   } else {
     // 'ic' padrão
-    bodyHTML = `<div class="chat-msg-text">${escapeHtml(msg.content)}</div>`;
+    bodyHTML = `<div class="msg-card-content">${escapeHtml(msg.content)}</div>`;
   }
 
   const safeAuthor = (msg.author_name || 'Personagem').replace(/'/g, "\\'");
-  const safeContent = (msg.content || '').replace(/'/g, "\\'").replace(/\n/g, ' ').substring(0, 50);
+  const safeContent = (msg.content || '').replace(/'/g, "\\'").replace(/\n/g, ' ').substring(0, 80);
 
   return `
-    <div class="chat-msg-card ${typeClass}" id="chat-msg-${msg.id}">
-      <div class="chat-msg-header">
-        <div class="chat-msg-author-info">
-          <div class="chat-msg-avatar">${avatarContent}</div>
-          <span class="chat-msg-name">${escapeHtml(msg.author_name || 'Desconhecido')}</span>
+    <div class="msg-card ${typeClass} ${isMine ? 'msg-mine' : ''}" id="chat-msg-${msg.id}">
+      <div class="msg-card-header">
+        <div class="msg-author-box">
+          <div class="msg-avatar">${avatarContent}</div>
+          <span class="msg-author-name">${escapeHtml(msg.author_name || 'Desconhecido')}</span>
           ${roleBadge}
         </div>
-        <div class="chat-msg-meta">
-          <span class="chat-msg-time">${timeStr}</span>
-          <div class="chat-msg-actions-hover">
-            <button type="button" class="btn-msg-action" onclick="iniciarRespostaMensagem(${msg.id}, '${safeAuthor}', '${safeContent}')" title="Responder esta mensagem">
+        <div class="msg-meta-box">
+          <span class="msg-timestamp">${timeStr}</span>
+          <div class="msg-card-toolbar">
+            <button type="button" class="msg-action-icon-btn btn-reply" onclick="window.iniciarRespostaMensagem(${msg.id}, '${safeAuthor}', '${safeContent}')" title="Responder">
               💬
             </button>
+            ${canEdit ? `
+              <button type="button" class="msg-action-icon-btn btn-edit" onclick="window.iniciarEdicaoMensagem(${msg.id})" title="Editar Mensagem">
+                ✏️
+              </button>
+            ` : ''}
             ${canDelete ? `
-              <button type="button" class="btn-msg-action btn-msg-delete" onclick="excluirMensagem(${msg.id})" title="Excluir mensagem">
+              <button type="button" class="msg-action-icon-btn btn-del" onclick="window.iniciarExclusaoMensagem(${msg.id})" title="Excluir Mensagem">
                 🗑️
               </button>
             ` : ''}
           </div>
         </div>
       </div>
-      <div class="chat-msg-body">
+      <div class="msg-card-body">
         ${replyHTML}
         ${bodyHTML}
       </div>
@@ -474,93 +484,106 @@ function renderChatMessageHTML(msg, currentUser, isGM) {
 
 function formatarBadgePapel(role, msgType, isSecret) {
   if (isSecret) {
-    return `<span class="chat-msg-badge badge-secret">🔒 Rolagem Secreta</span>`;
+    return `<span class="msg-role-tag tag-secret">🔒 Secreta</span>`;
   }
   if (msgType === 'whisper') {
-    return `<span class="chat-msg-badge badge-whisper">🔒 Sussurro</span>`;
+    return `<span class="msg-role-tag tag-whisper">🔒 Sussurro</span>`;
   }
   if (msgType === 'narracao') {
-    return `<span class="chat-msg-badge badge-narracao">👑 Narração</span>`;
+    return `<span class="msg-role-tag tag-mestre">👑 Narração</span>`;
   }
   if (msgType === 'ooc') {
-    return `<span class="chat-msg-badge badge-ooc">OOC</span>`;
+    return `<span class="msg-role-tag tag-ooc">OOC</span>`;
   }
   if (msgType === 'acao') {
-    return `<span class="chat-msg-badge badge-acao">Ação</span>`;
+    return `<span class="msg-role-tag tag-action">Ação</span>`;
   }
   if (role === 'npc') {
-    return `<span class="chat-msg-badge badge-npc">🎭 NPC</span>`;
+    return `<span class="msg-role-tag tag-npc">🎭 NPC</span>`;
   }
   if (role === 'mestre') {
-    return `<span class="chat-msg-badge badge-gm">Mestre</span>`;
+    return `<span class="msg-role-tag tag-mestre">Mestre</span>`;
   }
   if (role === 'assistente de mestre') {
-    return `<span class="chat-msg-badge badge-gm">Assistente</span>`;
+    return `<span class="msg-role-tag tag-mestre">Assistente</span>`;
   }
   if (role === 'sistema') {
-    return `<span class="chat-msg-badge badge-system">Arcana VTT</span>`;
+    return `<span class="msg-role-tag tag-mestre">Arcana VTT</span>`;
   }
-  return `<span class="chat-msg-badge badge-player">Jogador</span>`;
+  return `<span class="msg-role-tag">Jogador</span>`;
 }
 
 function renderRollCardBody(msg, meta) {
-  if (!meta || !meta.tipo) {
-    return `<div class="chat-msg-text">${escapeHtml(msg.content)}</div>`;
-  }
+  const rollData = meta?.roll_data || meta || {};
+  const rollType = rollData.tipo;
 
-  // Rolagem AlphaD6
-  if (meta.tipo === 'alphad6') {
-    const dados = meta.dados || [];
-    const sucessos = meta.sucessos || 0;
-    const dano = meta.danoTotal || 0;
-    const isSuccess = sucessos > 0;
+  // 1. AlphaD6 (pool_d6 ou alphad6)
+  if (rollType === 'pool_d6' || rollType === 'alphad6') {
+    const dados = rollData.dados || [];
+    const sucessos = rollData.totalSucessos !== undefined ? rollData.totalSucessos : (rollData.sucessos ? (Array.isArray(rollData.sucessos) ? rollData.sucessos.length : rollData.sucessos) : 0);
+    const veredicto = rollData.veredicto || (sucessos >= 2 ? 'SUCESSO_TOTAL' : (sucessos === 1 ? 'SUCESSO_PARCIAL' : 'FALHA_TOTAL'));
+    const isTotal = veredicto === 'SUCESSO_TOTAL';
+    const isPartial = veredicto === 'SUCESSO_PARCIAL';
+
+    const pillClass = isTotal ? 'roll-success' : (isPartial ? 'roll-partial' : 'roll-fail');
+    const vereditoTexto = isTotal ? '✨ Sucesso Total' : (isPartial ? '⚠️ Sucesso Parcial' : '💀 Falha Total');
 
     return `
       <div class="roll-result-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <span style="font-size: 12px; color: var(--gold-light); font-weight: 600;">
-            ${meta.nomeAtributo ? `Teste de ${meta.nomeAtributo.toUpperCase()}` : 'Rolagem AlphaD6'}
+        <div class="roll-header">
+          <span class="roll-title">
+            🎲 ${rollData.atributo ? `Teste de ${rollData.atributo.toUpperCase()}` : 'Rolagem AlphaD6'}
           </span>
-          <span style="font-size: 11px; color: var(--text-dim);">Fórmula: ${escapeHtml(meta.expressaoOriginal || '')}</span>
+          <span class="roll-formula">${escapeHtml(rollData.expressaoOriginal || `${rollData.dadosCount || dados.length}d6`)}</span>
         </div>
         <div class="roll-dice-pool">
-          ${dados.map(d => `<div class="die-face ${d >= 4 ? 'success' : ''}">${d}</div>`).join('')}
+          ${dados.map(d => `<div class="die-face ${d >= 4 ? 'success' : 'fail'}">${d}</div>`).join('')}
         </div>
-        <div class="roll-total-pill ${isSuccess ? 'roll-success' : 'roll-fail'}">
-          ${isSuccess ? `✨ ${sucessos} Sucesso(s) • Dano: ${dano}` : `💀 Falha (0 Sucessos)`}
+        <div class="roll-total-pill ${pillClass}">
+          ${vereditoTexto} • <strong>${sucessos} Sucesso(s)</strong> ${rollData.danoTotal ? `• Dano: ${rollData.danoTotal}` : ''}
         </div>
       </div>
     `;
   }
 
-  // Rolagem Livre D20 / D6
-  if (meta.tipo === 'livre') {
-    const dados = meta.dados || [];
-    const total = meta.total !== undefined ? meta.total : (dados.reduce((a, b) => a + b, 0) + (meta.modificador || 0));
+  // 2. Rolagem Livre (rolagem_livre ou livre)
+  if (rollType === 'rolagem_livre' || rollType === 'livre') {
+    const dados = rollData.dados || [];
+    const total = rollData.total !== undefined ? rollData.total : (dados.reduce((a, b) => a + b, 0) + (rollData.modificador || 0));
+    const mod = rollData.modificador || 0;
+
     return `
       <div class="roll-result-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <span style="font-size: 12px; color: var(--gold-light); font-weight: 600;">
-            Rolagem de Dados
+        <div class="roll-header">
+          <span class="roll-title">
+            🎲 Rolagem de Dados
           </span>
-          <span style="font-size: 11px; color: var(--text-dim);">Expressão: ${escapeHtml(meta.expressaoOriginal || '')}</span>
+          <span class="roll-formula">${escapeHtml(rollData.expressaoOriginal || '')}</span>
         </div>
         <div class="roll-dice-pool">
-          ${dados.map(d => `<div class="die-face">${d}</div>`).join('')}
+          ${dados.map(d => `<div class="die-face ${d >= (rollData.lados === 20 ? 10 : 4) ? 'success' : ''}">${d}</div>`).join('')}
         </div>
         <div class="roll-total-pill roll-success">
-          🎯 Total: <strong>${total}</strong> ${meta.modificador ? `(Mod: ${meta.modificador > 0 ? '+' : ''}${meta.modificador})` : ''}
+          🎯 Total: <strong>${total}</strong> ${mod !== 0 ? `(Mod: ${mod > 0 ? '+' : ''}${mod})` : ''}
         </div>
       </div>
     `;
   }
 
-  return `<div class="chat-msg-text">${escapeHtml(msg.content)}</div>`;
+  // Fallback: se o backend gerou string com tags <strong>, desescapa apenas tags permitidas de forma segura
+  const formattedContent = String(msg.content || '')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/&lt;strong&gt;/g, '<strong>').replace(/&lt;\/strong&gt;/g, '</strong>')
+    .replace(/&lt;em&gt;/g, '<em>').replace(/&lt;\/em&gt;/g, '</em>')
+    .replace(/&lt;code&gt;/g, '<code>').replace(/&lt;\/code&gt;/g, '</code>');
+
+  return `<div class="msg-card-content">${formattedContent}</div>`;
 }
 
 function renderActionCardBody(msg, meta, isGM) {
-  const status = meta?.status || 'pendente';
-  const tipoDescanso = meta?.tipoDescanso || 'curto';
+  const actionData = meta?.action_data || meta || {};
+  const status = actionData.status || 'pendente';
+  const tipoDescanso = actionData.tipoDescanso || 'curto';
 
   return `
     <div class="action-card-box">
@@ -587,10 +610,10 @@ function renderActionCardBody(msg, meta, isGM) {
 
         ${(isGM && status === 'pendente') ? `
           <div style="display: flex; gap: 8px;">
-            <button type="button" class="btn-action-sm btn-action-accept" onclick="responderCardAcao(${msg.id}, 'aprovar')">
+            <button type="button" class="btn-action-sm btn-action-accept" onclick="window.responderCardAcao(${msg.id}, 'aprovar')">
               Aprovar
             </button>
-            <button type="button" class="btn-action-sm btn-action-kick" onclick="responderCardAcao(${msg.id}, 'recusar')">
+            <button type="button" class="btn-action-sm btn-action-kick" onclick="window.responderCardAcao(${msg.id}, 'recusar')">
               Recusar
             </button>
           </div>
@@ -609,6 +632,165 @@ function escapeHtml(text) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+// === Gerenciamento de Respostas, Edição e Exclusão de Mensagens do Chat ===
+
+window.iniciarRespostaMensagem = function(msgId, authorName, textPreview) {
+  currentReplyTo = { id: msgId, author: authorName, text: textPreview };
+  const banner = document.getElementById('chat-reply-banner');
+  const authorEl = document.getElementById('reply-author-name');
+  const textEl = document.getElementById('reply-text-preview');
+  if (banner && authorEl && textEl) {
+    authorEl.textContent = authorName;
+    textEl.textContent = `"${textPreview}"`;
+    banner.classList.add('active');
+  }
+  const input = document.getElementById('chat-input');
+  if (input) input.focus();
+};
+
+window.cancelarRespostaMensagem = function() {
+  currentReplyTo = null;
+  const banner = document.getElementById('chat-reply-banner');
+  if (banner) banner.classList.remove('active');
+};
+
+window.iniciarEdicaoMensagem = function(msgId) {
+  const msg = chatMessagesCache.find(m => m.id === msgId);
+  if (!msg) return;
+
+  const modal = document.getElementById('modal-edit-chat-msg');
+  const idInput = document.getElementById('edit-msg-id');
+  const contentInput = document.getElementById('edit-msg-content');
+
+  if (modal && idInput && contentInput) {
+    idInput.value = msgId;
+    contentInput.value = msg.content || '';
+    modal.classList.add('active');
+    setTimeout(() => contentInput.focus(), 50);
+  }
+};
+
+window.fecharModalEdicaoMensagem = function() {
+  const modal = document.getElementById('modal-edit-chat-msg');
+  if (modal) modal.classList.remove('active');
+};
+
+window.salvarEdicaoMensagemSubmit = async function(e) {
+  if (e) e.preventDefault();
+  const idInput = document.getElementById('edit-msg-id');
+  const contentInput = document.getElementById('edit-msg-content');
+  if (!idInput || !contentInput) return;
+
+  const msgId = Number(idInput.value);
+  const newContent = contentInput.value.trim();
+  if (!msgId || !newContent) return;
+
+  try {
+    const res = await apiClient.editChatMessage(currentCampaignId, msgId, newContent);
+    if (res && res.sucesso) {
+      window.fecharModalEdicaoMensagem();
+      await loadChatHistory(true);
+      if (typeof window.notificarChatAtualizado === 'function') {
+        window.notificarChatAtualizado();
+      }
+    } else {
+      alert(`Falha ao editar mensagem: ${res?.erro || 'Erro desconhecido'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao editar mensagem: ${err.message}`);
+  }
+};
+
+let msgIdPendingDelete = null;
+
+window.iniciarExclusaoMensagem = function(msgId) {
+  msgIdPendingDelete = msgId;
+  const modal = document.getElementById('modal-delete-chat-msg');
+  if (modal) {
+    modal.classList.add('active');
+  } else {
+    if (confirm("Deseja realmente apagar esta mensagem?")) {
+      window.confirmarExclusaoMensagem();
+    }
+  }
+};
+
+window.fecharModalExcluirMensagem = function() {
+  msgIdPendingDelete = null;
+  const modal = document.getElementById('modal-delete-chat-msg');
+  if (modal) modal.classList.remove('active');
+};
+
+window.confirmarExclusaoMensagem = async function() {
+  if (!msgIdPendingDelete || !currentCampaignId) return;
+  const msgId = msgIdPendingDelete;
+  window.fecharModalExcluirMensagem();
+
+  try {
+    const res = await apiClient.deleteChatMessage(currentCampaignId, msgId);
+    if (res && res.sucesso) {
+      await loadChatHistory(true);
+      if (typeof window.notificarChatAtualizado === 'function') {
+        window.notificarChatAtualizado();
+      }
+    } else {
+      alert(`Falha ao excluir mensagem: ${res?.erro || 'Erro desconhecido'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao excluir mensagem: ${err.message}`);
+  }
+};
+
+window.excluirMensagem = window.iniciarExclusaoMensagem;
+
+window.abrirModalLimparChat = function() {
+  const modal = document.getElementById('modal-clear-chat');
+  if (modal) modal.classList.add('active');
+};
+
+window.fecharModalLimparChat = function() {
+  const modal = document.getElementById('modal-clear-chat');
+  if (modal) modal.classList.remove('active');
+};
+
+window.confirmarLimpezaChat = async function() {
+  if (!currentCampaignId) return;
+  window.fecharModalLimparChat();
+
+  try {
+    const res = await apiClient.clearChatHistory(currentCampaignId);
+    if (res && res.sucesso) {
+      await loadChatHistory(true);
+      if (typeof window.notificarChatAtualizado === 'function') {
+        window.notificarChatAtualizado();
+      }
+    } else {
+      alert(`Falha ao limpar histórico do chat: ${res?.erro || 'Erro desconhecido'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao limpar chat: ${err.message}`);
+  }
+};
+
+window.responderCardAcao = async function(msgId, action) {
+  if (!currentCampaignId || !msgId) return;
+  try {
+    const res = await apiClient.respondActionCard(currentCampaignId, msgId, action);
+    if (res && res.sucesso) {
+      await loadChatHistory(true);
+      if (typeof window.notificarChatAtualizado === 'function') {
+        window.notificarChatAtualizado();
+      }
+    } else {
+      alert(`Falha ao responder card de ação: ${res?.erro || 'Erro desconhecido'}`);
+    }
+  } catch (err) {
+    alert(`Erro ao responder card: ${err.message}`);
+  }
+};
+
+
 
 // === Envio de Mensagens e Comandos ===
 
@@ -1768,11 +1950,14 @@ async function initSyncP2P() {
   p2pNetManager = new window.P2PNetworkManager(currentCampaignId, user.id, apiClient);
   p2pNetManager.setDataCallback((peerId, data) => {
     if (data.type === 'chat_update') {
-      // Se for follower e receber um update do leader, carrega o chat novo.
       if (!isP2PLeader) {
         console.log(`[P2P] Update de chat recebido do líder ${peerId}`);
         loadChatHistory(true);
       }
+    } else if (data.type === 'token_move') {
+      aoReceberMovimentoP2P(data);
+    } else if (data.type === 'scene_state_update') {
+      aoReceberEstadoCenaP2P(data);
     }
   });
 
@@ -1792,8 +1977,6 @@ async function initSyncP2P() {
 
         if (isP2PLeader && !wasLeader) {
           console.log("[P2P] Você agora é o LÍDER (WebRTC Host).");
-          // O líder para o polling de chat tradicional, quem avisa é ele
-          // (na verdade o lider envia o sinal). Aqui apenas reage a mensagens
         } else if (!isP2PLeader && wasLeader) {
           console.log("[P2P] Você deixou de ser o LÍDER (WebRTC Follower).");
           p2pNetManager.closeAll();
@@ -1826,11 +2009,1539 @@ window.notificarChatAtualizado = function() {
   }
 };
 
+// =========================================================================
+// SISTEMA DE CENAS E OFICINA DO MESTRE (ARCANA VTT)
+// =========================================================================
+
+// --- 1. Paleta de Assets & Elementos Gráficos (Dark Fantasy) ---
+const TACTICAL_ASSET_PALETTE = [
+  // Camada 1: Chão / Pisável
+  { id: 'floor_stone', name: 'Pedra Rúnica', layer: 1, icon: '🪨', color: '#334155' },
+  { id: 'floor_wood', name: 'Madeira', layer: 1, icon: '🪵', color: '#78350f' },
+  { id: 'floor_grass', name: 'Grama Sombria', layer: 1, icon: '🌿', color: '#14532d' },
+  { id: 'floor_dirt', name: 'Terra Batida', layer: 1, icon: '🟫', color: '#451a03' },
+  { id: 'floor_water', name: 'Água Profunda', layer: 1, icon: '💧', color: '#1e3a8a' },
+  { id: 'floor_blood', name: 'Poça de Sangue', layer: 1, icon: '🩸', color: '#881337' },
+  { id: 'floor_runes', name: 'Círculo Rúnico', layer: 1, icon: '🌀', color: '#6b21a8' },
+
+  // Camada 2: Obstáculos, Paredes e Objetos Interativos
+  { id: 'wall_stone', name: 'Parede de Pedra', layer: 2, icon: '🧱', solid: true, color: '#1e293b' },
+  { id: 'wall_wood', name: 'Paliçada', layer: 2, icon: '🪵', solid: true, color: '#92400e' },
+  { id: 'tree_dead', name: 'Árvore Sombria', layer: 2, icon: '🌲', solid: true, color: '#064e3b' },
+  { id: 'door_closed', name: 'Porta Fechada', layer: 2, icon: '🚪', solid: true, interactive: true },
+  { id: 'door_open', name: 'Porta Aberta', layer: 2, icon: '🔲', solid: false, interactive: true },
+  { id: 'chest_wood', name: 'Baú Fechado', layer: 2, icon: '📦', solid: true, interactive: true },
+  { id: 'chest_open', name: 'Baú Aberto', layer: 2, icon: '📂', solid: false, interactive: true },
+  { id: 'lever_off', name: 'Alavanca (Off)', layer: 2, icon: '🕹️', solid: false, interactive: true },
+  { id: 'lever_on', name: 'Alavanca (On)', layer: 2, icon: '💡', solid: false, interactive: true },
+  { id: 'trap_hidden', name: 'Armadilha no Chão', layer: 2, icon: '⚙️', solid: false, interactive: true },
+  { id: 'campfire', name: 'Fogueira Acesa', layer: 2, icon: '🏕️', solid: true, interactive: true },
+  { id: 'altar', name: 'Altar Proibido', layer: 2, icon: '🏛️', solid: true, interactive: true },
+  { id: 'enemy_token', name: 'Guardião Esqueleto', layer: 2, icon: '💀', solid: true, interactive: true },
+
+  // Camada 3: Teto / Névoa / Luz Superior
+  { id: 'roof_shadow', name: 'Névoa Espessa', layer: 3, icon: '⬛', color: 'rgba(0,0,0,0.85)' },
+  { id: 'light_glow', name: 'Foco de Luz', layer: 3, icon: '🌟', color: 'rgba(253, 224, 71, 0.4)' },
+  { id: 'canopy_leaves', name: 'Copa de Árvore', layer: 3, icon: '🍃', color: 'rgba(22, 101, 52, 0.7)' }
+];
+
+function getAssetById(id) {
+  return TACTICAL_ASSET_PALETTE.find(a => a.id === id) || null;
+}
+
+// --- 2. Estado Global da Oficina e Cenas ---
+let oficinaScenesList = [];
+let selectedOficinaScene = null;
+let activeCampaignScene = null;
+
+let oficinaPaintState = {
+  selectedLayer: 1, // 1: Chão, 2: Obstáculo, 3: Teto
+  selectedTool: 'brush', // 'brush', 'eraser', 'fill'
+  selectedTileId: 'floor_stone',
+  rows: 12,
+  cols: 16,
+  matrix: [], // [rows][cols] -> { l1: 'floor_stone', l2: null, l3: null }
+  isMouseDown: false
+};
+
+let oficinaTriggersState = []; // Regras no-code da cena em edição
+
+// Estado do Palco de Jogo
+let palcoActiveSceneData = null;
+let palcoPlayerPosition = { x: 1, y: 1 };
+let palcoRemoteTokens = {}; // { [charId]: { charName, x, y, avatar } }
+let keyListenersInitialized = false;
+
+// Estado de Minijogos
+let mahjongState = {
+  cards: [],
+  revealedIndices: [],
+  matchedPairs: 0,
+  totalPairs: 0,
+  bombsHit: 0,
+  isBusy: false
+};
+
+let passwordState = {
+  secret: '1337',
+  currentGuess: '',
+  length: 4,
+  type: 'numeric',
+  hints: true,
+  damage: 2
+};
+
+// =========================================================================
+// GERENCIADOR DA OFICINA (CRUD DE CENAS)
+// =========================================================================
+
+export async function loadOficinaScenes() {
+  const container = document.getElementById('oficina-scenes-list');
+  if (!container) return;
+
+  try {
+    const res = await apiClient.listScenes(currentCampaignId);
+    if (res && res.sucesso) {
+      oficinaScenesList = res.cenas || [];
+      const badge = document.getElementById('oficina-scenes-count');
+      if (badge) badge.innerText = `${oficinaScenesList.length} Cenas`;
+
+      renderOficinaScenesList();
+
+      // Se não houver nenhuma cena selecionada e a lista não estiver vazia, seleciona a primeira
+      if (!selectedOficinaScene && oficinaScenesList.length > 0) {
+        selectOficinaScene(oficinaScenesList[0].id);
+      } else if (oficinaScenesList.length === 0) {
+        // Cria automaticamente uma cena inicial para o Mestre
+        await criarNovaCenaOficina("Masmorra Inicial", "tactical_grid");
+      }
+    }
+  } catch (e) {
+    console.error("Erro ao carregar cenas na oficina:", e);
+    container.innerHTML = `<div style="color: #f87171; text-align: center; padding: 20px;">Falha ao carregar cenas.</div>`;
+  }
+}
+
+function renderOficinaScenesList() {
+  const container = document.getElementById('oficina-scenes-list');
+  if (!container) return;
+
+  if (oficinaScenesList.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; color: var(--text-dim); padding: 30px 10px; font-size: 12.5px;">
+        Nenhuma cena criada ainda. Clique em "Nova Cena" acima!
+      </div>
+    `;
+    return;
+  }
+
+  const modelLabels = {
+    tactical_grid: '🗺️ Grid Tático',
+    puzzle_mahjong: '🃏 Mahjong',
+    puzzle_password: '🔢 Senha/Cofre',
+    dialogue_tree: '💬 Diálogo',
+    turn_combat: '⚔️ Combate'
+  };
+
+  container.innerHTML = oficinaScenesList.map(sc => {
+    const isSelected = selectedOficinaScene && selectedOficinaScene.id === sc.id;
+    const isActive = sc.is_active == 1;
+
+    return `
+      <div class="player-card ${isSelected ? 'selected-card' : ''}" 
+           style="cursor: pointer; padding: 12px; margin-bottom: 8px; border-left: 3px solid ${isActive ? 'var(--gold-primary)' : 'var(--border-subtle)'}; background: ${isSelected ? 'rgba(212, 163, 75, 0.12)' : 'var(--bg-card)'};"
+           onclick="selectOficinaScene('${sc.id}')">
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+            <strong style="font-size: 13.5px; color: ${isSelected ? 'var(--gold-light)' : '#fff'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              ${escapeHtml(sc.name || 'Sem Título')}
+            </strong>
+            ${isActive ? '<span style="font-size: 10px; background: rgba(212, 163, 75, 0.2); color: var(--gold-light); border: 1px solid var(--gold-primary); padding: 1px 5px; border-radius: 4px;">ATIVA</span>' : ''}
+          </div>
+          <div style="font-size: 11px; color: var(--text-dim);">
+            ${modelLabels[sc.model] || sc.model}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.selectOficinaScene = function(sceneId) {
+  const scene = oficinaScenesList.find(s => s.id === sceneId);
+  if (!scene) return;
+
+  selectedOficinaScene = scene;
+  renderOficinaScenesList();
+
+  // Preenche dados no editor
+  const nameInput = document.getElementById('oficina-scene-name-input');
+  if (nameInput) nameInput.value = scene.name || '';
+
+  const modelSelect = document.getElementById('oficina-scene-model-select');
+  if (modelSelect) modelSelect.value = scene.model || 'tactical_grid';
+
+  const btnActive = document.getElementById('btn-toggle-active-scene');
+  if (btnActive) {
+    if (scene.is_active == 1) {
+      btnActive.innerHTML = '⭐ Cena Ativa na Mesa';
+      btnActive.classList.add('active');
+    } else {
+      btnActive.innerHTML = '⭐ Tornar Ativa';
+      btnActive.classList.remove('active');
+    }
+  }
+
+  // Carrega Matriz do Grid ou inicializa nova
+  let modelData = {};
+  try {
+    modelData = typeof scene.model_data === 'string' ? JSON.parse(scene.model_data) : (scene.model_data || {});
+  } catch (e) {
+    modelData = {};
+  }
+
+  oficinaPaintState.rows = modelData.rows || 12;
+  oficinaPaintState.cols = modelData.cols || 16;
+  const dimRows = document.getElementById('grid-dim-rows');
+  const dimCols = document.getElementById('grid-dim-cols');
+  if (dimRows) dimRows.value = oficinaPaintState.rows;
+  if (dimCols) dimCols.value = oficinaPaintState.cols;
+
+  if (modelData.matrix && Array.isArray(modelData.matrix)) {
+    oficinaPaintState.matrix = modelData.matrix;
+  } else {
+    // Cria matriz padrão
+    oficinaPaintState.matrix = [];
+    for (let r = 0; r < oficinaPaintState.rows; r++) {
+      const row = [];
+      for (let c = 0; c < oficinaPaintState.cols; c++) {
+        row.push({ l1: 'floor_stone', l2: null, l3: null });
+      }
+      oficinaPaintState.matrix.push(row);
+    }
+  }
+
+  // Carrega Regras e Gatilhos
+  try {
+    oficinaTriggersState = typeof scene.rules_data === 'string' ? JSON.parse(scene.rules_data) : (scene.rules_data || []);
+    if (!Array.isArray(oficinaTriggersState)) oficinaTriggersState = [];
+  } catch (e) {
+    oficinaTriggersState = [];
+  }
+
+  // Configurações específicas de modelos
+  carregarConfiguracoesModeloOficina(scene.model, modelData);
+
+  // Renderiza componentes visuais
+  renderAssetPalette();
+  renderGridPaintTable();
+  renderTriggersEditor();
+  aoMudarModeloCenaOficina(scene.model);
+};
+
+window.criarNovaCenaOficina = async function(nomePadrao, modeloPadrao) {
+  const nome = nomePadrao || prompt("Digite o nome da nova cena:", "Novo Cenário Tático");
+  if (!nome) return;
+
+  const modelo = modeloPadrao || "tactical_grid";
+  const defaultMatrix = [];
+  for (let r = 0; r < 12; r++) {
+    const row = [];
+    for (let c = 0; c < 16; c++) {
+      row.push({ l1: 'floor_stone', l2: null, l3: null });
+    }
+    defaultMatrix.push(row);
+  }
+
+  const payload = {
+    campaignId: currentCampaignId,
+    name: nome,
+    model: modelo,
+    modelData: { rows: 12, cols: 16, matrix: defaultMatrix },
+    rulesData: [],
+    styleData: {},
+    maxPlayers: 12
+  };
+
+  try {
+    const res = await apiClient.createScene(payload);
+    if (res && res.sucesso) {
+      await loadOficinaScenes();
+      if (res.cenaId) {
+        selectOficinaScene(res.cenaId);
+      }
+    }
+  } catch (e) {
+    console.error("Erro ao criar cena:", e);
+    alert("Erro ao criar nova cena.");
+  }
+};
+
+window.salvarCenaAtualOficina = async function() {
+  if (!selectedOficinaScene) return;
+
+  const nameInput = document.getElementById('oficina-scene-name-input');
+  const modelSelect = document.getElementById('oficina-scene-model-select');
+  const nome = nameInput ? nameInput.value.trim() : selectedOficinaScene.name;
+  const modelo = modelSelect ? modelSelect.value : selectedOficinaScene.model;
+
+  // Monta modelData atualizado
+  const modelData = {
+    rows: oficinaPaintState.rows,
+    cols: oficinaPaintState.cols,
+    matrix: oficinaPaintState.matrix
+  };
+
+  // Coleta dados específicos do modelo das abas de config
+  coletarConfiguracoesModeloOficina(modelo, modelData);
+
+  const payload = {
+    sceneId: selectedOficinaScene.id,
+    name: nome,
+    model: modelo,
+    modelData: modelData,
+    rulesData: oficinaTriggersState,
+    styleData: {}
+  };
+
+  const saveBtn = document.getElementById('btn-save-oficina-scene');
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerText = "Salvando...";
+  }
+
+  try {
+    const res = await apiClient.updateScene(payload);
+    if (res && res.sucesso) {
+      selectedOficinaScene.name = nome;
+      selectedOficinaScene.model = modelo;
+      selectedOficinaScene.model_data = modelData;
+      selectedOficinaScene.rules_data = oficinaTriggersState;
+      await loadOficinaScenes();
+
+      // Notifica via P2P que a cena foi atualizada se estiver ativa
+      if (selectedOficinaScene.is_active == 1 && isP2PLeader && p2pNetManager) {
+        p2pNetManager.broadcast('scene_state_update', { sceneId: selectedOficinaScene.id, time: Date.now() });
+      }
+
+      alert("Cena salva com sucesso!");
+    }
+  } catch (e) {
+    console.error("Erro ao salvar cena:", e);
+    alert("Falha ao salvar a cena.");
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerText = "💾 Salvar Alterações";
+    }
+  }
+};
+
+window.excluirCenaOficina = async function() {
+  if (!selectedOficinaScene) return;
+  if (!confirm(`Deseja realmente excluir a cena "${selectedOficinaScene.name}"?`)) return;
+
+  try {
+    const res = await apiClient.deleteScene(selectedOficinaScene.id);
+    if (res && res.sucesso) {
+      selectedOficinaScene = null;
+      await loadOficinaScenes();
+    }
+  } catch (e) {
+    console.error("Erro ao excluir cena:", e);
+    alert("Erro ao excluir a cena.");
+  }
+};
+
+window.tornarCenaAtivaOficina = async function() {
+  if (!selectedOficinaScene) return;
+
+  try {
+    const res = await apiClient.setActiveScene(currentCampaignId, selectedOficinaScene.id);
+    if (res && res.sucesso) {
+      oficinaScenesList.forEach(s => s.is_active = (s.id === selectedOficinaScene.id ? 1 : 0));
+      selectedOficinaScene.is_active = 1;
+      renderOficinaScenesList();
+
+      const btnActive = document.getElementById('btn-toggle-active-scene');
+      if (btnActive) {
+        btnActive.innerHTML = '⭐ Cena Ativa na Mesa';
+        btnActive.classList.add('active');
+      }
+
+      // Notifica via P2P
+      if (isP2PLeader && p2pNetManager) {
+        p2pNetManager.broadcast('scene_state_update', { sceneId: selectedOficinaScene.id, active: true });
+      }
+
+      alert(`A cena "${selectedOficinaScene.name}" agora é a CENA ATIVA na mesa de jogo!`);
+    }
+  } catch (e) {
+    console.error("Erro ao definir cena ativa:", e);
+    alert("Falha ao definir cena como ativa.");
+  }
+};
+
+window.trocarAbaInternaOficina = function(tabKey) {
+  const panes = ['visual', 'config', 'triggers'];
+  panes.forEach(p => {
+    const el = document.getElementById(`oficina-pane-${p}`);
+    const btn = document.getElementById(`tab-btn-oficina-${p}`);
+    if (el) el.style.display = (p === tabKey) ? 'block' : 'none';
+    if (btn) {
+      if (p === tabKey) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
+  });
+};
+
+window.aoMudarModeloCenaOficina = function(model) {
+  const tabVisual = document.getElementById('tab-btn-oficina-visual');
+  const boxMahjong = document.getElementById('config-box-mahjong');
+  const boxPassword = document.getElementById('config-box-password');
+  const boxDialogue = document.getElementById('config-box-dialogue');
+  const boxTactical = document.getElementById('config-box-tactical');
+
+  if (boxMahjong) boxMahjong.style.display = (model === 'puzzle_mahjong') ? 'block' : 'none';
+  if (boxPassword) boxPassword.style.display = (model === 'puzzle_password') ? 'block' : 'none';
+  if (boxDialogue) boxDialogue.style.display = (model === 'dialogue_tree') ? 'block' : 'none';
+  if (boxTactical) boxTactical.style.display = (model === 'tactical_grid') ? 'block' : 'none';
+
+  if (model === 'tactical_grid') {
+    if (tabVisual) tabVisual.style.display = 'inline-block';
+  } else {
+    // Para minijogos, o foco principal é a aba de Regras do Modelo
+    trocarAbaInternaOficina('config');
+  }
+};
+
+function carregarConfiguracoesModeloOficina(model, modelData) {
+  if (model === 'puzzle_mahjong') {
+    const size = document.getElementById('mahjong-cfg-size');
+    const bombs = document.getElementById('mahjong-cfg-bombs');
+    const dmg = document.getElementById('mahjong-cfg-damage');
+    if (size && modelData.gridSize) size.value = modelData.gridSize;
+    if (bombs && modelData.bombCount !== undefined) bombs.value = modelData.bombCount;
+    if (dmg && modelData.bombDamage !== undefined) dmg.value = modelData.bombDamage;
+  } else if (model === 'puzzle_password') {
+    const pType = document.getElementById('password-cfg-type');
+    const pLen = document.getElementById('password-cfg-length');
+    const pSec = document.getElementById('password-cfg-secret');
+    const pHints = document.getElementById('password-cfg-hints');
+    const pDmg = document.getElementById('password-cfg-damage');
+    if (pType && modelData.passwordType) pType.value = modelData.passwordType;
+    if (pLen && modelData.length) pLen.value = modelData.length;
+    if (pSec && modelData.secret) pSec.value = modelData.secret;
+    if (pHints && modelData.hintsEnabled !== undefined) pHints.value = modelData.hintsEnabled ? '1' : '0';
+    if (pDmg && modelData.failDamage !== undefined) pDmg.value = modelData.failDamage;
+  } else if (model === 'dialogue_tree') {
+    const spk = document.getElementById('dialogue-cfg-speaker');
+    const ttl = document.getElementById('dialogue-cfg-title');
+    const avt = document.getElementById('dialogue-cfg-avatar');
+    const txt = document.getElementById('dialogue-cfg-text');
+    if (spk && modelData.speaker) spk.value = modelData.speaker;
+    if (ttl && modelData.speakerTitle) ttl.value = modelData.speakerTitle;
+    if (avt && modelData.avatar) avt.value = modelData.avatar;
+    if (txt && modelData.text) txt.value = modelData.text;
+  }
+}
+
+function coletarConfiguracoesModeloOficina(model, modelData) {
+  if (model === 'puzzle_mahjong') {
+    const size = document.getElementById('mahjong-cfg-size');
+    const bombs = document.getElementById('mahjong-cfg-bombs');
+    const dmg = document.getElementById('mahjong-cfg-damage');
+    modelData.gridSize = size ? size.value : '4x4';
+    modelData.bombCount = bombs ? parseInt(bombs.value) || 2 : 2;
+    modelData.bombDamage = dmg ? parseInt(dmg.value) || 4 : 4;
+  } else if (model === 'puzzle_password') {
+    const pType = document.getElementById('password-cfg-type');
+    const pLen = document.getElementById('password-cfg-length');
+    const pSec = document.getElementById('password-cfg-secret');
+    const pHints = document.getElementById('password-cfg-hints');
+    const pDmg = document.getElementById('password-cfg-damage');
+    modelData.passwordType = pType ? pType.value : 'numeric';
+    modelData.length = pLen ? parseInt(pLen.value) || 4 : 4;
+    modelData.secret = pSec ? pSec.value.trim() : '1337';
+    modelData.hintsEnabled = pHints ? pHints.value === '1' : true;
+    modelData.failDamage = pDmg ? parseInt(pDmg.value) || 2 : 2;
+  } else if (model === 'dialogue_tree') {
+    const spk = document.getElementById('dialogue-cfg-speaker');
+    const ttl = document.getElementById('dialogue-cfg-title');
+    const avt = document.getElementById('dialogue-cfg-avatar');
+    const txt = document.getElementById('dialogue-cfg-text');
+    modelData.speaker = spk ? spk.value : 'Guardião Misterioso';
+    modelData.speakerTitle = ttl ? ttl.value : 'Espectro Ancestral';
+    modelData.avatar = avt ? avt.value : '🧙';
+    modelData.text = txt ? txt.value : 'Quem ousa perturbar o repouso das eras?';
+  }
+}
+
+// =========================================================================
+// FERRAMENTA DE PINTURA DO GRID (OFICINA)
+// =========================================================================
+
+function renderAssetPalette() {
+  const container = document.getElementById('asset-palette-grid');
+  if (!container) return;
+
+  const currentLayer = oficinaPaintState.selectedLayer;
+  // Filtra ou exibe todos, destacando os recomendados da camada
+  container.innerHTML = TACTICAL_ASSET_PALETTE.map(asset => {
+    const isLayerMatch = asset.layer === currentLayer;
+    const isSelected = asset.id === oficinaPaintState.selectedTileId;
+
+    return `
+      <div class="asset-palette-item ${isSelected ? 'active' : ''}" 
+           style="opacity: ${isLayerMatch ? '1' : '0.45'}; border: 1px solid ${isSelected ? 'var(--gold-primary)' : 'var(--border-subtle)'};"
+           onclick="selecionarAssetTile('${asset.id}')"
+           title="${asset.name} (Camada ${asset.layer})">
+        <span>${asset.icon}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderGridPaintTable() {
+  const table = document.getElementById('grid-paint-table');
+  if (!table) return;
+
+  table.innerHTML = '';
+  const rows = oficinaPaintState.rows;
+  const cols = oficinaPaintState.cols;
+  const matrix = oficinaPaintState.matrix;
+
+  for (let r = 0; r < rows; r++) {
+    const tr = document.createElement('tr');
+    for (let c = 0; c < cols; c++) {
+      const cellData = (matrix[r] && matrix[r][c]) ? matrix[r][c] : { l1: 'floor_stone', l2: null, l3: null };
+      const td = document.createElement('td');
+      td.className = 'grid-board-cell';
+      td.dataset.row = r;
+      td.dataset.col = c;
+
+      // Camada 1
+      const l1Asset = getAssetById(cellData.l1);
+      const l1Div = document.createElement('div');
+      l1Div.className = 'cell-l1';
+      l1Div.innerHTML = l1Asset ? l1Asset.icon : '🪨';
+      td.appendChild(l1Div);
+
+      // Camada 2
+      if (cellData.l2) {
+        const l2Asset = getAssetById(cellData.l2);
+        if (l2Asset) {
+          const l2Div = document.createElement('div');
+          l2Div.className = 'cell-l2';
+          l2Div.innerHTML = l2Asset.icon;
+          td.appendChild(l2Div);
+        }
+      }
+
+      // Camada 3
+      if (cellData.l3) {
+        const l3Asset = getAssetById(cellData.l3);
+        if (l3Asset) {
+          const l3Div = document.createElement('div');
+          l3Div.className = 'cell-l3';
+          l3Div.innerHTML = l3Asset.icon;
+          td.appendChild(l3Div);
+        }
+      }
+
+      // Eventos de clique e arraste
+      td.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        oficinaPaintState.isMouseDown = true;
+        aplicarPinturaCelula(r, c);
+      });
+
+      td.addEventListener('mouseenter', () => {
+        if (oficinaPaintState.isMouseDown) {
+          aplicarPinturaCelula(r, c);
+        }
+      });
+
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+
+  // Soltar clique fora
+  document.addEventListener('mouseup', () => {
+    oficinaPaintState.isMouseDown = false;
+  }, { once: true });
+}
+
+window.selecionarCamadaPintura = function(layerNum) {
+  oficinaPaintState.selectedLayer = layerNum;
+  [1, 2, 3].forEach(l => {
+    const btn = document.getElementById(`layer-btn-${l}`);
+    if (btn) {
+      if (l === layerNum) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
+  });
+
+  // Ajusta o tile selecionado para um asset padrão da camada
+  const defaultAsset = TACTICAL_ASSET_PALETTE.find(a => a.layer === layerNum);
+  if (defaultAsset) {
+    oficinaPaintState.selectedTileId = defaultAsset.id;
+  }
+  renderAssetPalette();
+};
+
+window.selecionarFerramentaPintura = function(toolName) {
+  oficinaPaintState.selectedTool = toolName;
+  ['brush', 'eraser', 'fill'].forEach(t => {
+    const btn = document.getElementById(`tool-btn-${t}`);
+    if (btn) {
+      if (t === toolName) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
+  });
+};
+
+window.selecionarAssetTile = function(assetId) {
+  oficinaPaintState.selectedTileId = assetId;
+  const asset = getAssetById(assetId);
+  if (asset && asset.layer !== oficinaPaintState.selectedLayer) {
+    selecionarCamadaPintura(asset.layer);
+  } else {
+    renderAssetPalette();
+  }
+};
+
+window.redimensionarGridOficina = function() {
+  const rInput = document.getElementById('grid-dim-rows');
+  const cInput = document.getElementById('grid-dim-cols');
+  const newR = Math.max(3, Math.min(50, parseInt(rInput.value) || 12));
+  const newC = Math.max(3, Math.min(50, parseInt(cInput.value) || 16));
+
+  const newMatrix = [];
+  for (let r = 0; r < newR; r++) {
+    const row = [];
+    for (let c = 0; c < newC; c++) {
+      if (oficinaPaintState.matrix[r] && oficinaPaintState.matrix[r][c]) {
+        row.push(oficinaPaintState.matrix[r][c]);
+      } else {
+        row.push({ l1: 'floor_stone', l2: null, l3: null });
+      }
+    }
+    newMatrix.push(row);
+  }
+
+  oficinaPaintState.rows = newR;
+  oficinaPaintState.cols = newC;
+  oficinaPaintState.matrix = newMatrix;
+  renderGridPaintTable();
+};
+
+function aplicarPinturaCelula(r, c) {
+  const tool = oficinaPaintState.selectedTool;
+  const layer = oficinaPaintState.selectedLayer;
+  const layerKey = `l${layer}`;
+  const assetId = oficinaPaintState.selectedTileId;
+
+  if (tool === 'brush') {
+    oficinaPaintState.matrix[r][c][layerKey] = assetId;
+  } else if (tool === 'eraser') {
+    oficinaPaintState.matrix[r][c][layerKey] = (layer === 1 ? 'floor_stone' : null);
+  } else if (tool === 'fill') {
+    const targetVal = oficinaPaintState.matrix[r][c][layerKey];
+    executarFloodFill(r, c, targetVal, assetId, layerKey);
+  }
+
+  renderGridPaintTable();
+}
+
+function executarFloodFill(startR, startC, targetVal, replacementVal, layerKey) {
+  if (targetVal === replacementVal) return;
+  const rows = oficinaPaintState.rows;
+  const cols = oficinaPaintState.cols;
+  const matrix = oficinaPaintState.matrix;
+
+  const queue = [[startR, startC]];
+  const visited = new Set();
+
+  while (queue.length > 0) {
+    const [r, c] = queue.pop();
+    const key = `${r},${c}`;
+    if (visited.has(key)) continue;
+    visited.add(key);
+
+    if (r < 0 || r >= rows || c < 0 || c >= cols) continue;
+    if (matrix[r][c][layerKey] !== targetVal) continue;
+
+    matrix[r][c][layerKey] = replacementVal;
+
+    queue.push([r + 1, c]);
+    queue.push([r - 1, c]);
+    queue.push([r, c + 1]);
+    queue.push([r, c - 1]);
+  }
+}
+
+// =========================================================================
+// CONSTRUTOR NO-CODE DE GATILHOS (OFICINA)
+// =========================================================================
+
+function renderTriggersEditor() {
+  const container = document.getElementById('triggers-rules-list');
+  if (!container) return;
+
+  if (oficinaTriggersState.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; color: var(--text-dim); padding: 24px; background: var(--bg-card); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
+        Nenhum gatilho configurado. Clique em "Adicionar Regra" para criar interações inteligentes!
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = oficinaTriggersState.map((rule, idx) => {
+    return `
+      <div class="trigger-rule-item">
+        <div class="trigger-rule-header">
+          <span class="trigger-rule-title">Regra #${idx + 1}: [${rule.when || 'Gatilho'}] ➔ [${rule.then || 'Efeito'}]</span>
+          <button type="button" class="btn-delete-char-party" onclick="removerRegraGatilhoOficina(${idx})">Remover</button>
+        </div>
+
+        <div class="trigger-rule-grid">
+          <!-- GATILHO (QUANDO) -->
+          <div class="config-form-group">
+            <label class="config-label">Quando (Gatilho)</label>
+            <select class="form-control" onchange="atualizarRegraGatilho(${idx}, 'when', this.value)">
+              <option value="on_tile_click" ${rule.when === 'on_tile_click' ? 'selected' : ''}>🖱️ Ao Clicar no Tile</option>
+              <option value="on_tile_enter" ${rule.when === 'on_tile_enter' ? 'selected' : ''}>🚶 Ao Pisar no Tile</option>
+              <option value="on_password_correct" ${rule.when === 'on_password_correct' ? 'selected' : ''}>🔓 Ao Acertar Senha</option>
+              <option value="on_password_fail" ${rule.when === 'on_password_fail' ? 'selected' : ''}>❌ Ao Errar Senha</option>
+              <option value="on_score_reach" ${rule.when === 'on_score_reach' ? 'selected' : ''}>🏆 Ao Vencer Puzzle</option>
+            </select>
+          </div>
+
+          <!-- ALVO / COORDENADAS -->
+          <div class="config-form-group">
+            <label class="config-label">Tile / Asset Alvo (Ex: chest_wood, lever_off)</label>
+            <input type="text" class="form-control" value="${escapeHtml(rule.targetTile || '')}" placeholder="Ex: chest_wood ou x,y" onchange="atualizarRegraGatilho(${idx}, 'targetTile', this.value)">
+          </div>
+
+          <!-- EFEITO (ENTÃO) -->
+          <div class="config-form-group">
+            <label class="config-label">Então (Ação / Efeito)</label>
+            <select class="form-control" onchange="atualizarRegraGatilho(${idx}, 'then', this.value)">
+              <option value="change_tile" ${rule.then === 'change_tile' ? 'selected' : ''}>🔄 Mudar Tile (Ex: Abrir baú/porta)</option>
+              <option value="delete_tile" ${rule.then === 'delete_tile' ? 'selected' : ''}>🗑️ Remover Tile (Limpar passagem)</option>
+              <option value="apply_damage" ${rule.then === 'apply_damage' ? 'selected' : ''}>💥 Causar Dano de Anima</option>
+              <option value="heal_anima" ${rule.then === 'heal_anima' ? 'selected' : ''}>💚 Curar Anima</option>
+              <option value="award_xp" ${rule.then === 'award_xp' ? 'selected' : ''}>✨ Conceder XP</option>
+              <option value="transfer_scene" ${rule.then === 'transfer_scene' ? 'selected' : ''}>🚪 Teleportar para Cena</option>
+              <option value="log_diary" ${rule.then === 'log_diary' ? 'selected' : ''}>📜 Registrar no Diário</option>
+            </select>
+          </div>
+
+          <!-- PARÂMETROS DO EFEITO -->
+          <div class="config-form-group">
+            <label class="config-label">Parâmetro da Ação (Ex: novo tile, valor de dano, XP)</label>
+            <input type="text" class="form-control" value="${escapeHtml(rule.actionParams || '')}" placeholder="Ex: chest_open, 5, ou 50 XP" onchange="atualizarRegraGatilho(${idx}, 'actionParams', this.value)">
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.adicionarRegraGatilhoOficina = function() {
+  oficinaTriggersState.push({
+    id: 'rule_' + Date.now(),
+    when: 'on_tile_click',
+    targetTile: 'chest_wood',
+    then: 'change_tile',
+    actionParams: 'chest_open'
+  });
+  renderTriggersEditor();
+};
+
+window.removerRegraGatilhoOficina = function(idx) {
+  oficinaTriggersState.splice(idx, 1);
+  renderTriggersEditor();
+};
+
+window.atualizarRegraGatilho = function(idx, field, value) {
+  if (oficinaTriggersState[idx]) {
+    oficinaTriggersState[idx][field] = value;
+  }
+};
+
+// =========================================================================
+// PALCO DE CENAS INTERATIVO (VIEW-CENAS)
+// =========================================================================
+
+export async function loadActiveScenePalco(forcarSceneId) {
+  const hudTitle = document.getElementById('scene-hud-title');
+  const hudModelName = document.getElementById('scene-hud-model-name');
+  const hudModelIcon = document.getElementById('scene-hud-model-icon');
+
+  try {
+    const res = await apiClient.listScenes(currentCampaignId);
+    if (!res || !res.sucesso) return;
+
+    const cenas = res.cenas || [];
+    let cenaAlvo = null;
+
+    if (forcarSceneId) {
+      cenaAlvo = cenas.find(s => s.id === forcarSceneId);
+    }
+    if (!cenaAlvo) {
+      cenaAlvo = cenas.find(s => s.is_active == 1) || cenas[0] || null;
+    }
+
+    if (!cenaAlvo) {
+      if (hudTitle) hudTitle.innerText = "Sem Cena Ativa";
+      if (hudModelName) hudModelName.innerText = "Nenhuma cena disponível";
+      return;
+    }
+
+    palcoActiveSceneData = cenaAlvo;
+
+    // Popula o seletor de cenas para o Mestre/Jogador
+    const selector = document.getElementById('scene-player-selector');
+    if (selector) {
+      selector.style.display = 'block';
+      selector.innerHTML = cenas.map(c => `
+        <option value="${c.id}" ${c.id === cenaAlvo.id ? 'selected' : ''}>
+          ${escapeHtml(c.name)} ${c.is_active == 1 ? '⭐' : ''}
+        </option>
+      `).join('');
+    }
+
+    const modelIcons = {
+      tactical_grid: '🗺️',
+      puzzle_mahjong: '🃏',
+      puzzle_password: '🔢',
+      dialogue_tree: '💬',
+      turn_combat: '⚔️'
+    };
+
+    const modelLabels = {
+      tactical_grid: 'Grid Tático Multijogador',
+      puzzle_mahjong: 'Enigma das Relíquias (Memória)',
+      puzzle_password: 'Cofre Rúnico Secreto',
+      dialogue_tree: 'Conversa & Ramificação',
+      turn_combat: 'Arena de Batalha'
+    };
+
+    if (hudTitle) hudTitle.innerText = cenaAlvo.name;
+    if (hudModelName) hudModelName.innerText = modelLabels[cenaAlvo.model] || cenaAlvo.model;
+    if (hudModelIcon) hudModelIcon.innerText = modelIcons[cenaAlvo.model] || '🗺️';
+
+    atualizarHudPersonagemPalco();
+
+    // Alterna viewports
+    const gridView = document.getElementById('scene-grid-viewport');
+    const mahjongView = document.getElementById('scene-mahjong-viewport');
+    const passwordView = document.getElementById('scene-password-viewport');
+    const dialogueView = document.getElementById('scene-dialogue-viewport');
+
+    if (gridView) gridView.style.display = (cenaAlvo.model === 'tactical_grid') ? 'flex' : 'none';
+    if (mahjongView) mahjongView.style.display = (cenaAlvo.model === 'puzzle_mahjong') ? 'flex' : 'none';
+    if (passwordView) passwordView.style.display = (cenaAlvo.model === 'puzzle_password') ? 'flex' : 'none';
+    if (dialogueView) dialogueView.style.display = (cenaAlvo.model === 'dialogue_tree') ? 'flex' : 'none';
+
+    if (cenaAlvo.model === 'tactical_grid') {
+      renderTacticalGridPalco(cenaAlvo);
+      initPalcoKeyControls();
+    } else if (cenaAlvo.model === 'puzzle_mahjong') {
+      renderMahjongPalco(cenaAlvo);
+    } else if (cenaAlvo.model === 'puzzle_password') {
+      renderPasswordPalco(cenaAlvo);
+    } else if (cenaAlvo.model === 'dialogue_tree') {
+      renderDialoguePalco(cenaAlvo);
+    }
+
+  } catch (e) {
+    console.error("Erro ao carregar cena no palco:", e);
+  }
+}
+
+window.aoTrocarCenaNoPalco = function(sceneId) {
+  loadActiveScenePalco(sceneId);
+};
+
+function atualizarHudPersonagemPalco() {
+  const statsBox = document.getElementById('scene-hud-stats-box');
+  const animaVal = document.getElementById('scene-hud-anima-val');
+  const xpVal = document.getElementById('scene-hud-xp-val');
+
+  const user = obterUsuarioAtual();
+  const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
+
+  if (meuChar && statsBox && animaVal && xpVal) {
+    statsBox.style.display = 'flex';
+    const curA = meuChar.anima_atual !== undefined ? meuChar.anima_atual : meuChar.anima_max || 10;
+    const maxA = meuChar.anima_max || 10;
+    animaVal.innerText = `${curA}/${maxA}`;
+    xpVal.innerText = `${meuChar.xp_total || 0} XP`;
+  }
+}
+
+// --- Renderizador do Grid Tático no Palco ---
+function renderTacticalGridPalco(scene) {
+  const table = document.getElementById('scene-interactive-grid');
+  const placeholder = document.getElementById('scene-grid-placeholder');
+  if (!table) return;
+
+  if (placeholder) placeholder.style.display = 'none';
+  table.style.display = 'table';
+  table.innerHTML = '';
+
+  let modelData = {};
+  try {
+    modelData = typeof scene.model_data === 'string' ? JSON.parse(scene.model_data) : (scene.model_data || {});
+  } catch (e) {
+    modelData = {};
+  }
+
+  const rows = modelData.rows || 12;
+  const cols = modelData.cols || 16;
+  const matrix = modelData.matrix || [];
+
+  const user = obterUsuarioAtual();
+  const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
+
+  for (let r = 0; r < rows; r++) {
+    const tr = document.createElement('tr');
+    for (let c = 0; c < cols; c++) {
+      const cellData = (matrix[r] && matrix[r][c]) ? matrix[r][c] : { l1: 'floor_stone', l2: null, l3: null };
+      const td = document.createElement('td');
+      td.dataset.row = r;
+      td.dataset.col = c;
+
+      // Camada 1
+      const l1Asset = getAssetById(cellData.l1);
+      const l1Div = document.createElement('div');
+      l1Div.className = 'cell-l1';
+      l1Div.innerHTML = l1Asset ? l1Asset.icon : '🪨';
+      td.appendChild(l1Div);
+
+      // Camada 2
+      if (cellData.l2) {
+        const l2Asset = getAssetById(cellData.l2);
+        if (l2Asset) {
+          const l2Div = document.createElement('div');
+          l2Div.className = 'cell-l2';
+          l2Div.innerHTML = l2Asset.icon;
+          td.appendChild(l2Div);
+        }
+      }
+
+      // Camada 3
+      if (cellData.l3) {
+        const l3Asset = getAssetById(cellData.l3);
+        if (l3Asset) {
+          const l3Div = document.createElement('div');
+          l3Div.className = 'cell-l3';
+          l3Div.innerHTML = l3Asset.icon;
+          td.appendChild(l3Div);
+        }
+      }
+
+      // Token do Jogador Local
+      if (palcoPlayerPosition.x === c && palcoPlayerPosition.y === r) {
+        const tokenDiv = document.createElement('div');
+        tokenDiv.className = 'grid-token-entity token-player';
+        tokenDiv.innerHTML = meuChar ? (meuChar.avatar || '🗡️') : '🛡️';
+
+        const nameTag = document.createElement('div');
+        nameTag.className = 'grid-token-name';
+        nameTag.innerText = meuChar ? meuChar.nome : (user ? user.username : 'Você');
+        tokenDiv.appendChild(nameTag);
+
+        td.appendChild(tokenDiv);
+      }
+
+      // Tokens de outros jogadores remotos via P2P
+      Object.keys(palcoRemoteTokens).forEach(peerCharId => {
+        const remoteToken = palcoRemoteTokens[peerCharId];
+        if (remoteToken.x === c && remoteToken.y === r) {
+          const rTokenDiv = document.createElement('div');
+          rTokenDiv.className = 'grid-token-entity';
+          rTokenDiv.innerHTML = remoteToken.avatar || '🧙';
+
+          const rNameTag = document.createElement('div');
+          rNameTag.className = 'grid-token-name';
+          rNameTag.innerText = remoteToken.charName || 'Herói';
+          rTokenDiv.appendChild(rNameTag);
+
+          td.appendChild(rTokenDiv);
+        }
+      });
+
+      // Evento de Clique na Célula
+      td.addEventListener('click', () => {
+        onPalcoCellClick(r, c, cellData);
+      });
+
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+}
+
+function initPalcoKeyControls() {
+  if (keyListenersInitialized) return;
+  keyListenersInitialized = true;
+
+  window.addEventListener('keydown', (e) => {
+    const viewCenas = document.getElementById('view-cenas');
+    if (!viewCenas || !viewCenas.classList.contains('active')) return;
+    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
+
+    if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      moverTokenDirecao(0, -1);
+    } else if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      moverTokenDirecao(0, 1);
+    } else if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      moverTokenDirecao(-1, 0);
+    } else if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      moverTokenDirecao(1, 0);
+    } else if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      interagirTileAtual();
+    }
+  });
+}
+
+window.moverTokenDirecao = async function(dx, dy) {
+  if (!palcoActiveSceneData || palcoActiveSceneData.model !== 'tactical_grid') return;
+
+  let modelData = {};
+  try {
+    modelData = typeof palcoActiveSceneData.model_data === 'string' ? JSON.parse(palcoActiveSceneData.model_data) : (palcoActiveSceneData.model_data || {});
+  } catch (e) {
+    modelData = {};
+  }
+
+  const rows = modelData.rows || 12;
+  const cols = modelData.cols || 16;
+  const matrix = modelData.matrix || [];
+
+  const targetX = palcoPlayerPosition.x + dx;
+  const targetY = palcoPlayerPosition.y + dy;
+
+  // Verifica limites do mapa
+  if (targetX < 0 || targetX >= cols || targetY < 0 || targetY >= rows) {
+    return;
+  }
+
+  // Verifica colisão na Camada 2 (Obstáculos)
+  const cellData = (matrix[targetY] && matrix[targetY][targetX]) ? matrix[targetY][targetX] : null;
+  if (cellData && cellData.l2) {
+    const l2Asset = getAssetById(cellData.l2);
+    if (l2Asset && l2Asset.solid) {
+      console.log("Movimento bloqueado por obstáculo:", l2Asset.name);
+      return;
+    }
+  }
+
+  // Movimenta o token
+  palcoPlayerPosition.x = targetX;
+  palcoPlayerPosition.y = targetY;
+  renderTacticalGridPalco(palcoActiveSceneData);
+
+  // Broadcast P2P do movimento
+  const user = obterUsuarioAtual();
+  const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
+  if (p2pNetManager) {
+    p2pNetManager.broadcast('token_move', {
+      charId: meuChar ? meuChar.id : (user ? user.id : 'anon'),
+      charName: meuChar ? meuChar.nome : (user ? user.username : 'Herói'),
+      avatar: meuChar ? meuChar.avatar : '🗡️',
+      x: targetX,
+      y: targetY
+    });
+  }
+
+  // Verifica gatilho on_tile_enter
+  if (cellData) {
+    await testarEDispararGatilhos('on_tile_enter', targetX, targetY, cellData);
+  }
+};
+
+window.interagirTileAtual = async function() {
+  if (!palcoActiveSceneData) return;
+  let modelData = {};
+  try {
+    modelData = typeof palcoActiveSceneData.model_data === 'string' ? JSON.parse(palcoActiveSceneData.model_data) : (palcoActiveSceneData.model_data || {});
+  } catch (e) {
+    modelData = {};
+  }
+  const matrix = modelData.matrix || [];
+  const cellData = (matrix[palcoPlayerPosition.y] && matrix[palcoPlayerPosition.y][palcoPlayerPosition.x]) ? matrix[palcoPlayerPosition.y][palcoPlayerPosition.x] : null;
+  if (cellData) {
+    await testarEDispararGatilhos('on_tile_click', palcoPlayerPosition.x, palcoPlayerPosition.y, cellData);
+  }
+};
+
+async function onPalcoCellClick(r, c, cellData) {
+  if (!palcoActiveSceneData) return;
+  await testarEDispararGatilhos('on_tile_click', c, r, cellData);
+}
+
+async function testarEDispararGatilhos(triggerType, x, y, cellData) {
+  let rules = [];
+  try {
+    rules = typeof palcoActiveSceneData.rules_data === 'string' ? JSON.parse(palcoActiveSceneData.rules_data) : (palcoActiveSceneData.rules_data || []);
+  } catch (e) {
+    rules = [];
+  }
+
+  const matchingRule = rules.find(rule => {
+    if (rule.when !== triggerType) return false;
+    if (rule.targetTile) {
+      if (rule.targetTile === `${x},${y}`) return true;
+      if (cellData.l1 === rule.targetTile || cellData.l2 === rule.targetTile || cellData.l3 === rule.targetTile) return true;
+    }
+    return false;
+  });
+
+  if (matchingRule) {
+    console.log(`[Gatilho Disparado] ${triggerType} em (${x},${y}) -> Ação: ${matchingRule.then}`);
+    const user = obterUsuarioAtual();
+    const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
+
+    try {
+      const res = await apiClient.triggerSceneAction(currentCampaignId, palcoActiveSceneData.id, {
+        trigger: triggerType,
+        ruleId: matchingRule.id,
+        actionType: matchingRule.then,
+        actionParams: matchingRule.actionParams,
+        coords: { x, y },
+        characterId: meuChar ? meuChar.id : null
+      });
+
+      if (res && res.sucesso) {
+        // Se a ação alterou o tile na matriz local
+        if (res.tileAlterado && palcoActiveSceneData.model_data) {
+          if (typeof palcoActiveSceneData.model_data === 'string') {
+            palcoActiveSceneData.model_data = JSON.parse(palcoActiveSceneData.model_data);
+          }
+          if (palcoActiveSceneData.model_data.matrix && palcoActiveSceneData.model_data.matrix[y]) {
+            palcoActiveSceneData.model_data.matrix[y][x].l2 = res.tileAlterado;
+            renderTacticalGridPalco(palcoActiveSceneData);
+          }
+        }
+
+        // Se houve dano/cura ou XP, recarrega dados dos personagens para atualizar HUD
+        if (res.dano || res.cura || res.xp) {
+          await loadDiarioData();
+          atualizarHudPersonagemPalco();
+        }
+
+        // Se transferiu de cena
+        if (res.transferirCenaId) {
+          loadActiveScenePalco(res.transferirCenaId);
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao processar gatilho no backend:", e);
+    }
+  }
+}
+
+function aoReceberMovimentoP2P(data) {
+  if (!data || !data.charId) return;
+  palcoRemoteTokens[data.charId] = {
+    charName: data.charName,
+    avatar: data.avatar,
+    x: data.x,
+    y: data.y
+  };
+  if (palcoActiveSceneData && palcoActiveSceneData.model === 'tactical_grid') {
+    renderTacticalGridPalco(palcoActiveSceneData);
+  }
+}
+
+function aoReceberEstadoCenaP2P(data) {
+  if (data && data.sceneId) {
+    loadActiveScenePalco(data.sceneId);
+  }
+}
+
+// =========================================================================
+// MINIJOGO: MAHJONG / MEMÓRIA COM BOMBAS
+// =========================================================================
+
+function renderMahjongPalco(scene) {
+  const board = document.getElementById('mahjong-grid-board');
+  const scorePill = document.getElementById('mahjong-score-pill');
+  const bombsPill = document.getElementById('mahjong-bombs-pill');
+  if (!board) return;
+
+  board.innerHTML = '';
+  let modelData = {};
+  try {
+    modelData = typeof scene.model_data === 'string' ? JSON.parse(scene.model_data) : (scene.model_data || {});
+  } catch (e) {
+    modelData = {};
+  }
+
+  const bombCount = modelData.bombCount || 2;
+  const bombDamage = modelData.bombDamage || 4;
+
+  const ICONS_POOL = ['💎', '🔮', '📜', '🗝️', '🗡️', '🛡️', '👑', '⚡', '🌙', '🩸'];
+  const pairsNeeded = 6;
+  const selectedIcons = ICONS_POOL.slice(0, pairsNeeded);
+
+  let deck = [];
+  selectedIcons.forEach(icon => {
+    deck.push({ icon: icon, isBomb: false, id: Math.random() });
+    deck.push({ icon: icon, isBomb: false, id: Math.random() });
+  });
+
+  for (let b = 0; b < bombCount; b++) {
+    deck.push({ icon: '💣', isBomb: true, id: Math.random() });
+  }
+
+  // Embaralha
+  deck.sort(() => Math.random() - 0.5);
+
+  mahjongState = {
+    cards: deck.map(c => ({ ...c, matched: false, flipped: false })),
+    revealedIndices: [],
+    matchedPairs: 0,
+    totalPairs: pairsNeeded,
+    bombsHit: 0,
+    bombDamage: bombDamage,
+    isBusy: false
+  };
+
+  if (scorePill) scorePill.innerText = `Pares: 0/${pairsNeeded}`;
+  if (bombsPill) bombsPill.innerText = `Bombas: 0`;
+
+  renderMahjongCards();
+}
+
+function renderMahjongCards() {
+  const board = document.getElementById('mahjong-grid-board');
+  if (!board) return;
+
+  board.innerHTML = mahjongState.cards.map((card, idx) => {
+    let content = '❓';
+    let extraClass = 'hidden';
+
+    if (card.flipped || card.matched) {
+      content = card.icon;
+      extraClass = card.isBomb ? 'bomb' : 'revealed';
+    }
+
+    return `
+      <div class="mahjong-tile-card ${extraClass}" onclick="onMahjongCardClick(${idx})">
+        ${content}
+      </div>
+    `;
+  }).join('');
+}
+
+window.onMahjongCardClick = async function(idx) {
+  if (mahjongState.isBusy) return;
+  const card = mahjongState.cards[idx];
+  if (!card || card.matched || card.flipped) return;
+
+  // Vira a carta
+  card.flipped = true;
+  mahjongState.revealedIndices.push(idx);
+  renderMahjongCards();
+
+  // Se for bomba, explode e causa dano imediato
+  if (card.isBomb) {
+    mahjongState.bombsHit++;
+    const bombsPill = document.getElementById('mahjong-bombs-pill');
+    if (bombsPill) bombsPill.innerText = `Bombas: ${mahjongState.bombsHit}`;
+
+    const user = obterUsuarioAtual();
+    const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
+    if (meuChar) {
+      await apiClient.triggerSceneAction(currentCampaignId, palcoActiveSceneData.id, {
+        trigger: 'on_password_fail',
+        actionType: 'apply_damage',
+        actionParams: mahjongState.bombDamage,
+        characterId: meuChar.id
+      });
+      await loadDiarioData();
+      atualizarHudPersonagemPalco();
+    }
+    return;
+  }
+
+  // Compara par
+  const nonBombRevealed = mahjongState.revealedIndices.filter(i => !mahjongState.cards[i].isBomb && !mahjongState.cards[i].matched);
+  if (nonBombRevealed.length === 2) {
+    mahjongState.isBusy = true;
+    const [firstIdx, secondIdx] = nonBombRevealed;
+    const firstCard = mahjongState.cards[firstIdx];
+    const secondCard = mahjongState.cards[secondIdx];
+
+    if (firstCard.icon === secondCard.icon) {
+      firstCard.matched = true;
+      secondCard.matched = true;
+      mahjongState.matchedPairs++;
+      mahjongState.revealedIndices = [];
+      mahjongState.isBusy = false;
+
+      const scorePill = document.getElementById('mahjong-score-pill');
+      if (scorePill) scorePill.innerText = `Pares: ${mahjongState.matchedPairs}/${mahjongState.totalPairs}`;
+
+      renderMahjongCards();
+
+      // Se venceu
+      if (mahjongState.matchedPairs === mahjongState.totalPairs) {
+        setTimeout(async () => {
+          alert("Parabéns! Você desvendou todas as relíquias do enigma!");
+          const user = obterUsuarioAtual();
+          const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
+          await apiClient.triggerSceneAction(currentCampaignId, palcoActiveSceneData.id, {
+            trigger: 'on_score_reach',
+            actionType: 'award_xp',
+            actionParams: 50,
+            characterId: meuChar ? meuChar.id : null
+          });
+          await loadDiarioData();
+          atualizarHudPersonagemPalco();
+        }, 300);
+      }
+    } else {
+      setTimeout(() => {
+        firstCard.flipped = false;
+        secondCard.flipped = false;
+        mahjongState.revealedIndices = [];
+        mahjongState.isBusy = false;
+        renderMahjongCards();
+      }, 900);
+    }
+  }
+};
+
+// =========================================================================
+// MINIJOGO: SENHA / COFRE RÚNICO
+// =========================================================================
+
+function renderPasswordPalco(scene) {
+  let modelData = {};
+  try {
+    modelData = typeof scene.model_data === 'string' ? JSON.parse(scene.model_data) : (scene.model_data || {});
+  } catch (e) {
+    modelData = {};
+  }
+
+  passwordState = {
+    secret: modelData.secret || '1337',
+    currentGuess: '',
+    length: modelData.length || 4,
+    type: modelData.passwordType || 'numeric',
+    hints: modelData.hintsEnabled !== undefined ? modelData.hintsEnabled : true,
+    damage: modelData.failDamage || 2
+  };
+
+  const container = document.getElementById('password-slots-container');
+  if (!container) return;
+
+  container.innerHTML = '';
+  for (let i = 0; i < passwordState.length; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'password-slot-box';
+    slot.id = `pwd-slot-${i}`;
+    slot.innerText = '_';
+    container.appendChild(slot);
+  }
+
+  // Teclado numérico ou de entrada se for numérico
+  let keypad = document.getElementById('password-keypad');
+  if (!keypad) {
+    keypad = document.createElement('div');
+    keypad.id = 'password-keypad';
+    keypad.style.display = 'grid';
+    keypad.style.gridTemplateColumns = 'repeat(3, 54px)';
+    keypad.style.gap = '8px';
+    keypad.style.margin = '16px auto';
+    container.parentNode.insertBefore(keypad, container.nextSibling);
+  }
+
+  keypad.innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(num => `
+    <button type="button" class="btn-secondary" style="font-size: 18px; font-weight: 700; height: 48px;" onclick="digitarDigitoCofre('${num}')">
+      ${num}
+    </button>
+  `).join('');
+}
+
+window.digitarDigitoCofre = function(digito) {
+  if (passwordState.currentGuess.length >= passwordState.length) return;
+  passwordState.currentGuess += digito;
+
+  for (let i = 0; i < passwordState.length; i++) {
+    const slot = document.getElementById(`pwd-slot-${i}`);
+    if (slot) {
+      slot.innerText = passwordState.currentGuess[i] || '_';
+      slot.className = 'password-slot-box';
+    }
+  }
+};
+
+window.limparSenhaCofre = function() {
+  passwordState.currentGuess = '';
+  for (let i = 0; i < passwordState.length; i++) {
+    const slot = document.getElementById(`pwd-slot-${i}`);
+    if (slot) {
+      slot.innerText = '_';
+      slot.className = 'password-slot-box';
+    }
+  }
+  const fb = document.getElementById('password-feedback-msg');
+  if (fb) fb.innerText = "Insira a combinação e pressione Confirmar";
+};
+
+window.submeterSenhaCofre = async function() {
+  if (passwordState.currentGuess.length !== passwordState.length) {
+    alert(`Preencha todos os ${passwordState.length} dígitos da combinação.`);
+    return;
+  }
+
+  const guess = passwordState.currentGuess;
+  const secret = passwordState.secret;
+  const fb = document.getElementById('password-feedback-msg');
+
+  if (guess === secret) {
+    for (let i = 0; i < passwordState.length; i++) {
+      const slot = document.getElementById(`pwd-slot-${i}`);
+      if (slot) slot.className = 'password-slot-box hint-exact';
+    }
+    if (fb) fb.innerHTML = `<span style="color: #34d399; font-weight: 700;">🔓 ACESSO PERMITIDO! O mecanismo ancestral se destrancou.</span>`;
+
+    const user = obterUsuarioAtual();
+    const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
+    await apiClient.triggerSceneAction(currentCampaignId, palcoActiveSceneData.id, {
+      trigger: 'on_password_correct',
+      actionType: 'award_xp',
+      actionParams: 40,
+      characterId: meuChar ? meuChar.id : null
+    });
+    await loadDiarioData();
+    atualizarHudPersonagemPalco();
+  } else {
+    // Aplica dicas por cor se ativado
+    if (passwordState.hints) {
+      for (let i = 0; i < passwordState.length; i++) {
+        const slot = document.getElementById(`pwd-slot-${i}`);
+        if (slot) {
+          const g = parseInt(guess[i]);
+          const s = parseInt(secret[i]);
+          if (g === s) slot.className = 'password-slot-box hint-exact';
+          else if (g > s) slot.className = 'password-slot-box hint-high';
+          else slot.className = 'password-slot-box hint-low';
+        }
+      }
+    }
+    if (fb) fb.innerHTML = `<span style="color: #f87171;">❌ Combinação incorreta! O cofre liberou uma descarga mágica (${passwordState.damage} Dano).</span>`;
+
+    const user = obterUsuarioAtual();
+    const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
+    if (meuChar) {
+      await apiClient.triggerSceneAction(currentCampaignId, palcoActiveSceneData.id, {
+        trigger: 'on_password_fail',
+        actionType: 'apply_damage',
+        actionParams: passwordState.damage,
+        characterId: meuChar.id
+      });
+      await loadDiarioData();
+      atualizarHudPersonagemPalco();
+    }
+  }
+};
+
+// =========================================================================
+// MINIJOGO: ÁRVORE DE DIÁLOGOS (VISUAL NOVEL)
+// =========================================================================
+
+function renderDialoguePalco(scene) {
+  let modelData = {};
+  try {
+    modelData = typeof scene.model_data === 'string' ? JSON.parse(scene.model_data) : (scene.model_data || {});
+  } catch (e) {
+    modelData = {};
+  }
+
+  const avatar = document.getElementById('dialogue-avatar');
+  const name = document.getElementById('dialogue-speaker-name');
+  const title = document.getElementById('dialogue-speaker-title');
+  const textBubble = document.getElementById('dialogue-text-bubble');
+  const optionsList = document.getElementById('dialogue-options-list');
+
+  if (avatar) avatar.innerText = modelData.avatar || '🧙';
+  if (name) name.innerText = modelData.speaker || 'Guardião da Cripta';
+  if (title) title.innerText = modelData.speakerTitle || 'Entidade Antiga';
+  if (textBubble) textBubble.innerText = `"${modelData.text || 'Quem ousa perturbar o repouso das eras?'}"`;
+
+  if (optionsList) {
+    optionsList.innerHTML = `
+      <button type="button" class="dialogue-choice-btn" onclick="escolherOpcaoDialogo(1)">
+        <span>1.</span> "Buscamos apenas passagem para o templo subterrâneo."
+      </button>
+      <button type="button" class="dialogue-choice-btn" onclick="escolherOpcaoDialogo(2)">
+        <span>2.</span> "Fomos enviados pela Ordem Arcana para purificar estas terras."
+      </button>
+      <button type="button" class="dialogue-choice-btn" onclick="escolherOpcaoDialogo(3)">
+        <span>3.</span> [Sacar a arma e preparar-se para o combate]
+      </button>
+    `;
+  }
+}
+
+window.escolherOpcaoDialogo = async function(opcao) {
+  const textBubble = document.getElementById('dialogue-text-bubble');
+  const optionsList = document.getElementById('dialogue-options-list');
+
+  if (opcao === 1) {
+    if (textBubble) textBubble.innerText = `"Passagem? Apenas aqueles dignos de sacrifício cruzam os portais. Demonstrem sua fibra ou retornem ao pó."`;
+    if (optionsList) {
+      optionsList.innerHTML = `
+        <button type="button" class="dialogue-choice-btn" onclick="escolherOpcaoDialogo(4)">
+          <span>➔</span> Aceitar a provação e avançar.
+        </button>
+      `;
+    }
+  } else if (opcao === 2) {
+    if (textBubble) textBubble.innerText = `"A Ordem Arcana... faz séculos que não ouço este nome. Se são seus herdeiros, concedo-lhes minha bênção."`;
+    const user = obterUsuarioAtual();
+    const meuChar = currentPartyCharacters.find(c => c.user_id === (user ? user.id : ''));
+    await apiClient.triggerSceneAction(currentCampaignId, palcoActiveSceneData.id, {
+      trigger: 'on_tile_click',
+      actionType: 'heal_anima',
+      actionParams: 5,
+      characterId: meuChar ? meuChar.id : null
+    });
+    await loadDiarioData();
+    atualizarHudPersonagemPalco();
+  } else if (opcao === 3) {
+    if (textBubble) textBubble.innerText = `"Audácia tola! As sombras consumirão seus ossos!"`;
+  } else if (opcao === 4) {
+    alert("Você avança para o próximo estágio da masmorra!");
+  }
+};
+
+// =========================================================================
+// INICIALIZAÇÃO GERAL DO FRONTEND
+// =========================================================================
+
 document.addEventListener('DOMContentLoaded', () => {
   loadCampaignData();
   setupChatAutocomplete();
   loadChatHistory(false);
-  iniciarChatPolling(); // Mantemos como Fallback, depois podemos otimizar diminuindo a frequencia
+  iniciarChatPolling();
   initSyncP2P();
 });
+
 
