@@ -9,6 +9,7 @@ compatibility_flags = ["nodejs_compat"]
 binding = "DB"
 database_name = "arcana_vtt_db"
 database_id = "0c182dd7-36f9-45cf-a3bd-bfa8a639ee4d"
+migrations_dir = "migrations"
 
 # Variáveis e Segredos de Ambiente
 [vars]

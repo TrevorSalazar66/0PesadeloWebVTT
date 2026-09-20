@@ -888,8 +888,35 @@ export const dbQueries = {
   },
 
   // ==========================================
-  // MENSAGENS & CHAT DA CAMPANHA
+  // MENSAGENS & CHAT DA CAMPANHA (COM AUTO-CRIAÇÃO RESILIENTE)
   // ==========================================
+  async ensureCampaignMessagesTable(db) {
+    try {
+      await db.prepare(`
+        CREATE TABLE IF NOT EXISTS campaign_messages (
+          id TEXT PRIMARY KEY,
+          campaign_id TEXT NOT NULL,
+          user_id TEXT NOT NULL,
+          character_id TEXT,
+          author_name TEXT NOT NULL,
+          author_avatar TEXT DEFAULT '',
+          author_role TEXT DEFAULT 'jogador',
+          msg_type TEXT NOT NULL DEFAULT 'ic',
+          content TEXT NOT NULL,
+          metadata TEXT NOT NULL DEFAULT '{}',
+          whisper_target_id TEXT DEFAULT NULL,
+          is_deleted INTEGER NOT NULL DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+      `).run();
+      await db.prepare(`CREATE INDEX IF NOT EXISTS idx_messages_campaign ON campaign_messages(campaign_id, created_at)`).run().catch(() => {});
+      await db.prepare(`CREATE INDEX IF NOT EXISTS idx_messages_user ON campaign_messages(user_id)`).run().catch(() => {});
+      await db.prepare(`CREATE INDEX IF NOT EXISTS idx_messages_whisper ON campaign_messages(whisper_target_id)`).run().catch(() => {});
+    } catch (_) {}
+  },
+
   async saveCampaignMessage(db, {
     id,
     campaignId,
@@ -906,43 +933,64 @@ export const dbQueries = {
     const msgId = id || `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const metadataStr = typeof metadata === 'string' ? metadata : JSON.stringify(metadata);
 
-    const stmt = db.prepare(`
-      INSERT INTO campaign_messages (
-        id, campaign_id, user_id, character_id,
-        author_name, author_avatar, author_role,
-        msg_type, content, metadata, whisper_target_id,
-        is_deleted, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'))
-    `);
+    const executeInsert = async () => {
+      const stmt = db.prepare(`
+        INSERT INTO campaign_messages (
+          id, campaign_id, user_id, character_id,
+          author_name, author_avatar, author_role,
+          msg_type, content, metadata, whisper_target_id,
+          is_deleted, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'))
+      `);
 
-    await stmt.bind(
-      msgId,
-      campaignId,
-      userId,
-      characterId,
-      authorName.trim(),
-      authorAvatar || '',
-      authorRole,
-      msgType,
-      content.trim(),
-      metadataStr,
-      whisperTargetId || null
-    ).run();
+      return await stmt.bind(
+        msgId,
+        campaignId,
+        userId,
+        characterId,
+        authorName.trim(),
+        authorAvatar || '',
+        authorRole,
+        msgType,
+        content.trim(),
+        metadataStr,
+        whisperTargetId || null
+      ).run();
+    };
+
+    try {
+      await executeInsert();
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureCampaignMessagesTable(db);
+        await executeInsert();
+      } else {
+        throw err;
+      }
+    }
 
     return await this.getCampaignMessageById(db, msgId);
   },
 
   async getCampaignMessageById(db, messageId) {
-    const stmt = db.prepare('SELECT * FROM campaign_messages WHERE id = ?');
-    const msg = await stmt.bind(messageId).first();
-    if (msg && typeof msg.metadata === 'string') {
-      try {
-        msg.metadata = JSON.parse(msg.metadata);
-      } catch (_) {
-        msg.metadata = {};
+    try {
+      const stmt = db.prepare('SELECT * FROM campaign_messages WHERE id = ?');
+      const msg = await stmt.bind(messageId).first();
+      if (msg && typeof msg.metadata === 'string') {
+        try {
+          msg.metadata = JSON.parse(msg.metadata);
+        } catch (_) {
+          msg.metadata = {};
+        }
       }
+      return msg;
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureCampaignMessagesTable(db);
+        return null;
+      }
+      throw err;
     }
-    return msg;
   },
 
   async getCampaignMessages(db, campaignId, { limit = 50, beforeTimestamp = null, userId = null, isGm = false } = {}) {
@@ -966,9 +1014,18 @@ export const dbQueries = {
     sql += ` ORDER BY created_at DESC LIMIT ?`;
     params.push(safeLimit);
 
-    const stmt = db.prepare(sql);
-    const res = await stmt.bind(...params).all();
-    const rows = res.results || res || [];
+    let rows = [];
+    try {
+      const stmt = db.prepare(sql);
+      const res = await stmt.bind(...params).all();
+      rows = res.results || res || [];
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureCampaignMessagesTable(db);
+        return [];
+      }
+      throw err;
+    }
 
     // Parse metadata e reverte para ordem cronológica (mais antiga -> mais nova)
     const formatted = rows.map(r => {
@@ -990,31 +1047,55 @@ export const dbQueries = {
   },
 
   async deleteCampaignMessage(db, messageId, campaignId) {
-    const stmt = db.prepare(`
-      UPDATE campaign_messages 
-      SET is_deleted = 1 
-      WHERE id = ? AND campaign_id = ?
-    `);
-    return await stmt.bind(messageId, campaignId).run();
+    try {
+      const stmt = db.prepare(`
+        UPDATE campaign_messages 
+        SET is_deleted = 1 
+        WHERE id = ? AND campaign_id = ?
+      `);
+      return await stmt.bind(messageId, campaignId).run();
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureCampaignMessagesTable(db);
+        return;
+      }
+      throw err;
+    }
   },
 
   async clearAllCampaignMessages(db, campaignId) {
-    const stmt = db.prepare(`
-      UPDATE campaign_messages 
-      SET is_deleted = 1 
-      WHERE campaign_id = ?
-    `);
-    return await stmt.bind(campaignId).run();
+    try {
+      const stmt = db.prepare(`
+        UPDATE campaign_messages 
+        SET is_deleted = 1 
+        WHERE campaign_id = ?
+      `);
+      return await stmt.bind(campaignId).run();
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureCampaignMessagesTable(db);
+        return;
+      }
+      throw err;
+    }
   },
 
   async updateCampaignMessageMetadata(db, messageId, metadataObj) {
     const metaStr = typeof metadataObj === 'string' ? metadataObj : JSON.stringify(metadataObj);
-    const stmt = db.prepare(`
-      UPDATE campaign_messages 
-      SET metadata = ? 
-      WHERE id = ?
-    `);
-    return await stmt.bind(metaStr, messageId).run();
+    try {
+      const stmt = db.prepare(`
+        UPDATE campaign_messages 
+        SET metadata = ? 
+        WHERE id = ?
+      `);
+      return await stmt.bind(metaStr, messageId).run();
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureCampaignMessagesTable(db);
+        return;
+      }
+      throw err;
+    }
   }
 };
 
