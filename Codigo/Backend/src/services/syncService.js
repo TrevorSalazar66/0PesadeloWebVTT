@@ -93,12 +93,53 @@ export async function handleSyncRequest(request, env, clientIp) {
         const userBasic = await dbQueries.getUserById(db, user.userId);
         const profile = await dbQueries.getUserProfile(db, user.userId);
         const stats = await dbQueries.getUserStats(db, user.userId);
+
+        const structuredUser = {
+          id: userBasic?.id,
+          name: userBasic?.display_name || userBasic?.name || '',
+          displayName: userBasic?.display_name || userBasic?.name || '',
+          email: userBasic?.email || '',
+          role: userBasic?.role || 'jogador',
+          avatar_url: userBasic?.avatar_url || '',
+          avatarUrl: userBasic?.avatar_url || '',
+          email_verified: userBasic?.email_verified || 0,
+          auth_provider: userBasic?.auth_provider || 'email',
+          created_at: userBasic?.created_at || ''
+        };
+
+        const structuredProfile = profile ? {
+          name: profile.name || userBasic?.display_name || '',
+          displayName: profile.name || userBasic?.display_name || '',
+          nickname: profile.nickname || '',
+          ageGroup: profile.age_group || '18-24',
+          ageRange: profile.age_group || '18-24',
+          bio: profile.bio || '',
+          avatarUrl: profile.avatar_url || userBasic?.avatar_url || '',
+          bannerUrl: profile.banner_url || '',
+          contactWhatsapp: profile.contacts?.whatsapp || '',
+          contactDiscord: profile.contacts?.discord || '',
+          contactInstagram: profile.contacts?.instagram || '',
+          contacts: profile.contacts || {}
+        } : null;
+
+        const structuredStats = {
+          ...(stats || {}),
+          totalCampaigns: stats?.totalCampaigns || 0,
+          totalCreatedCampaigns: stats?.totalCreatedCampaigns || 0,
+          totalCharacters: stats?.totalCharacters || 0,
+          participatingCampaigns: stats?.totalCampaigns || 0,
+          masterCampaigns: stats?.totalCreatedCampaigns || 0,
+          charactersCreated: stats?.totalCharacters || 0
+        };
+
         return new Response(JSON.stringify({
           sucesso: true,
           dados: {
             ...userBasic,
+            user: structuredUser,
             perfil: profile || null,
-            stats: stats || { totalCampaigns: 0, totalCreatedCampaigns: 0, totalCharacters: 0 }
+            profile: structuredProfile,
+            stats: structuredStats
           }
         }), { status: 200, headers });
       }
@@ -200,9 +241,13 @@ export async function handleSyncRequest(request, env, clientIp) {
 
         const name = (data.name !== undefined ? data.name : (data.displayName !== undefined ? data.displayName : (currentProfile.name || currentUser.display_name))) || '';
         const nickname = (data.nickname !== undefined ? data.nickname : (currentProfile.nickname || '')).trim().replace(/^@+/, '');
-        const ageGroup = data.ageGroup !== undefined ? data.ageGroup : (currentProfile.age_group || '18-24');
+        const ageGroup = data.ageGroup !== undefined ? data.ageGroup : (data.ageRange !== undefined ? data.ageRange : (currentProfile.age_group || '18-24'));
         const bio = data.bio !== undefined ? data.bio : (currentProfile.bio || '');
-        const contacts = data.contacts !== undefined ? data.contacts : (currentProfile.contacts || {});
+        const contacts = data.contacts !== undefined ? data.contacts : {
+          whatsapp: data.contactWhatsapp !== undefined ? data.contactWhatsapp : (currentProfile.contacts?.whatsapp || ''),
+          discord: data.contactDiscord !== undefined ? data.contactDiscord : (currentProfile.contacts?.discord || ''),
+          instagram: data.contactInstagram !== undefined ? data.contactInstagram : (currentProfile.contacts?.instagram || '')
+        };
         const avatarUrl = data.avatarUrl !== undefined ? data.avatarUrl : (currentProfile.avatar_url || currentUser.avatar_url || '');
         const bannerUrl = data.bannerUrl !== undefined ? data.bannerUrl : (currentProfile.banner_url || '');
 
@@ -269,23 +314,46 @@ export async function handleSyncRequest(request, env, clientIp) {
         headers.set('Set-Cookie', createAuthCookie(updatedToken, LIMITS.JWT_EXPIRATION_SECONDS));
 
         const updatedStats = await dbQueries.getUserStats(db, user.userId);
+        const structuredProfile = {
+          userId: user.userId,
+          name: name.trim(),
+          displayName: name.trim(),
+          nickname,
+          ageGroup: String(ageGroup || '18-24').trim(),
+          ageRange: String(ageGroup || '18-24').trim(),
+          bio: cleanBio,
+          contacts: cleanContacts,
+          contactWhatsapp: cleanContacts.whatsapp || '',
+          contactDiscord: cleanContacts.discord || '',
+          contactInstagram: cleanContacts.instagram || '',
+          avatarUrl: typeof avatarUrl === 'string' ? avatarUrl.trim() : '',
+          bannerUrl: typeof bannerUrl === 'string' ? bannerUrl.trim() : '',
+          role: user.role,
+          profileCompleted: 1
+        };
+
+        const structuredStats = {
+          ...(updatedStats || {}),
+          totalCampaigns: updatedStats?.totalCampaigns || 0,
+          totalCreatedCampaigns: updatedStats?.totalCreatedCampaigns || 0,
+          totalCharacters: updatedStats?.totalCharacters || 0,
+          participatingCampaigns: updatedStats?.totalCampaigns || 0,
+          masterCampaigns: updatedStats?.totalCreatedCampaigns || 0,
+          charactersCreated: updatedStats?.totalCharacters || 0
+        };
+
         return new Response(JSON.stringify({
           sucesso: true,
           mensagem: 'Perfil do aventureiro atualizado com sucesso!',
           token: updatedToken,
-          perfil: {
-            userId: user.userId,
-            name: name.trim(),
-            nickname,
-            ageGroup: String(ageGroup || '18-24').trim(),
-            bio: cleanBio,
-            contacts: cleanContacts,
-            avatarUrl: typeof avatarUrl === 'string' ? avatarUrl.trim() : '',
-            bannerUrl: typeof bannerUrl === 'string' ? bannerUrl.trim() : '',
-            role: user.role,
-            profileCompleted: 1
+          perfil: structuredProfile,
+          profile: structuredProfile,
+          dados: {
+            perfil: structuredProfile,
+            profile: structuredProfile,
+            stats: structuredStats
           },
-          stats: updatedStats
+          stats: structuredStats
         }), { status: 200, headers });
       }
 

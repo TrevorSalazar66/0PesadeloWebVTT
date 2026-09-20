@@ -8341,13 +8341,14 @@
 
         const res = await window.apiClient.getUserProfile();
         if (res && res.sucesso && res.dados) {
-          const user = res.dados.user || {};
-          const profile = res.dados.profile || {};
-          const stats = res.dados.stats || {};
+          const dados = res.dados;
+          const user = dados.user || dados || {};
+          const profile = dados.profile || dados.perfil || {};
+          const stats = dados.stats || {};
 
           // 1. Atualizar Hero Banner
-          const displayName = profile.displayName || user.name || 'Aventureiro Arcano';
-          const nickname = profile.nickname || user.name?.toLowerCase().replace(/\s+/g, '_') || 'aventureiro';
+          const displayName = profile.displayName || profile.name || user.displayName || user.name || user.display_name || 'Aventureiro Arcano';
+          const nickname = profile.nickname || user.nickname || (displayName ? displayName.toLowerCase().replace(/\s+/g, '_') : 'aventureiro');
           const bio = profile.bio || 'Nenhuma crônica ou história contada ainda. Edite sua biografia para forjar sua lenda na Taverna.';
           
           const elTitle = document.getElementById('profile-hero-display-name');
@@ -8360,13 +8361,14 @@
           if (elBio) elBio.textContent = `"${bio}"`;
 
           const elId = document.getElementById('profile-user-id');
-          if (elId) elId.value = user.id || '...';
+          if (elId) elId.value = user.id || dados.id || '...';
 
           // Data de criação
           const elCreated = document.getElementById('profile-hero-created-at');
-          if (elCreated && user.created_at) {
+          const createdAt = user.created_at || dados.created_at;
+          if (elCreated && createdAt) {
             try {
-              const dt = new Date(user.created_at);
+              const dt = new Date(createdAt);
               const dataFormatada = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
               elCreated.textContent = `📅 Membro desde ${dataFormatada}`;
             } catch(e) {
@@ -8377,13 +8379,14 @@
           // Provedor de Login
           const elAuth = document.getElementById('profile-hero-auth-method');
           if (elAuth) {
-            elAuth.textContent = `🔑 Login: ${user.auth_provider === 'google' ? 'Google' : 'E-mail'}`;
+            const provider = user.auth_provider || dados.auth_provider;
+            elAuth.textContent = `🔑 Login: ${provider === 'google' ? 'Google' : 'E-mail'}`;
           }
 
           // Role Badge do Hero
           const elRoleBadge = document.getElementById('profile-hero-role-badge');
           if (elRoleBadge) {
-            const role = String(user.role || 'jogador').toLowerCase();
+            const role = String(user.role || dados.role || 'jogador').toLowerCase();
             let roleLabel = 'Jogador';
             let roleClass = 'role-badge-jogador';
             if (role === 'superadmin') {
@@ -8401,10 +8404,11 @@
           }
 
           // Avatar Heráldico
+          const avatarUrl = profile.avatarUrl || profile.avatar_url || user.avatarUrl || user.avatar_url || dados.avatar_url;
           const elAvatar = document.getElementById('profile-hero-avatar-img');
           if (elAvatar) {
-            if (profile.avatarUrl) {
-              elAvatar.innerHTML = `<img src="${profile.avatarUrl}" alt="Avatar de ${displayName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.onerror=null; this.parentElement.textContent='${displayName[0].toUpperCase()}';">`;
+            if (avatarUrl) {
+              elAvatar.innerHTML = `<img src="${avatarUrl}" alt="Avatar de ${displayName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.onerror=null; this.parentElement.textContent='${displayName[0].toUpperCase()}';">`;
             } else {
               elAvatar.innerHTML = '';
               elAvatar.textContent = (displayName[0] || 'A').toUpperCase();
@@ -8412,10 +8416,11 @@
           }
 
           // Banner de Fundo Hero
+          const bannerUrl = profile.bannerUrl || profile.banner_url || '';
           const elBanner = document.getElementById('profile-hero-banner');
           if (elBanner) {
-            if (profile.bannerUrl) {
-              elBanner.style.background = `linear-gradient(to top, rgba(16, 16, 29, 0.95), rgba(16, 16, 29, 0.75)), url('${profile.bannerUrl}') center/cover no-repeat`;
+            if (bannerUrl) {
+              elBanner.style.background = `linear-gradient(to top, rgba(16, 16, 29, 0.95), rgba(16, 16, 29, 0.75)), url('${bannerUrl}') center/cover no-repeat`;
             } else {
               elBanner.style.background = `linear-gradient(135deg, rgba(20, 20, 36, 0.95) 0%, rgba(30, 25, 45, 0.9) 100%)`;
             }
@@ -8423,13 +8428,13 @@
 
           // 2. Preencher Formulário 1 (Identidade & Bio)
           const inName = document.getElementById('profile-input-name');
-          if (inName) inName.value = profile.displayName || user.name || '';
+          if (inName) inName.value = profile.displayName || profile.name || user.displayName || user.name || user.display_name || '';
 
           const inNick = document.getElementById('profile-input-nickname');
           if (inNick) inNick.value = profile.nickname || '';
 
           const inAge = document.getElementById('profile-input-age');
-          if (inAge) inAge.value = profile.ageRange || '18-24';
+          if (inAge) inAge.value = profile.ageRange || profile.ageGroup || profile.age_group || '18-24';
 
           const inBio = document.getElementById('profile-input-bio');
           if (inBio) {
@@ -8439,37 +8444,38 @@
 
           // 3. Preencher Formulário 2 (Mídias & Redes)
           const inAvatar = document.getElementById('profile-input-avatar');
-          if (inAvatar) inAvatar.value = profile.avatarUrl || '';
+          if (inAvatar) inAvatar.value = avatarUrl || '';
 
           const inBanner = document.getElementById('profile-input-banner');
-          if (inBanner) inBanner.value = profile.bannerUrl || '';
+          if (inBanner) inBanner.value = bannerUrl || '';
 
           const inDiscord = document.getElementById('profile-input-discord');
-          if (inDiscord) inDiscord.value = profile.contactDiscord || '';
+          if (inDiscord) inDiscord.value = profile.contactDiscord || profile.contacts?.discord || '';
 
           const inWhatsapp = document.getElementById('profile-input-whatsapp');
-          if (inWhatsapp) inWhatsapp.value = profile.contactWhatsapp || '';
+          if (inWhatsapp) inWhatsapp.value = profile.contactWhatsapp || profile.contacts?.whatsapp || '';
 
           const inInstagram = document.getElementById('profile-input-instagram');
-          if (inInstagram) inInstagram.value = profile.contactInstagram || '';
+          if (inInstagram) inInstagram.value = profile.contactInstagram || profile.contacts?.instagram || '';
 
           // 4. Preencher Estatísticas
           const statCamp = document.getElementById('profile-stat-campaigns');
-          if (statCamp) statCamp.textContent = stats.participatingCampaigns ?? 0;
+          if (statCamp) statCamp.textContent = stats.participatingCampaigns ?? stats.totalCampaigns ?? 0;
 
           const statMaster = document.getElementById('profile-stat-created-campaigns');
-          if (statMaster) statMaster.textContent = stats.masterCampaigns ?? 0;
+          if (statMaster) statMaster.textContent = stats.masterCampaigns ?? stats.totalCreatedCampaigns ?? 0;
 
           const statChars = document.getElementById('profile-stat-characters');
-          if (statChars) statChars.textContent = stats.charactersCreated ?? 0;
+          if (statChars) statChars.textContent = stats.charactersCreated ?? stats.totalCharacters ?? 0;
 
           // 5. Preencher Segurança
           const inEmail = document.getElementById('profile-info-email');
-          if (inEmail) inEmail.value = user.email || '';
+          if (inEmail) inEmail.value = user.email || dados.email || '';
 
           const elEmailBadge = document.getElementById('profile-email-badge');
           if (elEmailBadge) {
-            if (user.email_verified) {
+            const isVerified = user.email_verified || dados.email_verified;
+            if (isVerified) {
               elEmailBadge.textContent = '✓ Confirmado';
               elEmailBadge.className = 'badge-email-verified';
             } else {
@@ -8483,8 +8489,8 @@
             const raw = localStorage.getItem('arcana_user_data');
             if (raw) {
               const current = JSON.parse(raw);
-              current.displayName = profile.displayName || user.name;
-              current.name = user.name;
+              current.displayName = profile.displayName || profile.name || user.name || user.display_name;
+              current.name = user.name || user.display_name;
               localStorage.setItem('arcana_user_data', JSON.stringify(current));
             }
           } catch(e) {}
@@ -8535,14 +8541,21 @@
 
         const res = await window.apiClient.updateUserProfile({
           displayName,
+          name: displayName,
           nickname,
           ageRange,
+          ageGroup: ageRange,
           bio,
           avatarUrl,
           bannerUrl,
           contactDiscord,
           contactWhatsapp,
-          contactInstagram
+          contactInstagram,
+          contacts: {
+            discord: contactDiscord || '',
+            whatsapp: contactWhatsapp || '',
+            instagram: contactInstagram || ''
+          }
         });
 
         if (res && res.sucesso) {

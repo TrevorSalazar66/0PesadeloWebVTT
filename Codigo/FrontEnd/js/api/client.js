@@ -245,6 +245,10 @@ export const apiClient = {
     return this.sync('admin.user.resetPassword', { targetUserId, newPassword });
   },
 
+  adminListCampaigns(params = {}) {
+    return this.sync('admin.campaigns.list', params);
+  },
+
   adminListAuditLogs(params = {}) {
     return this.sync('admin.audit.logs', params);
   },

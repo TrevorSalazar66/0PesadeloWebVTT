@@ -136,10 +136,22 @@ export const dbQueries = {
     let totalCharacters = 0;
 
     try {
-      const campCountStmt = db.prepare('SELECT COUNT(*) as total FROM campaign_players WHERE user_id = ?');
-      const campRes = await campCountStmt.bind(userId).first();
+      const campCountStmt = db.prepare(`
+        SELECT COUNT(DISTINCT campaign_id) as total FROM (
+          SELECT campaign_id FROM campaign_players WHERE user_id = ?
+          UNION
+          SELECT id as campaign_id FROM campaigns WHERE owner_id = ?
+        )
+      `);
+      const campRes = await campCountStmt.bind(userId, userId).first();
       totalCampaigns = campRes?.total || 0;
-    } catch (_) {}
+    } catch (_) {
+      try {
+        const campCountStmt = db.prepare('SELECT COUNT(*) as total FROM campaign_players WHERE user_id = ?');
+        const campRes = await campCountStmt.bind(userId).first();
+        totalCampaigns = campRes?.total || 0;
+      } catch (__) {}
+    }
 
     try {
       const createdCountStmt = db.prepare('SELECT COUNT(*) as total FROM campaigns WHERE owner_id = ?');
