@@ -1336,7 +1336,179 @@ export const dbQueries = {
       }
       throw err;
     }
+  },
+
+  // ==========================================
+  // CENAS DA CAMPANHA (MODULARES & INTERATIVAS)
+  // ==========================================
+
+  async ensureScenesTable(db) {
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS scenes (
+        id TEXT PRIMARY KEY,
+        campaign_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT DEFAULT '',
+        image_url TEXT DEFAULT '',
+        model TEXT DEFAULT 'tactical_grid',
+        model_data TEXT DEFAULT '{}',
+        rules_data TEXT DEFAULT '[]',
+        style_data TEXT DEFAULT '{}',
+        state_data TEXT DEFAULT '{}',
+        max_players INTEGER DEFAULT 12,
+        xp_triggers TEXT DEFAULT '[]',
+        is_active INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
+    // Migrações dinâmicas para colunas adicionais
+    try { await db.prepare("ALTER TABLE scenes ADD COLUMN model TEXT DEFAULT 'tactical_grid'").run(); } catch (_) {}
+    try { await db.prepare("ALTER TABLE scenes ADD COLUMN model_data TEXT DEFAULT '{}'").run(); } catch (_) {}
+    try { await db.prepare("ALTER TABLE scenes ADD COLUMN rules_data TEXT DEFAULT '[]'").run(); } catch (_) {}
+    try { await db.prepare("ALTER TABLE scenes ADD COLUMN style_data TEXT DEFAULT '{}'").run(); } catch (_) {}
+    try { await db.prepare("ALTER TABLE scenes ADD COLUMN state_data TEXT DEFAULT '{}'").run(); } catch (_) {}
+    try { await db.prepare("ALTER TABLE scenes ADD COLUMN max_players INTEGER DEFAULT 12").run(); } catch (_) {}
+    try { await db.prepare("ALTER TABLE scenes ADD COLUMN is_active INTEGER DEFAULT 0").run(); } catch (_) {}
+    try { await db.prepare("ALTER TABLE scenes ADD COLUMN xp_triggers TEXT DEFAULT '[]'").run(); } catch (_) {}
+  },
+
+  async createScene(db, { id, campaignId, name, description = '', imageUrl = '', model = 'tactical_grid', modelData = {}, rulesData = [], styleData = {}, stateData = {}, maxPlayers = 12, xpTriggers = [], isActive = 0 }) {
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO scenes (id, campaign_id, name, description, image_url, model, model_data, rules_data, style_data, state_data, max_players, xp_triggers, is_active, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `);
+      return await stmt.bind(
+        id,
+        campaignId,
+        name,
+        description || '',
+        imageUrl || '',
+        model || 'tactical_grid',
+        typeof modelData === 'string' ? modelData : JSON.stringify(modelData || {}),
+        typeof rulesData === 'string' ? rulesData : JSON.stringify(rulesData || []),
+        typeof styleData === 'string' ? styleData : JSON.stringify(styleData || {}),
+        typeof stateData === 'string' ? stateData : JSON.stringify(stateData || {}),
+        maxPlayers || 12,
+        typeof xpTriggers === 'string' ? xpTriggers : JSON.stringify(xpTriggers || []),
+        isActive ? 1 : 0
+      ).run();
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureScenesTable(db);
+        return await this.createScene(db, { id, campaignId, name, description, imageUrl, model, modelData, rulesData, styleData, stateData, maxPlayers, xpTriggers, isActive });
+      }
+      throw err;
+    }
+  },
+
+  async getScenesByCampaign(db, campaignId) {
+    try {
+      const stmt = db.prepare(`
+        SELECT * FROM scenes 
+        WHERE campaign_id = ? 
+        ORDER BY created_at ASC
+      `);
+      const res = await stmt.bind(campaignId).all();
+      return res.results || res || [];
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureScenesTable(db);
+        return [];
+      }
+      throw err;
+    }
+  },
+
+  async getSceneById(db, sceneId) {
+    try {
+      const stmt = db.prepare('SELECT * FROM scenes WHERE id = ?');
+      return await stmt.bind(sceneId).first();
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureScenesTable(db);
+        return null;
+      }
+      throw err;
+    }
+  },
+
+  async updateScene(db, sceneId, { name, description, imageUrl, model, modelData, rulesData, styleData, stateData, maxPlayers, xpTriggers, isActive }) {
+    try {
+      const existing = await this.getSceneById(db, sceneId);
+      if (!existing) return null;
+
+      const finalName = name !== undefined ? name : existing.name;
+      const finalDesc = description !== undefined ? description : existing.description;
+      const finalImg = imageUrl !== undefined ? imageUrl : existing.image_url;
+      const finalModel = model !== undefined ? model : existing.model;
+      const finalModelData = modelData !== undefined ? (typeof modelData === 'string' ? modelData : JSON.stringify(modelData)) : existing.model_data;
+      const finalRulesData = rulesData !== undefined ? (typeof rulesData === 'string' ? rulesData : JSON.stringify(rulesData)) : existing.rules_data;
+      const finalStyleData = styleData !== undefined ? (typeof styleData === 'string' ? styleData : JSON.stringify(styleData)) : existing.style_data;
+      const finalStateData = stateData !== undefined ? (typeof stateData === 'string' ? stateData : JSON.stringify(stateData)) : existing.state_data;
+      const finalMaxPlayers = maxPlayers !== undefined ? maxPlayers : existing.max_players;
+      const finalXp = xpTriggers !== undefined ? (typeof xpTriggers === 'string' ? xpTriggers : JSON.stringify(xpTriggers)) : existing.xp_triggers;
+      const finalActive = isActive !== undefined ? (isActive ? 1 : 0) : existing.is_active;
+
+      const stmt = db.prepare(`
+        UPDATE scenes 
+        SET name = ?, description = ?, image_url = ?, model = ?, model_data = ?, rules_data = ?, style_data = ?, state_data = ?, max_players = ?, xp_triggers = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `);
+      return await stmt.bind(
+        finalName, finalDesc, finalImg, finalModel, finalModelData, finalRulesData, finalStyleData, finalStateData, finalMaxPlayers, finalXp, finalActive, sceneId
+      ).run();
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureScenesTable(db);
+        return await this.updateScene(db, sceneId, { name, description, imageUrl, model, modelData, rulesData, styleData, stateData, maxPlayers, xpTriggers, isActive });
+      }
+      throw err;
+    }
+  },
+
+  async setActiveScene(db, campaignId, sceneId) {
+    try {
+      await db.prepare('UPDATE scenes SET is_active = 0 WHERE campaign_id = ?').bind(campaignId).run();
+      const stmt = db.prepare('UPDATE scenes SET is_active = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND campaign_id = ?');
+      return await stmt.bind(sceneId, campaignId).run();
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureScenesTable(db);
+        return await this.setActiveScene(db, campaignId, sceneId);
+      }
+      throw err;
+    }
+  },
+
+  async updateSceneState(db, sceneId, stateData) {
+    try {
+      const stmt = db.prepare('UPDATE scenes SET state_data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+      return await stmt.bind(typeof stateData === 'string' ? stateData : JSON.stringify(stateData), sceneId).run();
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureScenesTable(db);
+        return null;
+      }
+      throw err;
+    }
+  },
+
+  async deleteScene(db, sceneId) {
+    try {
+      const stmt = db.prepare('DELETE FROM scenes WHERE id = ?');
+      return await stmt.bind(sceneId).run();
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureScenesTable(db);
+        return null;
+      }
+      throw err;
+    }
   }
 };
+
 
 

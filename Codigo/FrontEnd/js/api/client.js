@@ -325,9 +325,44 @@ export const apiClient = {
 
   changeUserPassword(data = {}) {
     return this.sync('profile.password.update', data);
+  },
+
+  // === MÉTODOS DE CENAS & OFICINA DO MESTRE ===
+
+  listScenes(campaignId) {
+    return this.sync('campaigns.scenes.list', { campaignId });
+  },
+
+  getScene(sceneId) {
+    return this.sync('campaigns.scenes.get', { sceneId });
+  },
+
+  createScene(data = {}) {
+    return this.sync('campaigns.scenes.create', data);
+  },
+
+  updateScene(data = {}) {
+    return this.sync('campaigns.scenes.update', data);
+  },
+
+  deleteScene(sceneId) {
+    return this.sync('campaigns.scenes.delete', { sceneId });
+  },
+
+  setActiveScene(campaignId, sceneId) {
+    return this.sync('campaigns.scenes.setActive', { campaignId, sceneId });
+  },
+
+  updateSceneState(sceneId, stateData = {}) {
+    return this.sync('campaigns.scenes.updateState', { sceneId, stateData });
+  },
+
+  triggerSceneAction(campaignId, sceneId, payload = {}) {
+    return this.sync('campaigns.scenes.triggerAction', { campaignId, sceneId, ...payload });
   }
 };
 
 if (typeof window !== 'undefined') {
   window.apiClient = apiClient;
 }
+

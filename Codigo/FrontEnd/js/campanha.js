@@ -2267,13 +2267,17 @@ window.criarNovaCenaOficina = async function(nomePadrao, modeloPadrao) {
     const res = await apiClient.createScene(payload);
     if (res && res.sucesso) {
       await loadOficinaScenes();
-      if (res.cenaId) {
-        selectOficinaScene(res.cenaId);
+      const newId = res.cenaId || (res.cena && res.cena.id) || (res.dados && res.dados.id);
+      if (newId) {
+        selectOficinaScene(newId);
       }
+    } else {
+      console.warn("Falha ao criar cena:", res);
+      alert(res?.erro || "Erro ao criar nova cena.");
     }
   } catch (e) {
     console.error("Erro ao criar cena:", e);
-    alert("Erro ao criar nova cena.");
+    alert(e?.message || "Erro ao criar nova cena.");
   }
 };
 

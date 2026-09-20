@@ -846,6 +846,7 @@ export async function handleSyncRequest(request, env, clientIp) {
         const scenes = await dbQueries.getScenesByCampaign(db, campaignId);
         return new Response(JSON.stringify({
           sucesso: true,
+          cenas: scenes,
           dados: scenes
         }), { status: 200, headers });
       }
@@ -863,6 +864,7 @@ export async function handleSyncRequest(request, env, clientIp) {
 
         return new Response(JSON.stringify({
           sucesso: true,
+          cena: scene,
           dados: scene
         }), { status: 200, headers });
       }
@@ -873,12 +875,12 @@ export async function handleSyncRequest(request, env, clientIp) {
           name,
           description = '',
           imageUrl = '',
-          model = 'grid',
+          model = 'tactical_grid',
           modelData = {},
           rulesData = [],
           styleData = {},
           stateData = {},
-          maxPlayers = 10,
+          maxPlayers = 12,
           xpTriggers = [],
           isActive = 0
         } = data;
@@ -906,22 +908,24 @@ export async function handleSyncRequest(request, env, clientIp) {
           id: sceneId,
           campaignId,
           name: name.trim(),
-          description: description.trim(),
-          imageUrl: imageUrl.trim(),
-          model: model.trim(),
+          description: description ? description.trim() : '',
+          imageUrl: imageUrl ? imageUrl.trim() : '',
+          model: model ? model.trim() : 'tactical_grid',
           modelData,
           rulesData,
           styleData,
           stateData,
-          maxPlayers,
+          maxPlayers: maxPlayers || 12,
           xpTriggers,
-          isActive
+          isActive: isActive ? 1 : 0
         });
 
         const createdScene = await dbQueries.getSceneById(db, sceneId);
         return new Response(JSON.stringify({
           sucesso: true,
           mensagem: 'Cena criada com sucesso!',
+          cenaId: sceneId,
+          cena: createdScene,
           dados: createdScene
         }), { status: 200, headers });
       }
@@ -2731,99 +2735,6 @@ export async function handleSyncRequest(request, env, clientIp) {
         } catch (err) {
           return new Response(JSON.stringify({ sucesso: false, erro: err.message }), { status: 400, headers });
         }
-      }
-
-      case 'campaigns.scenes.create': {
-        const { campaignId, name, description = '', imageUrl = '', xpTriggers = [] } = data;
-        if (!campaignId || !name) {
-          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha e nome da cena são obrigatórios.' }), { status: 400, headers });
-        }
-
-        const campaign = await dbQueries.getCampaignById(db, campaignId);
-        if (!campaign || (campaign.owner_id !== user.userId && !['admin', 'superadmin'].includes(user.role))) {
-          return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o Mestre pode criar cenas nesta campanha.' }), { status: 403, headers });
-        }
-
-        const sceneId = `scn_${randomUUID().replace(/-/g, '').substring(0, 12)}`;
-        await dbQueries.createScene(db, {
-          id: sceneId,
-          campaignId,
-          name,
-          description,
-          imageUrl,
-          xpTriggers
-        });
-
-        return new Response(JSON.stringify({
-          sucesso: true,
-          mensagem: 'Cena criada com sucesso!',
-          dados: { id: sceneId, campaignId, name, xpTriggers }
-        }), { status: 201, headers });
-      }
-
-      case 'campaigns.scenes.list': {
-        const { campaignId } = data;
-        if (!campaignId) {
-          return new Response(JSON.stringify({ sucesso: false, erro: 'ID da campanha obrigatório.' }), { status: 400, headers });
-        }
-        const scenes = await dbQueries.getScenesByCampaign(db, campaignId);
-        const parsed = scenes.map(s => ({
-          ...s,
-          xp_triggers: typeof s.xp_triggers === 'string' ? JSON.parse(s.xp_triggers || '[]') : (s.xp_triggers || [])
-        }));
-        return new Response(JSON.stringify({ sucesso: true, dados: parsed }), { status: 200, headers });
-      }
-
-      case 'campaigns.scenes.triggerXP': {
-        const { campaignId, sceneId, triggerId } = data;
-        if (!campaignId || !sceneId || !triggerId) {
-          return new Response(JSON.stringify({ sucesso: false, erro: 'Dados incompletos para acionar gatilho de cena.' }), { status: 400, headers });
-        }
-
-        const campaign = await dbQueries.getCampaignById(db, campaignId);
-        if (!campaign || (campaign.owner_id !== user.userId && !['admin', 'superadmin'].includes(user.role))) {
-          return new Response(JSON.stringify({ sucesso: false, erro: 'Apenas o Mestre pode acionar gatilhos de XP.' }), { status: 403, headers });
-        }
-
-        const scene = await dbQueries.getSceneById(db, sceneId);
-        if (!scene) {
-          return new Response(JSON.stringify({ sucesso: false, erro: 'Cena não encontrada.' }), { status: 404, headers });
-        }
-
-        let triggers = typeof scene.xp_triggers === 'string' ? JSON.parse(scene.xp_triggers || '[]') : (scene.xp_triggers || []);
-        const trigger = triggers.find(t => t.id === triggerId);
-        if (!trigger) {
-          return new Response(JSON.stringify({ sucesso: false, erro: 'Gatilho de XP não encontrado na cena.' }), { status: 404, headers });
-        }
-
-        if (trigger.status === 'awarded') {
-          return new Response(JSON.stringify({ sucesso: false, erro: 'Este gatilho de XP já foi concedido anteriormente.' }), { status: 400, headers });
-        }
-
-        const xpToGive = Math.max(1, Math.floor(Number(trigger.xp) || 1));
-        const party = await dbQueries.getCharactersByCampaign(db, campaignId);
-        
-        for (const char of party) {
-          let sheet = typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data || '{}') : (char.sheet_data || {});
-          sheet.xp_atual = Math.max(0, Math.floor(Number(sheet.xp_atual) || 0)) + xpToGive;
-          await dbQueries.updateCharacterSheet(db, char.id, sheet);
-        }
-
-        // Marca o gatilho como awarded
-        trigger.status = 'awarded';
-        trigger.awarded_at = new Date().toISOString();
-        await dbQueries.updateScene(db, sceneId, { xpTriggers: triggers });
-
-        return new Response(JSON.stringify({
-          sucesso: true,
-          mensagem: `Gatilho "${trigger.titulo || triggerId}" acionado! ${xpToGive} XP concedido a ${party.length} personagem(ns).`,
-          dados: {
-            sceneId,
-            triggerId,
-            xpConcedido: xpToGive,
-            personagensAfetados: party.length
-          }
-        }), { status: 200, headers });
       }
 
       // ==========================================
