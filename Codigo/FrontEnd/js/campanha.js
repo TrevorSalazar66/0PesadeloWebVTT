@@ -295,6 +295,11 @@ window.loadChatHistory = async function(forceScroll = false) {
             chatMessages.scrollTop = chatMessages.scrollHeight;
           }, 40);
         }
+        
+        // Se mudou e eu for o Líder P2P, aviso os outros
+        if (hasChanged && typeof window.notificarChatAtualizado === 'function') {
+          window.notificarChatAtualizado();
+        }
       }
 
       // Atualiza status de conexão
@@ -315,7 +320,13 @@ function iniciarChatPolling() {
   chatPollingTimer = setInterval(() => {
     const chatView = document.getElementById('view-chat');
     if (chatView && chatView.classList.contains('active')) {
-      loadChatHistory(false);
+      // Se não houver líder eleito ou eu for o líder, faço polling rápido.
+      // Se eu for follower, polling de fallback bem mais lento (15s)
+      const pollingAllowed = (typeof isP2PLeader === 'undefined' || isP2PLeader) ? true : (Date.now() % 15000 < 3500);
+      
+      if (pollingAllowed) {
+        loadChatHistory(false);
+      }
     }
   }, 3500);
 }
@@ -1745,10 +1756,81 @@ window.executarExclusaoCampanha = async function() {
   }
 };
 
+let p2pNetManager = null;
+let isP2PLeader = false;
+let p2pHeartbeatInterval = null;
+let p2pSignalPollInterval = null;
+
+async function initSyncP2P() {
+  const user = obterUsuarioAtual();
+  if (!user || !user.id || !currentCampaignId) return;
+
+  p2pNetManager = new window.P2PNetworkManager(currentCampaignId, user.id, apiClient);
+  p2pNetManager.setDataCallback((peerId, data) => {
+    if (data.type === 'chat_update') {
+      // Se for follower e receber um update do leader, carrega o chat novo.
+      if (!isP2PLeader) {
+        console.log(`[P2P] Update de chat recebido do líder ${peerId}`);
+        loadChatHistory(true);
+      }
+    }
+  });
+
+  // Loop de presença
+  p2pHeartbeatInterval = setInterval(async () => {
+    try {
+      const res = await apiClient.sync('sync.presence', {
+        campaignId: currentCampaignId,
+        isLeader: isP2PLeader ? 1 : 0
+      });
+      if (res && res.sucesso) {
+        const { ativos, liderId, meuId } = res;
+        
+        // Verifica se eu sou o líder
+        const wasLeader = isP2PLeader;
+        isP2PLeader = (liderId === meuId);
+
+        if (isP2PLeader && !wasLeader) {
+          console.log("[P2P] Você agora é o LÍDER (WebRTC Host).");
+          // O líder para o polling de chat tradicional, quem avisa é ele
+          // (na verdade o lider envia o sinal). Aqui apenas reage a mensagens
+        } else if (!isP2PLeader && wasLeader) {
+          console.log("[P2P] Você deixou de ser o LÍDER (WebRTC Follower).");
+          p2pNetManager.closeAll();
+        }
+
+        // Se eu for o líder, tento conectar em todo mundo
+        if (isP2PLeader) {
+          ativos.forEach(u => {
+            if (u.user_id !== meuId) {
+              p2pNetManager.connectToPeer(u.user_id);
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Erro no heartbeat P2P", e);
+    }
+  }, 10000); // 10 segundos
+
+  // Loop de busca de sinais P2P (ofertas, respostas, ICE)
+  p2pSignalPollInterval = setInterval(() => {
+    p2pNetManager.pollSignals();
+  }, 3000);
+}
+
+// Interceptador para quando o usuário (líder) atualiza o chat, enviar o broadcast
+window.notificarChatAtualizado = function() {
+  if (isP2PLeader && p2pNetManager) {
+    p2pNetManager.broadcast('chat_update', { time: Date.now() });
+  }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   loadCampaignData();
   setupChatAutocomplete();
   loadChatHistory(false);
-  iniciarChatPolling();
+  iniciarChatPolling(); // Mantemos como Fallback, depois podemos otimizar diminuindo a frequencia
+  initSyncP2P();
 });
 

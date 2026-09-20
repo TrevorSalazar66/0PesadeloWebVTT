@@ -1094,6 +1094,125 @@ export const dbQueries = {
         await this.ensureCampaignMessagesTable(db);
         return;
       }
+    }
+  },
+
+  // ==========================================
+  // PRESENÇA E SINALIZAÇÃO P2P (WEBRTC)
+  // ==========================================
+
+  async ensurePresenceTable(db) {
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS campaign_presence (
+        campaign_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        is_leader INTEGER DEFAULT 0,
+        last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (campaign_id, user_id)
+      )
+    `);
+  },
+
+  async updatePresence(db, campaignId, userId, isLeader = 0) {
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO campaign_presence (campaign_id, user_id, is_leader, last_seen)
+        VALUES (?, ?, ?, datetime('now'))
+        ON CONFLICT(campaign_id, user_id) DO UPDATE SET
+          is_leader = excluded.is_leader,
+          last_seen = datetime('now')
+      `);
+      return await stmt.bind(campaignId, userId, isLeader).run();
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensurePresenceTable(db);
+        return await this.updatePresence(db, campaignId, userId, isLeader);
+      }
+      throw err;
+    }
+  },
+
+  async getActivePresence(db, campaignId, timeoutSeconds = 15) {
+    try {
+      const stmt = db.prepare(`
+        SELECT user_id, is_leader, last_seen 
+        FROM campaign_presence 
+        WHERE campaign_id = ? 
+          AND (strftime('%s', 'now') - strftime('%s', last_seen)) <= ?
+        ORDER BY user_id ASC
+      `);
+      const res = await stmt.bind(campaignId, timeoutSeconds).all();
+      return res.results || res || [];
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensurePresenceTable(db);
+        return [];
+      }
+      throw err;
+    }
+  },
+
+  async ensureSignalsTable(db) {
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS webrtc_signals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        campaign_id TEXT NOT NULL,
+        sender_id TEXT NOT NULL,
+        target_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+  },
+
+  async insertSignal(db, campaignId, senderId, targetId, type, payload) {
+    const payloadStr = typeof payload === 'string' ? payload : JSON.stringify(payload);
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO webrtc_signals (campaign_id, sender_id, target_id, type, payload)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+      return await stmt.bind(campaignId, senderId, targetId, type, payloadStr).run();
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureSignalsTable(db);
+        return await this.insertSignal(db, campaignId, senderId, targetId, type, payload);
+      }
+      throw err;
+    }
+  },
+
+  async consumeSignals(db, campaignId, targetId) {
+    try {
+      const stmtSelect = db.prepare(`
+        SELECT id, sender_id, type, payload, created_at 
+        FROM webrtc_signals 
+        WHERE campaign_id = ? AND target_id = ?
+        ORDER BY created_at ASC
+      `);
+      const res = await stmtSelect.bind(campaignId, targetId).all();
+      const signals = res.results || res || [];
+
+      if (signals.length > 0) {
+        const idsToDelete = signals.map(s => s.id);
+        const placeholders = idsToDelete.map(() => '?').join(',');
+        const stmtDelete = db.prepare(`
+          DELETE FROM webrtc_signals WHERE id IN (${placeholders})
+        `);
+        await stmtDelete.bind(...idsToDelete).run();
+      }
+
+      return signals.map(s => {
+        let parsedPayload = s.payload;
+        try { parsedPayload = JSON.parse(s.payload); } catch(e){}
+        return { ...s, payload: parsedPayload };
+      });
+    } catch (err) {
+      if (err.message && err.message.includes('no such table')) {
+        await this.ensureSignalsTable(db);
+        return [];
+      }
       throw err;
     }
   }

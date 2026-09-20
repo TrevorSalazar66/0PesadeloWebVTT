@@ -88,6 +88,51 @@ export async function handleSyncRequest(request, env, clientIp) {
   // ----------------------------------------------------
   try {
     switch (action) {
+      // ----------------------------------------------------
+      // WEBRTC SIGNALING & LEADER ELECTION
+      // ----------------------------------------------------
+      case 'sync.presence': {
+        const { campaignId, isLeader = 0 } = data;
+        if (!campaignId) return new Response(JSON.stringify({ sucesso: false, erro: 'campaignId ausente' }), { status: 400, headers });
+        
+        // Atualiza a presença do usuário atual
+        await dbQueries.updatePresence(db, campaignId, user.userId, isLeader);
+        
+        // Retorna todos os ativos (últimos 15 segundos)
+        const activeUsers = await dbQueries.getActivePresence(db, campaignId, 15);
+        
+        // O líder é o cara com o menor user_id (ordem alfabética/numérica do UUID/ID)
+        let leaderId = null;
+        if (activeUsers.length > 0) {
+          leaderId = activeUsers[0].user_id; // Já vem ordenado pelo ASC do dbQueries
+        }
+
+        return new Response(JSON.stringify({
+          sucesso: true,
+          ativos: activeUsers,
+          liderId: leaderId,
+          meuId: user.userId
+        }), { status: 200, headers });
+      }
+
+      case 'sync.signal': {
+        const { campaignId, targetId, type, payload } = data;
+        if (!campaignId || !targetId || !type || !payload) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Dados de sinalização incompletos' }), { status: 400, headers });
+        }
+
+        await dbQueries.insertSignal(db, campaignId, user.userId, targetId, type, payload);
+        return new Response(JSON.stringify({ sucesso: true }), { status: 200, headers });
+      }
+
+      case 'sync.consumeSignals': {
+        const { campaignId } = data;
+        if (!campaignId) return new Response(JSON.stringify({ sucesso: false, erro: 'campaignId ausente' }), { status: 400, headers });
+
+        const signals = await dbQueries.consumeSignals(db, campaignId, user.userId);
+        return new Response(JSON.stringify({ sucesso: true, signals }), { status: 200, headers });
+      }
+
       // PERFIL & ONBOARDING
       case 'profile.get': {
         const userBasic = await dbQueries.getUserById(db, user.userId);
