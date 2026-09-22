@@ -3200,6 +3200,144 @@ export async function handleSyncRequest(request, env, clientIp) {
         return new Response(JSON.stringify({ sucesso: true, dados: result.data }), { status: 200, headers });
       }
 
+      // ----------------------------------------------------
+      // COMPÊNDIO & HERANÇA DELTA (OFICINA DO MESTRE)
+      // ----------------------------------------------------
+      case 'compendium.list': {
+        const { category = null, campaignId = null, includePublic = true } = data;
+        const items = await dbQueries.getCompendiumItems(db, {
+          category,
+          ownerUserId: user.userId,
+          campaignId,
+          includePublic
+        });
+        return new Response(JSON.stringify({ sucesso: true, dados: items }), { status: 200, headers });
+      }
+
+      case 'compendium.get': {
+        const { itemId } = data;
+        if (!itemId) return new Response(JSON.stringify({ sucesso: false, erro: 'itemId é obrigatório' }), { status: 400, headers });
+        const item = await dbQueries.getCompendiumItemById(db, itemId);
+        if (!item) return new Response(JSON.stringify({ sucesso: false, erro: 'Elemento não encontrado no compêndio' }), { status: 404, headers });
+        return new Response(JSON.stringify({ sucesso: true, dado: item }), { status: 200, headers });
+      }
+
+      case 'compendium.create': {
+        const { parentId = null, campaignId = null, name, category, systemId = 'alphad6', baseAssetId = 'default_asset', isPublic = 0, blocks = {}, deltaChanges = {} } = data;
+        if (!name || !category) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Nome e Categoria são obrigatórios' }), { status: 400, headers });
+        }
+        
+        // Verifica limite de 100 itens por tipo do mestre
+        const currentItems = await dbQueries.getCompendiumItems(db, { category, ownerUserId: user.userId, includePublic: false });
+        if (currentItems.length >= 100) {
+          return new Response(JSON.stringify({ sucesso: false, erro: `Limite de 100 elementos de compêndio do tipo "${category}" atingido!` }), { status: 400, headers });
+        }
+
+        const id = 'comp_' + randomUUID();
+        await dbQueries.createCompendiumItem(db, {
+          id,
+          parentId,
+          ownerUserId: user.userId,
+          campaignId,
+          name,
+          category,
+          systemId,
+          baseAssetId,
+          isPublic,
+          blocks,
+          deltaChanges
+        });
+
+        const createdItem = await dbQueries.getCompendiumItemById(db, id);
+        return new Response(JSON.stringify({ sucesso: true, dado: createdItem }), { status: 201, headers });
+      }
+
+      case 'compendium.update': {
+        const { itemId, name, isPublic, blocks, deltaChanges } = data;
+        if (!itemId) return new Response(JSON.stringify({ sucesso: false, erro: 'itemId é obrigatório' }), { status: 400, headers });
+        
+        const existing = await dbQueries.getCompendiumItemById(db, itemId);
+        if (!existing) return new Response(JSON.stringify({ sucesso: false, erro: 'Elemento não encontrado' }), { status: 404, headers });
+        if (existing.owner_user_id !== user.userId && user.role !== 'admin' && user.role !== 'superadmin') {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Sem permissão para alterar este item' }), { status: 403, headers });
+        }
+
+        await dbQueries.updateCompendiumItem(db, itemId, { name, isPublic, blocks, deltaChanges });
+        const updated = await dbQueries.getCompendiumItemById(db, itemId);
+        return new Response(JSON.stringify({ sucesso: true, dado: updated }), { status: 200, headers });
+      }
+
+      case 'compendium.delete': {
+        const { itemId } = data;
+        if (!itemId) return new Response(JSON.stringify({ sucesso: false, erro: 'itemId é obrigatório' }), { status: 400, headers });
+        const existing = await dbQueries.getCompendiumItemById(db, itemId);
+        if (!existing) return new Response(JSON.stringify({ sucesso: false, erro: 'Elemento não encontrado' }), { status: 404, headers });
+        if (existing.owner_user_id !== user.userId && user.role !== 'admin' && user.role !== 'superadmin') {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Sem permissão para excluir este item' }), { status: 403, headers });
+        }
+
+        await dbQueries.deleteCompendiumItem(db, itemId);
+        return new Response(JSON.stringify({ sucesso: true, mensagem: 'Elemento de compêndio removido com sucesso' }), { status: 200, headers });
+      }
+
+      case 'compendium.useItem': {
+        const { itemId, characterId } = data;
+        if (!itemId || !characterId) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'itemId e characterId são obrigatórios para usar o item' }), { status: 400, headers });
+        }
+
+        const item = await dbQueries.getCompendiumItemById(db, itemId);
+        if (!item) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Item não encontrado no compêndio' }), { status: 404, headers });
+        }
+
+        const blocks = item.resolved_blocks || item.blocks || {};
+        const tipoItem = blocks.bloco_tipo_item?.value || 'consumable';
+        const efeitoBlock = blocks.bloco_efeito_alphad6 || {};
+        const actions = efeitoBlock.actions || [];
+
+        // Verifica cargas/quantidade
+        let qtdAtual = blocks.bloco_quantidade?.value !== undefined ? Number(blocks.bloco_quantidade.value) : 1;
+        if (qtdAtual <= 0) {
+          return new Response(JSON.stringify({ sucesso: false, erro: 'Item esgotado / sem quantidade restante' }), { status: 400, headers });
+        }
+
+        // Executa ações mecânicas autoritativas no personagem
+        const results = [];
+        const char = await dbQueries.getCharacterById(db, characterId);
+        let sheet = char && char.sheet_data ? (typeof char.sheet_data === 'string' ? JSON.parse(char.sheet_data) : char.sheet_data) : {};
+
+        for (const act of actions) {
+          if (act.type === 'heal_anima') {
+            const dice = act.params?.dice || '2d6';
+            const roll = rpgEngineService.rollDice(dice);
+            const curAnima = sheet.anima_atual !== undefined ? Number(sheet.anima_atual) : 10;
+            const maxAnima = sheet.anima_max !== undefined ? Number(sheet.anima_max) : 20;
+            const newAnima = Math.min(maxAnima, curAnima + roll.total);
+            sheet.anima_atual = newAnima;
+            results.push(`Curou ${roll.total} de Anima (${dice}: ${roll.dados.join('+')}). Nova Anima: ${newAnima}/${maxAnima}`);
+          }
+        }
+
+        // Se for consumível, reduz quantidade
+        if (tipoItem === 'consumable') {
+          blocks.bloco_quantidade.value = Math.max(0, qtdAtual - 1);
+        }
+
+        // Salva ficha atualizada se alterada
+        if (char) {
+          await dbQueries.updateCharacter(db, characterId, { sheetData: sheet });
+        }
+
+        return new Response(JSON.stringify({
+          sucesso: true,
+          mensagem: `Item "${item.name}" utilizado com sucesso!`,
+          resultados: results,
+          quantidadeRestante: blocks.bloco_quantidade?.value
+        }), { status: 200, headers });
+      }
+
       default:
         return new Response(JSON.stringify({
           sucesso: false,

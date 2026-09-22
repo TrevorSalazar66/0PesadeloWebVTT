@@ -203,3 +203,29 @@ CREATE INDEX IF NOT EXISTS idx_messages_campaign ON campaign_messages(campaign_i
 CREATE INDEX IF NOT EXISTS idx_messages_user ON campaign_messages(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_whisper ON campaign_messages(whisper_target_id);
 
+-- 13. Tabela de Elementos do Compêndio (Oficiais do Sistema e Homebrews com Herança Delta)
+CREATE TABLE IF NOT EXISTS compendium_items (
+    id TEXT PRIMARY KEY,
+    parent_id TEXT DEFAULT NULL,
+    owner_user_id TEXT NOT NULL,
+    campaign_id TEXT DEFAULT NULL,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL CHECK (category IN ('item', 'equipment', 'creature', 'power', 'clue')),
+    system_id TEXT NOT NULL DEFAULT 'alphad6',
+    base_asset_id TEXT NOT NULL DEFAULT 'default_asset',
+    is_public INTEGER NOT NULL DEFAULT 0,
+    blocks TEXT NOT NULL DEFAULT '{}',
+    delta_changes TEXT NOT NULL DEFAULT '{}',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES compendium_items(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_compendium_category ON compendium_items(category);
+CREATE INDEX IF NOT EXISTS idx_compendium_owner ON compendium_items(owner_user_id);
+CREATE INDEX IF NOT EXISTS idx_compendium_campaign ON compendium_items(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_compendium_public ON compendium_items(is_public);
+
+

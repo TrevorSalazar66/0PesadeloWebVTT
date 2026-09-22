@@ -22,8 +22,19 @@ window.abrirModalHub = function(modalId) {
     if (modalId === 'hub-modal-cenas' && typeof window.loadOficinaScenes === 'function') {
       window.loadOficinaScenes();
     }
+
+    // Se estiver abrindo o Gerenciamento de Compêndio, inicializa a interface
+    if (modalId === 'hub-modal-compendio') {
+      if (window.CompendiumUI && !window.compendiumInstance) {
+        window.compendiumInstance = new window.CompendiumUI('compendium-hub-container', window.apiClient);
+        window.compendiumInstance.loadItems();
+      } else if (window.compendiumInstance) {
+        window.compendiumInstance.loadItems();
+      }
+    }
   }
 };
+
 
 window.fecharModalHub = function(modalId) {
   const modal = document.getElementById(modalId);

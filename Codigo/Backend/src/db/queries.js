@@ -1341,8 +1341,115 @@ export const dbQueries = {
     await this.ensureScenesTable(db);
     const stmt = db.prepare('DELETE FROM scenes WHERE id = ?');
     return await stmt.bind(sceneId).run();
+  },
+
+  // ==========================================
+  // COMPÊNDIO & HERANÇA DELTA (OFICINA DO MESTRE)
+  // ==========================================
+  async getCompendiumItems(db, { category = null, ownerUserId = null, campaignId = null, includePublic = true }) {
+    let sql = 'SELECT * FROM compendium_items WHERE 1=1';
+    const params = [];
+
+    if (category) {
+      sql += ' AND category = ?';
+      params.push(category);
+    }
+
+    if (ownerUserId || campaignId) {
+      sql += ' AND (';
+      const sub = [];
+      if (ownerUserId) {
+        sub.push('owner_user_id = ?');
+        params.push(ownerUserId);
+      }
+      if (campaignId) {
+        sub.push('campaign_id = ?');
+        params.push(campaignId);
+      }
+      if (includePublic) {
+        sub.push('is_public = 1');
+      }
+      sql += sub.join(' OR ') + ')';
+    } else if (includePublic) {
+      sql += ' AND is_public = 1';
+    }
+
+    sql += ' ORDER BY created_at DESC';
+
+    const stmt = db.prepare(sql);
+    const res = await stmt.bind(...params).all();
+    const items = res.results || [];
+
+    return items.map(item => {
+      try { item.blocks = typeof item.blocks === 'string' ? JSON.parse(item.blocks) : item.blocks; } catch (_) { item.blocks = {}; }
+      try { item.delta_changes = typeof item.delta_changes === 'string' ? JSON.parse(item.delta_changes) : item.delta_changes; } catch (_) { item.delta_changes = {}; }
+      return item;
+    });
+  },
+
+  async getCompendiumItemById(db, itemId) {
+    const stmt = db.prepare('SELECT * FROM compendium_items WHERE id = ?');
+    const item = await stmt.bind(itemId).first();
+    if (!item) return null;
+
+    try { item.blocks = typeof item.blocks === 'string' ? JSON.parse(item.blocks) : item.blocks; } catch (_) { item.blocks = {}; }
+    try { item.delta_changes = typeof item.delta_changes === 'string' ? JSON.parse(item.delta_changes) : item.delta_changes; } catch (_) { item.delta_changes = {}; }
+
+    if (item.parent_id) {
+      const parent = await this.getCompendiumItemById(db, item.parent_id);
+      if (parent) {
+        item.resolved_blocks = { ...parent.blocks, ...item.blocks, ...item.delta_changes };
+      }
+    } else {
+      item.resolved_blocks = item.blocks;
+    }
+
+    return item;
+  },
+
+  async createCompendiumItem(db, { id, parentId = null, ownerUserId, campaignId = null, name, category, systemId = 'alphad6', baseAssetId = 'default_asset', isPublic = 0, blocks = {}, deltaChanges = {} }) {
+    const stmt = db.prepare(`
+      INSERT INTO compendium_items (id, parent_id, owner_user_id, campaign_id, name, category, system_id, base_asset_id, is_public, blocks, delta_changes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    return await stmt.bind(
+      id,
+      parentId,
+      ownerUserId,
+      campaignId,
+      name,
+      category,
+      systemId,
+      baseAssetId,
+      isPublic ? 1 : 0,
+      typeof blocks === 'string' ? blocks : JSON.stringify(blocks),
+      typeof deltaChanges === 'string' ? deltaChanges : JSON.stringify(deltaChanges)
+    ).run();
+  },
+
+  async updateCompendiumItem(db, id, { name, isPublic, blocks, deltaChanges }) {
+    const existing = await this.getCompendiumItemById(db, id);
+    if (!existing) return null;
+
+    const finalName = name !== undefined ? name : existing.name;
+    const finalPublic = isPublic !== undefined ? (isPublic ? 1 : 0) : existing.is_public;
+    const finalBlocks = blocks !== undefined ? (typeof blocks === 'string' ? blocks : JSON.stringify(blocks)) : JSON.stringify(existing.blocks);
+    const finalDelta = deltaChanges !== undefined ? (typeof deltaChanges === 'string' ? deltaChanges : JSON.stringify(deltaChanges)) : JSON.stringify(existing.delta_changes);
+
+    const stmt = db.prepare(`
+      UPDATE compendium_items
+      SET name = ?, is_public = ?, blocks = ?, delta_changes = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+    return await stmt.bind(finalName, finalPublic, finalBlocks, finalDelta, id).run();
+  },
+
+  async deleteCompendiumItem(db, id) {
+    const stmt = db.prepare('DELETE FROM compendium_items WHERE id = ?');
+    return await stmt.bind(id).run();
   }
 };
+
 
 
 
