@@ -25,11 +25,13 @@ window.abrirModalHub = function(modalId) {
 
     // Se estiver abrindo o Gerenciamento de Compêndio, inicializa a interface
     if (modalId === 'hub-modal-compendio') {
-      if (window.CompendiumUI && !window.compendiumInstance) {
-        window.compendiumInstance = new window.CompendiumUI('compendium-hub-container', window.apiClient);
-        window.compendiumInstance.loadItems();
-      } else if (window.compendiumInstance) {
-        window.compendiumInstance.loadItems();
+      if (window.CompendiumUI) {
+        if (!window.compendiumInstance) {
+          window.compendiumInstance = new window.CompendiumUI('hub-modal-compendio', window.apiClient);
+          window.compendiumInstance.init();
+        } else {
+          window.compendiumInstance.render();
+        }
       }
     }
   }

@@ -4,6 +4,9 @@
  */
 
 import { apiClient } from './api/client.js';
+import { CompendiumUI } from './compendio.js';
+
+window.CompendiumUI = CompendiumUI;
 
 let currentCampaignId = new URLSearchParams(window.location.search).get('id');
 let currentCampaignData = null;
