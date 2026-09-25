@@ -646,7 +646,8 @@ export function validateArchetypeAndContacts({ arquetipo = '', contatos = [] } =
 
 export const WEALTH_TIERS = {
   milionario: {
-    id: 'milionario', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+    id: 'milionario',
+    blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } },
     label: 'Milionário',
     nivel: 5,
     min: 10,
@@ -656,7 +657,8 @@ export const WEALTH_TIERS = {
     descricao: 'Uma pessoa com renda estável muito maior que todos, a maior classe na escala monetária, provavelmente dono de várias empresas e com incontáveis coisas compondo seu patrimônio.'
   },
   rico: {
-    id: 'rico', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+    id: 'rico',
+    blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } },
     label: 'Rico',
     nivel: 4,
     min: 8,
@@ -666,7 +668,8 @@ export const WEALTH_TIERS = {
     descricao: 'Uma pessoa com renda mensal significativamente maior que a média, com liberdade financeira e muitos bens compondo seu patrimônio.'
   },
   abastado: {
-    id: 'abastado', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+    id: 'abastado',
+    blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } },
     label: 'Abastado',
     nivel: 3,
     min: 6,
@@ -676,7 +679,8 @@ export const WEALTH_TIERS = {
     descricao: 'Uma pessoa com uma fonte de renda estável, possuindo uma casa própria ou talvez até mesmo um apartamento espaçoso, um veículo e com certa liberdade financeira.'
   },
   pobre: {
-    id: 'pobre', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+    id: 'pobre',
+    blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } },
     label: 'Pobre',
     nivel: 2,
     min: 4,
@@ -686,7 +690,8 @@ export const WEALTH_TIERS = {
     descricao: 'Uma pessoa com renda mensal baixa, comumente morando junto com outras pessoas desta classe social que se ajudam a manter o local alugado, nada mais que a escala monetária mínima para sobreviver.'
   },
   miseravel: {
-    id: 'miseravel', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+    id: 'miseravel',
+    blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } },
     label: 'Miserável',
     nivel: 1,
     min: 2,
@@ -1680,7 +1685,7 @@ export function validateCharacterCreationAlphaD6({
 
   // Montagem da Ficha Canônica
   const characterSheet = {
-    sistema_id: 'alphad6', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+    sistema_id: 'alphad6', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } },
     identidade: {
       nome: cleanName,
       sexo: cleanSexo,
