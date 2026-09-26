@@ -399,7 +399,8 @@
       color: #cbd5e1;
     }
 
-    .role-badge-assistente, .role-badge-assistente_de_mestre {
+    .role-badge-assistente,
+    .role-badge-assistente_de_mestre {
       background: rgba(45, 212, 191, 0.12);
       border: 1px solid rgba(45, 212, 191, 0.3);
       color: #2dd4bf;
@@ -438,7 +439,8 @@
       transition: all var(--transition-fast);
     }
 
-    .role-select-dropdown:hover, .role-select-dropdown:focus {
+    .role-select-dropdown:hover,
+    .role-select-dropdown:focus {
       border-color: var(--gold-primary);
       background: var(--bg-surface);
     }
@@ -600,7 +602,7 @@
       box-shadow: 0 0 14px rgba(212, 163, 75, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.5);
     }
 
-    .admin-search-input:focus + svg,
+    .admin-search-input:focus+svg,
     .admin-search-box-wrap:focus-within svg {
       color: var(--gold-light);
     }
@@ -628,8 +630,15 @@
     }
 
     @keyframes pulseBlocked {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.65; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.65;
+      }
     }
 
     /* Botões de Ação na Tabela de Usuários */
@@ -1311,9 +1320,11 @@
     .mobile-header-bar {
       display: none;
     }
+
     .drawer-overlay {
       display: none;
     }
+
     .mobile-bottom-nav {
       display: none;
     }
@@ -1329,6 +1340,7 @@
     }
 
     @media (max-width: 768px) {
+
       /* Cabeçalho Fixo Mobile */
       .mobile-header-bar {
         display: flex;
@@ -1477,7 +1489,8 @@
         font-size: 22px;
       }
 
-      .dashboard-grid, .campaign-details-layout {
+      .dashboard-grid,
+      .campaign-details-layout {
         grid-template-columns: 1fr !important;
       }
 
@@ -2813,23 +2826,29 @@
       .profile-layout-grid {
         grid-template-columns: 1fr;
       }
+
       .profile-hero-content {
         flex-direction: column;
         align-items: flex-start;
       }
+
       .profile-hero-main-group {
         flex-direction: column;
         align-items: flex-start;
       }
+
       .profile-hero-avatar-box {
         align-items: flex-start;
       }
+
       .profile-hero-actions {
         width: 100%;
       }
+
       .profile-id-box {
         width: 100%;
       }
+
       .profile-id-input {
         width: 100%;
       }
@@ -3132,8 +3151,10 @@
             <label for="otp-code-input" class="form-label">Código de Verificação (6 dígitos)</label>
             <input type="text" id="otp-code-input" class="form-input otp-input-field" placeholder="123456" maxlength="6"
               pattern="[0-9]{6}" required autocomplete="one-time-code">
-            <div id="otp-code-hint-box" style="display: none; margin-top: 8px; padding: 8px 12px; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold-primary); border-radius: var(--radius-sm); font-size: 12px; color: var(--gold-light);">
-              🔑 Código de ativação gerado: <strong id="otp-code-hint-val" style="font-family: monospace; font-size: 14px; letter-spacing: 2px;"></strong>
+            <div id="otp-code-hint-box"
+              style="display: none; margin-top: 8px; padding: 8px 12px; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold-primary); border-radius: var(--radius-sm); font-size: 12px; color: var(--gold-light);">
+              🔑 Código de ativação gerado: <strong id="otp-code-hint-val"
+                style="font-family: monospace; font-size: 14px; letter-spacing: 2px;"></strong>
             </div>
           </div>
 
@@ -3425,33 +3446,33 @@
     <nav class="mobile-bottom-nav">
       <button class="bottom-nav-btn active" id="bnav-inicio" onclick="navegarPara('inicio')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
         </svg>
         <span>Início</span>
       </button>
       <button class="bottom-nav-btn" id="bnav-campanhas" onclick="navegarPara('campanhas')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+          <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
         </svg>
         <span>Campanhas</span>
       </button>
       <button class="bottom-nav-btn" id="bnav-sistemas" onclick="navegarPara('sistemas')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
         </svg>
         <span>Sistemas</span>
       </button>
       <button class="bottom-nav-btn" id="bnav-personagens" onclick="navegarPara('personagens')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
         </svg>
         <span>Heróis</span>
       </button>
       <button class="bottom-nav-btn" id="bnav-perfil" onclick="navegarPara('perfil')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
         </svg>
         <span>Perfil</span>
       </button>
@@ -3465,7 +3486,8 @@
            ========================================== -->
       <section id="view-inicio" class="view-section active">
         <!-- Banner de Boas-Vindas -->
-        <div class="welcome-card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div class="welcome-card"
+          style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
           <div>
             <p class="welcome-eyebrow">BEM-VINDO(A) DE VOLTA</p>
             <h2 class="welcome-title" id="welcome-user-title">Saudações, aventureiro.</h2>
@@ -3474,12 +3496,16 @@
               trilha abaixo para começar.
             </p>
           </div>
-          <div class="home-user-badge" onclick="navegarPara('perfil')" style="cursor: pointer; display: flex; align-items: center; gap: 12px; background: var(--bg-surface); padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-card); transition: border-color 0.2s;" title="Clique para ver seu perfil completo">
-            <div id="home-user-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-light); font-size: 14px;">
+          <div class="home-user-badge" onclick="navegarPara('perfil')"
+            style="cursor: pointer; display: flex; align-items: center; gap: 12px; background: var(--bg-surface); padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-card); transition: border-color 0.2s;"
+            title="Clique para ver seu perfil completo">
+            <div id="home-user-avatar"
+              style="width: 36px; height: 36px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-light); font-size: 14px;">
               A
             </div>
             <div>
-              <div id="home-user-name" style="font-weight: 600; font-size: 13.5px; color: var(--text-main);">Aventureiro</div>
+              <div id="home-user-name" style="font-weight: 600; font-size: 13.5px; color: var(--text-main);">Aventureiro
+              </div>
               <div id="home-user-nick" style="font-size: 11px; color: var(--text-dim);">@aventureiro</div>
             </div>
           </div>
@@ -3741,9 +3767,11 @@
           </div>
           <div style="flex: 1;">
             <h2 class="page-title">Perfil do Aventureiro</h2>
-            <p class="page-subtitle">Sua identidade heráldica, histórico de campanhas, conexões e governança de conta.</p>
+            <p class="page-subtitle">Sua identidade heráldica, histórico de campanhas, conexões e governança de conta.
+            </p>
           </div>
-          <button class="btn-secondary" onclick="carregarPerfilUsuario()" title="Sincronizar dados com a Taverna" style="display: inline-flex; align-items: center; gap: 6px;">
+          <button class="btn-secondary" onclick="carregarPerfilUsuario()" title="Sincronizar dados com a Taverna"
+            style="display: inline-flex; align-items: center; gap: 6px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
@@ -3765,7 +3793,8 @@
                   <h1 class="font-cinzel profile-hero-title" id="profile-hero-display-name">Aventureiro Arcano</h1>
                   <span class="profile-hero-nick" id="profile-hero-nickname">@aventureiro</span>
                 </div>
-                <p class="profile-hero-bio" id="profile-hero-bio-preview">"Carregando crônicas e histórico do aventureiro..."</p>
+                <p class="profile-hero-bio" id="profile-hero-bio-preview">"Carregando crônicas e histórico do
+                  aventureiro..."</p>
                 <div class="profile-hero-meta">
                   <span class="profile-hero-meta-badge" id="profile-hero-created-at">
                     📅 Membro da Taverna
@@ -3781,10 +3810,13 @@
                 <span class="profile-id-label">ID do Aventureiro</span>
                 <div style="display: flex; gap: 8px; align-items: center;">
                   <input type="text" id="profile-user-id" class="profile-id-input" readonly value="...">
-                  <button type="button" class="btn-secondary" onclick="copiarIdUsuarioPerfil()" title="Copiar ID para convites em mesas" style="padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-                      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                  <button type="button" class="btn-secondary" onclick="copiarIdUsuarioPerfil()"
+                    title="Copiar ID para convites em mesas"
+                    style="padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
                     </svg>
                     Copiar ID
                   </button>
@@ -3796,14 +3828,15 @@
 
         <!-- GRADE PRINCIPAL DO PERFIL (2 COLUNAS) -->
         <div class="profile-layout-grid">
-          
+
           <!-- CARD 1: IDENTIDADE & BIOGRAFIA -->
           <div class="config-card">
             <div class="config-card-header">
               <div class="config-card-header-left">
                 <div class="config-card-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
                 </div>
                 <div>
@@ -3816,15 +3849,18 @@
             <form id="form-profile-main" onsubmit="salvarPerfilCompleto(event)">
               <div class="config-form-group">
                 <label class="config-label" for="profile-input-name">Nome de Exibição / Alcunha Principal</label>
-                <input type="text" id="profile-input-name" class="form-input" placeholder="Ex: Mestre Gandalf, Aragorn..." required minlength="2" maxlength="60">
+                <input type="text" id="profile-input-name" class="form-input"
+                  placeholder="Ex: Mestre Gandalf, Aragorn..." required minlength="2" maxlength="60">
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                 <div class="config-form-group">
                   <label class="config-label" for="profile-input-nickname">Nickname Único (@)</label>
                   <div style="position: relative;">
-                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gold-light); font-weight: 700;">@</span>
-                    <input type="text" id="profile-input-nickname" class="form-input" style="padding-left: 28px;" placeholder="seu_apelido" required minlength="3" maxlength="25">
+                    <span
+                      style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gold-light); font-weight: 700;">@</span>
+                    <input type="text" id="profile-input-nickname" class="form-input" style="padding-left: 28px;"
+                      placeholder="seu_apelido" required minlength="3" maxlength="25">
                   </div>
                 </div>
                 <div class="config-form-group">
@@ -3841,18 +3877,24 @@
 
               <div class="config-form-group">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px;">
-                  <label class="config-label" for="profile-input-bio" style="margin: 0;">Biografia do Aventureiro</label>
-                  <span id="profile-bio-counter" style="font-size: 11.5px; color: var(--text-dim); font-family: monospace;">500 restantes</span>
+                  <label class="config-label" for="profile-input-bio" style="margin: 0;">Biografia do
+                    Aventureiro</label>
+                  <span id="profile-bio-counter"
+                    style="font-size: 11.5px; color: var(--text-dim); font-family: monospace;">500 restantes</span>
                 </div>
-                <textarea id="profile-input-bio" class="form-input" rows="4" maxlength="500" oninput="atualizarContadorBio(this.value)" placeholder="Conte um pouco sobre suas experiências de RPG, sistemas favoritos ou estilo de interpretação..."></textarea>
+                <textarea id="profile-input-bio" class="form-input" rows="4" maxlength="500"
+                  oninput="atualizarContadorBio(this.value)"
+                  placeholder="Conte um pouco sobre suas experiências de RPG, sistemas favoritos ou estilo de interpretação..."></textarea>
               </div>
 
               <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
-                <button type="submit" class="btn-gold" id="btn-save-profile" style="margin: 0; padding: 10px 22px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                    <polyline points="17 21 17 13 7 13 7 21"/>
-                    <polyline points="7 3 7 8 15 8"/>
+                <button type="submit" class="btn-gold" id="btn-save-profile"
+                  style="margin: 0; padding: 10px 22px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
                   </svg>
                   Salvar Identidade
                 </button>
@@ -3865,10 +3907,12 @@
             <div class="config-card-header">
               <div class="config-card-header-left">
                 <div class="config-card-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="2" y1="12" x2="22" y2="12"/>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path
+                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                   </svg>
                 </div>
                 <div>
@@ -3881,19 +3925,23 @@
             <form id="form-profile-social" onsubmit="salvarPerfilCompleto(event)">
               <div class="config-form-group">
                 <label class="config-label" for="profile-input-avatar">URL da Imagem do Avatar</label>
-                <input type="url" id="profile-input-avatar" class="form-input" placeholder="https://exemplo.com/minha-foto.png">
-                <span class="config-subtext">Cole o link direto da imagem para usar como seu retrato personalizado.</span>
+                <input type="url" id="profile-input-avatar" class="form-input"
+                  placeholder="https://exemplo.com/minha-foto.png">
+                <span class="config-subtext">Cole o link direto da imagem para usar como seu retrato
+                  personalizado.</span>
               </div>
 
               <div class="config-form-group">
                 <label class="config-label" for="profile-input-banner">URL do Estandarte / Banner de Fundo</label>
-                <input type="url" id="profile-input-banner" class="form-input" placeholder="https://exemplo.com/meu-banner.jpg">
+                <input type="url" id="profile-input-banner" class="form-input"
+                  placeholder="https://exemplo.com/meu-banner.jpg">
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                 <div class="config-form-group">
                   <label class="config-label" for="profile-input-discord">Discord (Usuário)</label>
-                  <input type="text" id="profile-input-discord" class="form-input" placeholder="usuario#0000 ou @usuario">
+                  <input type="text" id="profile-input-discord" class="form-input"
+                    placeholder="usuario#0000 ou @usuario">
                 </div>
                 <div class="config-form-group">
                   <label class="config-label" for="profile-input-whatsapp">WhatsApp (com DDD)</label>
@@ -3907,11 +3955,13 @@
               </div>
 
               <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
-                <button type="submit" class="btn-gold" style="margin: 0; padding: 10px 22px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                    <polyline points="17 21 17 13 7 13 7 21"/>
-                    <polyline points="7 3 7 8 15 8"/>
+                <button type="submit" class="btn-gold"
+                  style="margin: 0; padding: 10px 22px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
                   </svg>
                   Salvar Mídias & Redes
                 </button>
@@ -3924,10 +3974,11 @@
             <div class="config-card-header">
               <div class="config-card-header-left">
                 <div class="config-card-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10"/>
-                    <line x1="12" y1="20" x2="12" y2="4"/>
-                    <line x1="6" y1="20" x2="6" y2="14"/>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
                   </svg>
                 </div>
                 <div>
@@ -3964,9 +4015,10 @@
             <div class="config-card-header">
               <div class="config-card-header-left">
                 <div class="config-card-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                 </div>
                 <div>
@@ -3979,47 +4031,59 @@
             <div class="config-form-group">
               <label class="config-label">E-mail Cadastrado</label>
               <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="email" id="profile-info-email" class="form-input" readonly style="opacity: 0.85; cursor: not-allowed; flex: 1;">
+                <input type="email" id="profile-info-email" class="form-input" readonly
+                  style="opacity: 0.85; cursor: not-allowed; flex: 1;">
                 <span class="badge-email-verified" id="profile-email-badge">✓ Confirmado</span>
               </div>
             </div>
 
             <div style="margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                 <div>
                   <h4 style="margin: 0; font-size: 13.5px; color: #fff; font-weight: 600;">Alterar Senha de Acesso</h4>
-                  <p style="margin: 2px 0 0 0; font-size: 11.5px; color: var(--text-dim);">Crie uma senha forte com pelo menos 8 caracteres.</p>
+                  <p style="margin: 2px 0 0 0; font-size: 11.5px; color: var(--text-dim);">Crie uma senha forte com pelo
+                    menos 8 caracteres.</p>
                 </div>
-                <button type="button" class="btn-secondary" onclick="alternarFormTrocarSenha()" id="btn-toggle-change-pass" style="padding: 7px 16px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 2l-2 2m-1.5 1.5L10 13l-4 4-2-2 4-4 7.5-7.5"/>
-                    <circle cx="16.5" cy="7.5" r="1.5"/>
+                <button type="button" class="btn-secondary" onclick="alternarFormTrocarSenha()"
+                  id="btn-toggle-change-pass"
+                  style="padding: 7px 16px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2l-2 2m-1.5 1.5L10 13l-4 4-2-2 4-4 7.5-7.5" />
+                    <circle cx="16.5" cy="7.5" r="1.5" />
                   </svg>
                   Alterar Senha
                 </button>
               </div>
 
               <!-- Formulário Colapsável de Troca de Senha -->
-              <form id="form-change-password" style="display: none; margin-top: 14px; background: rgba(0, 0, 0, 0.35); padding: 18px; border-radius: var(--radius-lg); border: 1px solid rgba(212, 163, 75, 0.2);" onsubmit="alterarSenhaPerfil(event)">
+              <form id="form-change-password"
+                style="display: none; margin-top: 14px; background: rgba(0, 0, 0, 0.35); padding: 18px; border-radius: var(--radius-lg); border: 1px solid rgba(212, 163, 75, 0.2);"
+                onsubmit="alterarSenhaPerfil(event)">
                 <div class="config-form-group">
                   <label class="config-label" for="pass-current">Senha Atual</label>
-                  <input type="password" id="pass-current" class="form-input" placeholder="Digite sua senha atual..." required>
+                  <input type="password" id="pass-current" class="form-input" placeholder="Digite sua senha atual..."
+                    required>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                   <div class="config-form-group">
                     <label class="config-label" for="pass-new">Nova Senha</label>
-                    <input type="password" id="pass-new" class="form-input" placeholder="Mínimo de 8 caracteres..." minlength="8" required>
+                    <input type="password" id="pass-new" class="form-input" placeholder="Mínimo de 8 caracteres..."
+                      minlength="8" required>
                   </div>
                   <div class="config-form-group">
                     <label class="config-label" for="pass-confirm">Confirme a Nova Senha</label>
-                    <input type="password" id="pass-confirm" class="form-input" placeholder="Repita a nova senha..." minlength="8" required>
+                    <input type="password" id="pass-confirm" class="form-input" placeholder="Repita a nova senha..."
+                      minlength="8" required>
                   </div>
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
                   <button type="button" class="btn-secondary" onclick="alternarFormTrocarSenha()">Cancelar</button>
-                  <button type="submit" class="btn-gold" id="btn-submit-change-pass" style="margin: 0; padding: 8px 18px; font-size: 12.5px;">Atualizar Senha</button>
+                  <button type="submit" class="btn-gold" id="btn-submit-change-pass"
+                    style="margin: 0; padding: 8px 18px; font-size: 12.5px;">Atualizar Senha</button>
                 </div>
               </form>
             </div>
@@ -4041,7 +4105,8 @@
           </div>
           <div style="flex: 1;">
             <h2 class="page-title">Painel de Administração</h2>
-            <p class="page-subtitle">Métricas Globais, Gestão de Usuários, Controle Anti-Sybil e Auditoria do Arcana VTT.</p>
+            <p class="page-subtitle">Métricas Globais, Gestão de Usuários, Controle Anti-Sybil e Auditoria do Arcana
+              VTT.</p>
           </div>
           <button class="btn-secondary" onclick="recarregarSubAbaAdminAtiva()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -4117,7 +4182,9 @@
               <h3 class="admin-card-title">Resumo do Servidor & Integridade</h3>
             </div>
             <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6;">
-              O <strong>Arcana VTT</strong> está operando em Cloudflare Workers com D1 Database, sincronização em tempo real via Durable Objects (WebSocket) e proteção anti-abuso de hardware fingerprints. Como Administrador ou Superadmin, você pode gerenciar a comunidade, monitorar mesas ativas e auditar alterações em cargos.
+              O <strong>Arcana VTT</strong> está operando em Cloudflare Workers com D1 Database, sincronização em tempo
+              real via Durable Objects (WebSocket) e proteção anti-abuso de hardware fingerprints. Como Administrador ou
+              Superadmin, você pode gerenciar a comunidade, monitorar mesas ativas e auditar alterações em cargos.
             </p>
           </div>
         </div>
@@ -4128,11 +4195,14 @@
             <div class="admin-card-header" style="flex-wrap: wrap; gap: 12px;">
               <div>
                 <h3 class="admin-card-title">Diretório de Usuários & Controle de Acesso</h3>
-                <span class="badge-total-blocked" id="badge-total-users" style="background: rgba(96, 165, 250, 0.12); color: #60a5fa; border-color: rgba(96, 165, 250, 0.3);">0 usuários</span>
+                <span class="badge-total-blocked" id="badge-total-users"
+                  style="background: rgba(96, 165, 250, 0.12); color: #60a5fa; border-color: rgba(96, 165, 250, 0.3);">0
+                  usuários</span>
               </div>
               <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                 <div class="admin-search-box-wrap">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg>
@@ -4193,7 +4263,8 @@
                 </thead>
                 <tbody id="admin-devices-tbody">
                   <tr>
-                    <td colspan="5" class="table-empty-msg">Nenhum dispositivo bloqueado no momento. A taverna está segura!</td>
+                    <td colspan="5" class="table-empty-msg">Nenhum dispositivo bloqueado no momento. A taverna está
+                      segura!</td>
                   </tr>
                 </tbody>
               </table>
@@ -4207,11 +4278,14 @@
             <div class="admin-card-header" style="flex-wrap: wrap; gap: 12px;">
               <div>
                 <h3 class="admin-card-title">Crônicas & Mesas Forjadas na Plataforma</h3>
-                <span class="badge-total-blocked" id="badge-total-campaigns" style="background: rgba(168, 85, 247, 0.12); color: #c084fc; border-color: rgba(168, 85, 247, 0.3);">0 campanhas</span>
+                <span class="badge-total-blocked" id="badge-total-campaigns"
+                  style="background: rgba(168, 85, 247, 0.12); color: #c084fc; border-color: rgba(168, 85, 247, 0.3);">0
+                  campanhas</span>
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                 <div class="admin-search-box-wrap">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg>
@@ -4249,10 +4323,13 @@
             <div class="admin-card-header" style="flex-wrap: wrap; gap: 12px;">
               <div>
                 <h3 class="admin-card-title">Trilha de Auditoria Administrativa</h3>
-                <span class="badge-total-blocked" id="badge-total-audit" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3);">Últimas 100 ações</span>
+                <span class="badge-total-blocked" id="badge-total-audit"
+                  style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3);">Últimas
+                  100 ações</span>
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                <select id="admin-audit-action-filter" class="role-select-dropdown" onchange="filtrarLogsAuditoriaAdmin()">
+                <select id="admin-audit-action-filter" class="role-select-dropdown"
+                  onchange="filtrarLogsAuditoriaAdmin()">
                   <option value="">Todas as Ações</option>
                   <option value="CHANGE_USER_ROLE">Alteração de Cargo</option>
                   <option value="USER_BLOCK">Bloqueio de Conta</option>
@@ -4293,16 +4370,21 @@
   <!-- ==========================================================================
        MODAL DE PERFIL & MODERAÇÃO DE USUÁRIO (PAINEL ADMIN / SUPERADMIN)
        ========================================================================== -->
-  <div class="modal-overlay" id="modal-admin-user-profile" onclick="if(event.target === this) fecharModalPerfilUsuarioAdmin()">
+  <div class="modal-overlay" id="modal-admin-user-profile"
+    onclick="if(event.target === this) fecharModalPerfilUsuarioAdmin()">
     <div class="modal-card" style="max-width: 620px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+      <div
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <div id="admin-modal-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: var(--gold-dark); border: 2px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; color: var(--gold-light); overflow: hidden;">
+          <div id="admin-modal-avatar"
+            style="width: 50px; height: 50px; border-radius: 50%; background: var(--gold-dark); border: 2px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; color: var(--gold-light); overflow: hidden;">
             U
           </div>
           <div>
-            <h3 class="modal-title" id="admin-modal-user-name" style="margin: 0; font-size: 1.25rem;">Nome do Usuário</h3>
-            <p style="margin: 2px 0 0 0; font-size: 13px; color: var(--gold-light);" id="admin-modal-user-nick">@nickname</p>
+            <h3 class="modal-title" id="admin-modal-user-name" style="margin: 0; font-size: 1.25rem;">Nome do Usuário
+            </h3>
+            <p style="margin: 2px 0 0 0; font-size: 13px; color: var(--gold-light);" id="admin-modal-user-nick">
+              @nickname</p>
           </div>
         </div>
         <button class="modal-close-btn" onclick="fecharModalPerfilUsuarioAdmin()">&times;</button>
@@ -4314,18 +4396,22 @@
           <span id="admin-modal-role-badge" class="role-badge role-badge-jogador">Jogador</span>
           <span id="admin-modal-status-badge" class="badge-status-active">Conta Ativa</span>
           <span id="admin-modal-email-verified-badge" class="badge-status-active">E-mail Verificado</span>
-          <span id="admin-modal-provider-badge" class="role-badge" style="background: rgba(255,255,255,0.05); color: var(--text-muted); border-color: var(--border-subtle); font-size: 11px;">E-mail</span>
+          <span id="admin-modal-provider-badge" class="role-badge"
+            style="background: rgba(255,255,255,0.05); color: var(--text-muted); border-color: var(--border-subtle); font-size: 11px;">E-mail</span>
         </div>
 
         <!-- Grid de Metadados -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: rgba(0,0,0,0.25); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+        <div
+          style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: rgba(0,0,0,0.25); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
           <div>
             <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">E-mail:</span>
-            <div id="admin-modal-email" style="font-size: 13px; color: var(--text-main); font-weight: 500; word-break: break-all;">-</div>
+            <div id="admin-modal-email"
+              style="font-size: 13px; color: var(--text-main); font-weight: 500; word-break: break-all;">-</div>
           </div>
           <div>
             <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">ID do Usuário:</span>
-            <div id="admin-modal-user-id" style="font-size: 12px; color: var(--text-muted); font-family: monospace;">-</div>
+            <div id="admin-modal-user-id" style="font-size: 12px; color: var(--text-muted); font-family: monospace;">-
+            </div>
           </div>
           <div>
             <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Faixa Etária:</span>
@@ -4337,45 +4423,57 @@
           </div>
           <div>
             <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Mesas Forjadas:</span>
-            <div id="admin-modal-campaigns-count" style="font-size: 13px; color: var(--gold-light); font-weight: 600;">0 campanhas</div>
+            <div id="admin-modal-campaigns-count" style="font-size: 13px; color: var(--gold-light); font-weight: 600;">0
+              campanhas</div>
           </div>
           <div>
             <span style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Fichas Criadas:</span>
-            <div id="admin-modal-characters-count" style="font-size: 13px; color: var(--gold-light); font-weight: 600;">0 fichas</div>
+            <div id="admin-modal-characters-count" style="font-size: 13px; color: var(--gold-light); font-weight: 600;">
+              0 fichas</div>
           </div>
         </div>
 
         <!-- Biografia -->
         <div>
-          <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; letter-spacing: 0.5px;">Biografia de Aventureiro</h4>
-          <div id="admin-modal-bio" style="font-size: 13px; color: var(--text-main); line-height: 1.5; background: rgba(0,0,0,0.15); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); max-height: 90px; overflow-y: auto;">
+          <h4
+            style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; letter-spacing: 0.5px;">
+            Biografia de Aventureiro</h4>
+          <div id="admin-modal-bio"
+            style="font-size: 13px; color: var(--text-main); line-height: 1.5; background: rgba(0,0,0,0.15); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); max-height: 90px; overflow-y: auto;">
             Nenhuma biografia informada.
           </div>
         </div>
 
         <!-- Contatos Sociais -->
         <div>
-          <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.5px;">Contatos do Jogador</h4>
+          <h4
+            style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.5px;">
+            Contatos do Jogador</h4>
           <div id="admin-modal-contacts" style="display: flex; gap: 8px; flex-wrap: wrap;">
             <!-- Renderizado via JS -->
           </div>
         </div>
 
         <!-- SEÇÃO EXCLUSIVA PARA SUPERADMIN: CREDENCIAIS & REDEFINIÇÃO DE SENHA -->
-        <div id="admin-modal-superadmin-section" style="display: none; background: rgba(212, 163, 75, 0.05); border: 1px solid var(--border-gold); padding: 14px; border-radius: var(--radius-md);">
+        <div id="admin-modal-superadmin-section"
+          style="display: none; background: rgba(212, 163, 75, 0.05); border: 1px solid var(--border-gold); padding: 14px; border-radius: var(--radius-md);">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-            <h4 style="font-size: 12.5px; font-weight: 700; color: var(--gold-light); margin: 0; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+            <h4
+              style="font-size: 12.5px; font-weight: 700; color: var(--gold-light); margin: 0; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
               <span>🔑</span> Segurança & Credenciais (Exclusivo Superadmin)
             </h4>
           </div>
-          
-          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4;" id="admin-modal-cred-info">
+
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4;"
+            id="admin-modal-cred-info">
             <!-- Informações da senha / hash -->
           </div>
 
           <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px;">
-            <input type="text" id="admin-modal-new-password" placeholder="Digitar nova senha para o usuário..." class="admin-search-input" style="flex: 1; padding: 6px 12px; font-size: 12.5px; min-width: unset;">
-            <button class="btn-primary" style="padding: 6px 14px; font-size: 12.5px; white-space: nowrap;" onclick="salvarNovaSenhaUsuarioAdmin()">
+            <input type="text" id="admin-modal-new-password" placeholder="Digitar nova senha para o usuário..."
+              class="admin-search-input" style="flex: 1; padding: 6px 12px; font-size: 12.5px; min-width: unset;">
+            <button class="btn-primary" style="padding: 6px 14px; font-size: 12.5px; white-space: nowrap;"
+              onclick="salvarNovaSenhaUsuarioAdmin()">
               Redefinir Senha
             </button>
           </div>
@@ -4383,7 +4481,8 @@
       </div>
 
       <!-- Rodapé de Ações de Moderação -->
-      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+      <div class="modal-footer"
+        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
         <div style="display: flex; gap: 8px; align-items: center;" id="admin-modal-role-change-wrapper">
           <!-- Dropdown de Alteração de Cargo para Superadmin -->
         </div>
@@ -4391,7 +4490,8 @@
           <button id="admin-modal-btn-block" class="btn-action-block" onclick="executarBloqueioModalUsuario()">
             🚫 Bloquear Conta
           </button>
-          <button id="admin-modal-btn-delete" class="btn-action-delete" style="display: none;" onclick="executarExclusaoModalUsuario()">
+          <button id="admin-modal-btn-delete" class="btn-action-delete" style="display: none;"
+            onclick="executarExclusaoModalUsuario()">
             🗑️ Deletar Conta
           </button>
           <button class="btn-secondary" onclick="fecharModalPerfilUsuarioAdmin()">
@@ -4402,7 +4502,7 @@
     </div>
   </div>
 
-    </main>
+  </main>
   </div>
 
 
@@ -4544,10 +4644,12 @@
        ========================================================================== -->
   <div class="modal-overlay" id="modal-sistema-alphad6" onclick="if(event.target === this) fecharModalSistema()">
     <div class="modal-card modal-system-view">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-shrink: 0;">
+      <div
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-shrink: 0;">
         <div style="display: flex; align-items: center; gap: 12px;">
           <div class="system-card-icon" style="width: 44px; height: 44px;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <rect width="12" height="12" x="2" y="10" rx="2" />
               <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3.16l-4.76-4.76a2.24 2.24 0 0 0-3.16 0L10 6.08" />
               <path d="M6 14h.01" />
@@ -4584,7 +4686,7 @@
 
       <!-- Corpo com Rolagem Interna -->
       <div class="modal-system-body-scroll" id="modal-system-scroll-container">
-        
+
         <!-- ABA 1: REGRAS DO SISTEMA -->
         <div class="system-tab-pane active" id="tab-pane-regras">
           <!-- Renderizado dinamicamente -->
@@ -4594,10 +4696,11 @@
         <div class="system-tab-pane" id="tab-pane-compendio">
           <div class="compendium-search-bar-row">
             <div style="flex: 1; position: relative;">
-              <input type="text" id="search-compendium-items" class="form-input" 
-                placeholder="Buscar itens por nome, tipo, bônus ou efeito..."
-                oninput="filtrarCompendioItens()" style="padding-left: 36px;">
-              <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.6;">🔍</span>
+              <input type="text" id="search-compendium-items" class="form-input"
+                placeholder="Buscar itens por nome, tipo, bônus ou efeito..." oninput="filtrarCompendioItens()"
+                style="padding-left: 36px;">
+              <span
+                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.6;">🔍</span>
             </div>
           </div>
           <div class="compendium-categories-row" id="compendium-items-categories">
@@ -4612,10 +4715,11 @@
         <div class="system-tab-pane" id="tab-pane-pericias">
           <div class="compendium-search-bar-row">
             <div style="flex: 1; position: relative;">
-              <input type="text" id="search-compendium-specs" class="form-input" 
-                placeholder="Buscar especialização por nome, descrição ou atributo..."
-                oninput="filtrarPericias()" style="padding-left: 36px;">
-              <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.6;">🔍</span>
+              <input type="text" id="search-compendium-specs" class="form-input"
+                placeholder="Buscar especialização por nome, descrição ou atributo..." oninput="filtrarPericias()"
+                style="padding-left: 36px;">
+              <span
+                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.6;">🔍</span>
             </div>
           </div>
           <div class="compendium-categories-row" id="compendium-specs-categories">
@@ -4630,17 +4734,20 @@
         <div class="system-tab-pane" id="tab-pane-comunidade">
           <div class="compendium-search-bar-row">
             <div style="flex: 1; position: relative;">
-              <input type="text" id="search-community" class="form-input" 
-                placeholder="Buscar por herói, NPC, criador, campanha ou homebrew..."
-                oninput="filtrarComunidade()" style="padding-left: 36px;">
-              <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.6;">🔍</span>
+              <input type="text" id="search-community" class="form-input"
+                placeholder="Buscar por herói, NPC, criador, campanha ou homebrew..." oninput="filtrarComunidade()"
+                style="padding-left: 36px;">
+              <span
+                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.6;">🔍</span>
             </div>
           </div>
           <div class="compendium-categories-row" id="community-categories-filters">
             <button class="comp-cat-filter-btn active" onclick="filtrarTipoComunidade('todos', this)">Todos</button>
-            <button class="comp-cat-filter-btn" onclick="filtrarTipoComunidade('jogadores', this)">🛡️ Personagens de Jogadores</button>
+            <button class="comp-cat-filter-btn" onclick="filtrarTipoComunidade('jogadores', this)">🛡️ Personagens de
+              Jogadores</button>
             <button class="comp-cat-filter-btn" onclick="filtrarTipoComunidade('npcs', this)">💀 NPCs & Ameaças</button>
-            <button class="comp-cat-filter-btn" onclick="filtrarTipoComunidade('homebrew', this)">✨ Criações Homebrew</button>
+            <button class="comp-cat-filter-btn" onclick="filtrarTipoComunidade('homebrew', this)">✨ Criações
+              Homebrew</button>
           </div>
           <div class="tree-characters-grid" id="community-list-container" style="padding: 0;">
             <!-- Fichas da comunidade renderizadas aqui -->
@@ -4654,7 +4761,8 @@
   <!-- ==========================================================================
        MODAL: INSPEÇÃO RÁPIDA DE FICHA DA COMUNIDADE
        ========================================================================== -->
-  <div class="modal-overlay" id="modal-preview-ficha-comunidade" onclick="if(event.target === this) fecharModalPreviewFicha()">
+  <div class="modal-overlay" id="modal-preview-ficha-comunidade"
+    onclick="if(event.target === this) fecharModalPreviewFicha()">
     <div class="modal-card modal-card-large" style="max-width: 720px;">
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -4662,7 +4770,8 @@
             A
           </div>
           <div>
-            <h3 class="modal-title" id="preview-ficha-nome" style="margin: 0; font-size: 1.3rem;">Nome do Personagem</h3>
+            <h3 class="modal-title" id="preview-ficha-nome" style="margin: 0; font-size: 1.3rem;">Nome do Personagem
+            </h3>
             <p class="page-subtitle" id="preview-ficha-sub" style="margin: 2px 0 0 0; font-size: 12px;">
               Campanha • Criador
             </p>
@@ -5282,10 +5391,10 @@
                       <div style="display: flex; align-items: center; gap: 8px;">
                         <span class="role-badge" style="font-size: 10px; padding: 2px 6px;">${p.role}</span>
                         ${(currentUser && (currentUser.userId === camp.owner_id || currentUser.id === camp.owner_id || String(currentUser.userId || currentUser.id) === String(camp.owner_id)) && p.user_id !== camp.owner_id) ?
-            (p.role.toLowerCase() === 'jogador' ?
-              `<button class="btn-hollow" style="padding: 2px 6px; font-size: 10px; border-color: var(--gold-primary); color: var(--gold-light);" onclick="alterarCargoJogador('${camp.id}', '${p.user_id}', 'assistente de mestre')">Promover a Assistente</button>` :
-              `<button class="btn-hollow" style="padding: 2px 6px; font-size: 10px; border-color: #ef4444; color: #ef4444;" onclick="alterarCargoJogador('${camp.id}', '${p.user_id}', 'jogador')">Rebaixar a Jogador</button>`)
-            : ''}
+              (p.role.toLowerCase() === 'jogador' ?
+                `<button class="btn-hollow" style="padding: 2px 6px; font-size: 10px; border-color: var(--gold-primary); color: var(--gold-light);" onclick="alterarCargoJogador('${camp.id}', '${p.user_id}', 'assistente de mestre')">Promover a Assistente</button>` :
+                `<button class="btn-hollow" style="padding: 2px 6px; font-size: 10px; border-color: #ef4444; color: #ef4444;" onclick="alterarCargoJogador('${camp.id}', '${p.user_id}', 'jogador')">Rebaixar a Jogador</button>`)
+              : ''}
                       </div>
                     </div>
                   `).join('')}
@@ -5303,40 +5412,40 @@
 
               <!-- Botão de Ação: Entrar na Campanha ou Solicitar Entrada -->
               ${isPublic ?
-            (requestStatus === 'pendente' ?
-              `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px; opacity: 0.7; cursor: not-allowed;" disabled>
+              (requestStatus === 'pendente' ?
+                `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px; opacity: 0.7; cursor: not-allowed;" disabled>
                     ⏳ Solicitação Pendente
                   </button>` :
-              requestStatus === 'aceito' ?
-                `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="window.location.href='campanha.html?id=${camp.id}'">
+                requestStatus === 'aceito' ?
+                  `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="window.location.href='campanha.html?id=${camp.id}'">
                     🎲 Entrar na Campanha
                   </button>` :
-                `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="solicitarEntrada('${camp.id}', this)">
+                  `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="solicitarEntrada('${camp.id}', this)">
                     ✋ Solicitar Entrada
                   </button>`)
-            :
-            `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="window.location.href='campanha.html?id=${camp.id}'">
+              :
+              `<button class="btn-gold" style="width: 100%; padding: 14px; font-size: 14px;" onclick="window.location.href='campanha.html?id=${camp.id}'">
                   🎲 Entrar na Campanha
                 </button>`
-          }
+            }
             </div>
           </div>
         `;
-        // Carregar solicitações se for o mestre / owner
-        const isMaster = currentUser && (currentUser.userId === camp.owner_id || currentUser.id === camp.owner_id || String(currentUser.userId || currentUser.id) === String(camp.owner_id));
-        if (isMaster) {
-          const reqSection = document.getElementById('campaign-requests-section');
-          const reqList = document.getElementById('campaign-requests-list');
-          if (reqSection && reqList) {
-            reqSection.style.display = 'block';
-            try {
-              const reqRes = await window.apiClient.listCampaignRequests(camp.id);
-              if (reqRes && reqRes.sucesso && Array.isArray(reqRes.dados)) {
-                const pendentes = reqRes.dados.filter(r => r.status === 'pendente' || r.status === 'pending');
-                if (pendentes.length === 0) {
-                  reqList.innerHTML = '<div style="font-size: 13px; color: var(--text-dim);">Nenhuma solicitação pendente no momento.</div>';
-                } else {
-                  reqList.innerHTML = pendentes.map(r => `
+          // Carregar solicitações se for o mestre / owner
+          const isMaster = currentUser && (currentUser.userId === camp.owner_id || currentUser.id === camp.owner_id || String(currentUser.userId || currentUser.id) === String(camp.owner_id));
+          if (isMaster) {
+            const reqSection = document.getElementById('campaign-requests-section');
+            const reqList = document.getElementById('campaign-requests-list');
+            if (reqSection && reqList) {
+              reqSection.style.display = 'block';
+              try {
+                const reqRes = await window.apiClient.listCampaignRequests(camp.id);
+                if (reqRes && reqRes.sucesso && Array.isArray(reqRes.dados)) {
+                  const pendentes = reqRes.dados.filter(r => r.status === 'pendente' || r.status === 'pending');
+                  if (pendentes.length === 0) {
+                    reqList.innerHTML = '<div style="font-size: 13px; color: var(--text-dim);">Nenhuma solicitação pendente no momento.</div>';
+                  } else {
+                    reqList.innerHTML = pendentes.map(r => `
                     <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
                       <div>
                         <div style="font-size: 13px; font-weight: 600; color: var(--text-main);">${r.display_name || r.name || 'Jogador'}</div>
@@ -5348,38 +5457,38 @@
                       </div>
                     </div>
                   `).join('');
+                  }
                 }
+              } catch (e) {
+                reqList.innerHTML = `<div style="font-size: 13px; color: #ef4444;">Falha ao carregar solicitações.</div>`;
               }
-            } catch (e) {
-              reqList.innerHTML = `<div style="font-size: 13px; color: #ef4444;">Falha ao carregar solicitações.</div>`;
             }
           }
+
         }
-
+      } catch (err) {
+        detailsBox.innerHTML = `<p style="color: #ef4444;">Erro ao carregar detalhes da campanha: ${err.message}</p>`;
       }
-    } catch (err) {
-      detailsBox.innerHTML = `<p style="color: #ef4444;">Erro ao carregar detalhes da campanha: ${err.message}</p>`;
     }
-  }
 
-  async function responderSolicitacao(requestId, status, campId) {
-    if (!window.apiClient) return;
-    try {
-      const res = await window.apiClient.updateCampaignRequest(requestId, status);
-      if (res && res.sucesso) {
-        mostrarToast(res.mensagem || 'Solicitação respondida com sucesso!');
-        if (campId) {
-          abrirDetalhesCampanha(campId);
+    async function responderSolicitacao(requestId, status, campId) {
+      if (!window.apiClient) return;
+      try {
+        const res = await window.apiClient.updateCampaignRequest(requestId, status);
+        if (res && res.sucesso) {
+          mostrarToast(res.mensagem || 'Solicitação respondida com sucesso!');
+          if (campId) {
+            abrirDetalhesCampanha(campId);
+          } else {
+            navegarPara('campanhas');
+          }
         } else {
-          navegarPara('campanhas');
+          throw new Error(res?.erro || 'Erro ao responder solicitação.');
         }
-      } else {
-        throw new Error(res?.erro || 'Erro ao responder solicitação.');
+      } catch (e) {
+        mostrarToast('Erro: ' + e.message);
       }
-    } catch (e) {
-      mostrarToast('Erro: ' + e.message);
     }
-  }
 
     async function alterarCargoJogador(campId, targetUserId, newRole) {
       if (!window.apiClient) return;
@@ -5610,7 +5719,7 @@
 
       container.innerHTML = sistemas.map(sys => {
         const totalChars = sys.campaigns.reduce((acc, c) => acc + (c.characters ? c.characters.length : 0), 0);
-        
+
         return `
           <div class="tree-system-block">
             <div class="tree-system-header" onclick="toggleTreeSection(this)">
@@ -5637,18 +5746,18 @@
 
                   <div class="tree-characters-grid">
                     ${camp.characters.map(char => {
-                      const sheet = char.sheet || {};
-                      const ident = sheet.identidade || {};
-                      const attrs = sheet.atributos || { corpo: 1, mente: 1, social: 1, espirito: 1 };
-                      const currentAnima = sheet.current_anima !== undefined ? sheet.current_anima : (sheet.max_anima || 15);
-                      const maxAnima = sheet.max_anima || 15;
-                      const defesa = sheet.sistema_estado?.defesa_total !== undefined ? sheet.sistema_estado.defesa_total : (sheet.defesa_total || 1);
-                      const wealthNome = sheet.wealth?.tier_nome || 'Classe Média';
-                      const nivel = sheet.nivel || 1;
-                      const arquetipo = ident.arquetipo || 'Aventureiro';
-                      const initial = (char.name || 'A')[0].toUpperCase();
+          const sheet = char.sheet || {};
+          const ident = sheet.identidade || {};
+          const attrs = sheet.atributos || { corpo: 1, mente: 1, social: 1, espirito: 1 };
+          const currentAnima = sheet.current_anima !== undefined ? sheet.current_anima : (sheet.max_anima || 15);
+          const maxAnima = sheet.max_anima || 15;
+          const defesa = sheet.sistema_estado?.defesa_total !== undefined ? sheet.sistema_estado.defesa_total : (sheet.defesa_total || 1);
+          const wealthNome = sheet.wealth?.tier_nome || 'Classe Média';
+          const nivel = sheet.nivel || 1;
+          const arquetipo = ident.arquetipo || 'Aventureiro';
+          const initial = (char.name || 'A')[0].toUpperCase();
 
-                      return `
+          return `
                         <div class="character-card">
                           <div class="character-card-header">
                             <div class="character-avatar">${initial}</div>
@@ -5703,7 +5812,7 @@
                           </div>
                         </div>
                       `;
-                    }).join('')}
+        }).join('')}
                   </div>
                 </div>
               `).join('')}
@@ -5716,7 +5825,7 @@
     /**
      * Exclui um personagem com confirmação do jogador/mestre
      */
-    window.deletarPersonagem = async function(characterId, characterName) {
+    window.deletarPersonagem = async function (characterId, characterName) {
       if (!confirm(`Tem certeza que deseja excluir o personagem "${characterName}"? Esta ação removerá a ficha permanentemente e liberará o slot.`)) {
         return;
       }
@@ -6081,7 +6190,7 @@
           alternarAuthView('otp');
           const sub = document.getElementById('otp-subtitle-text');
           if (sub) sub.textContent = `Esta conta ainda não foi confirmada. Digite o código de 6 dígitos enviado para ${email}.`;
-          
+
           const codeVal = err.payload?.codigoAtivacao || err.payload?._codigoTesteDev;
           const hintBox = document.getElementById('otp-code-hint-box');
           const hintVal = document.getElementById('otp-code-hint-val');
@@ -6091,7 +6200,7 @@
             hintBox.style.display = 'block';
             if (codeInp && !codeInp.value) codeInp.value = codeVal;
           }
-          
+
           mostrarToast('Acesso pendente: confirme seu e-mail com o código de 6 dígitos.');
           return;
         }
@@ -6470,8 +6579,8 @@
       tbody.innerHTML = usuarios.map(u => {
         const roleKey = String(u.role || 'jogador').toLowerCase();
         const roleClass = roleKey === 'superadmin' ? 'role-badge-superadmin' :
-                          roleKey === 'admin' ? 'role-badge-admin' :
-                          roleKey === 'mestre' ? 'role-badge-mestre' : 'role-badge-jogador';
+          roleKey === 'admin' ? 'role-badge-admin' :
+            roleKey === 'mestre' ? 'role-badge-mestre' : 'role-badge-jogador';
 
         const roleLabels = {
           jogador: 'Jogador',
@@ -7140,7 +7249,7 @@
     // ==========================================================================
     // SISTEMAS DE RPG & MODAL DO ALPHAD6 (COMPÊNDIO, REGRAS & COMUNIDADE)
     // ==========================================================================
-    
+
     // CATÁLOGO CANÔNICO DAS 40 ESPECIALIZAÇÕES & PERÍCIAS (ALPHAD6)
     const ALPHAD6_SPECIALIZATIONS_CANON = [
       // 1. Combate & Táticas Marciais
@@ -7327,7 +7436,7 @@
 
       try {
         if (!window.apiClient) return;
-        const res = await window.apiClient.sync('rpg.system.overview', { systemId: 'alphad6', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+        const res = await window.apiClient.sync('rpg.system.overview', { systemId: 'alphad6' });
 
         if (res && res.sucesso && res.dados) {
           cachedSystemData = res.dados;
@@ -7340,7 +7449,7 @@
 
     function renderizarGradeSistemasFallback() {
       cachedSystemData = {
-        systemId: 'alphad6', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+        systemId: 'alphad6',
         rules: {
           nome: 'AlphaD6 RPG',
           versao: '1.2.0 (Oficial)'
@@ -7481,9 +7590,9 @@
       }
 
       // Renderiza imediatamente com os dados disponíveis
-      const totalComunidade = (cachedSystemData?.community?.players?.length || 0) + 
-                             (cachedSystemData?.community?.npcs?.length || 0) + 
-                             (cachedSystemData?.community?.homebrews?.length || 0);
+      const totalComunidade = (cachedSystemData?.community?.players?.length || 0) +
+        (cachedSystemData?.community?.npcs?.length || 0) +
+        (cachedSystemData?.community?.homebrews?.length || 0);
       const badgeCount = document.getElementById('count-comunidade-badge');
       if (badgeCount) badgeCount.textContent = totalComunidade;
 
@@ -7500,9 +7609,9 @@
           const res = await window.apiClient.sync('rpg.system.overview', { systemId });
           if (res && res.sucesso && res.dados) {
             cachedSystemData = res.dados;
-            const updatedTotal = (cachedSystemData?.community?.players?.length || 0) + 
-                                 (cachedSystemData?.community?.npcs?.length || 0) + 
-                                 (cachedSystemData?.community?.homebrews?.length || 0);
+            const updatedTotal = (cachedSystemData?.community?.players?.length || 0) +
+              (cachedSystemData?.community?.npcs?.length || 0) +
+              (cachedSystemData?.community?.homebrews?.length || 0);
             if (badgeCount) badgeCount.textContent = updatedTotal;
             renderizarAbaCompendio();
             renderizarAbaPericias();
@@ -7960,8 +8069,8 @@
         const tipo = item.tipo || item.type || '';
         const slot = item.slot || '';
         const dano = item.dano || '';
-        const matchText = !term || 
-          nome.toLowerCase().includes(term) || 
+        const matchText = !term ||
+          nome.toLowerCase().includes(term) ||
           desc.toLowerCase().includes(term) ||
           tipo.toLowerCase().includes(term) ||
           slot.toLowerCase().includes(term) ||
@@ -8059,8 +8168,8 @@
         const nome = spec.nome || spec.name || '';
         const desc = spec.desc || spec.descricao || '';
         const cat = spec.categoria || '';
-        const matchText = !term || 
-          nome.toLowerCase().includes(term) || 
+        const matchText = !term ||
+          nome.toLowerCase().includes(term) ||
           desc.toLowerCase().includes(term) ||
           cat.toLowerCase().includes(term) ||
           attr.includes(term);
@@ -8333,7 +8442,7 @@
                 ${inv.length > 0 ? inv.map(i => `
                   <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle); padding: 8px 10px; border-radius: var(--radius-sm);">
                     <div style="font-weight: 700; font-size: 12.5px; color: #fff;">${i.nome || i}</div>
-                    <div style="font-size: 11px; color: var(--text-dim);">${i.dano || i.defesa ? (i.dano || ('+'+i.defesa+' Def')) : (i.custo_pratas ? i.custo_pratas + ' P' : '1 Slot')}</div>
+                    <div style="font-size: 11px; color: var(--text-dim);">${i.dano || i.defesa ? (i.dano || ('+' + i.defesa + ' Def')) : (i.custo_pratas ? i.custo_pratas + ' P' : '1 Slot')}</div>
                   </div>
                 `).join('') : '<span style="color: var(--text-dim); font-size: 12px;">Inventário vazio.</span>'}
               </div>
@@ -8436,7 +8545,7 @@
           const displayName = profile.displayName || profile.name || user.displayName || user.name || user.display_name || 'Aventureiro Arcano';
           const nickname = profile.nickname || user.nickname || (displayName ? displayName.toLowerCase().replace(/\s+/g, '_') : 'aventureiro');
           const bio = profile.bio || 'Nenhuma crônica ou história contada ainda. Edite sua biografia para forjar sua lenda na Taverna.';
-          
+
           const elTitle = document.getElementById('profile-hero-display-name');
           if (elTitle) elTitle.textContent = displayName;
 
@@ -8457,7 +8566,7 @@
               const dt = new Date(createdAt);
               const dataFormatada = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
               elCreated.textContent = `📅 Membro desde ${dataFormatada}`;
-            } catch(e) {
+            } catch (e) {
               elCreated.textContent = `📅 Membro da Taverna`;
             }
           }
@@ -8579,7 +8688,7 @@
               current.name = user.name || user.display_name;
               localStorage.setItem('arcana_user_data', JSON.stringify(current));
             }
-          } catch(e) {}
+          } catch (e) { }
         }
       } catch (err) {
         console.error('Erro ao carregar perfil:', err);
@@ -8775,7 +8884,7 @@
             try {
               usuario = JSON.parse(userParam);
               localStorage.setItem('arcana_user_data', JSON.stringify(usuario));
-            } catch (_) {}
+            } catch (_) { }
           }
 
           window.history.replaceState({}, document.title, window.location.pathname);
