@@ -241,11 +241,10 @@ export async function handleAuthRequest(request, env, clientIp) {
       return new Response(JSON.stringify({ sucesso: false, erro: 'Informe e-mail e senha' }), { status: 400, headers });
     }
 
-    const emailVal = validateEmailFormat(email);
-    if (!emailVal.valid) {
-      return new Response(JSON.stringify({ sucesso: false, erro: emailVal.reason }), { status: 400, headers });
+    const cleanEmail = String(email).trim().toLowerCase();
+    if (!cleanEmail.includes('@') || cleanEmail.length < 5) {
+      return new Response(JSON.stringify({ sucesso: false, erro: 'Formato de e-mail inválido' }), { status: 400, headers });
     }
-    const cleanEmail = emailVal.cleanEmail;
 
     const user = await dbQueries.getUserByEmail(db, cleanEmail);
     if (!user || !user.password_hash) {

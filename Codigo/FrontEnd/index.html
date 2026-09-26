@@ -6046,12 +6046,11 @@
       const rawEmail = emailInput ? emailInput.value : '';
       const password = passInput ? passInput.value : '';
 
-      const check = validarFormatoEmailFrontend(rawEmail);
-      if (!check.valid) {
-        mostrarToast(check.reason);
+      const email = (rawEmail || '').trim().toLowerCase();
+      if (!email || !email.includes('@')) {
+        mostrarToast('Informe seu e-mail de acesso.');
         return;
       }
-      const email = check.cleanEmail;
 
       if (!password || password.length < 6) {
         mostrarToast('Informe sua senha cadastrada (mínimo 6 caracteres).');

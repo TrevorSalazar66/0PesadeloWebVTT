@@ -8,13 +8,19 @@ export function getAllowedOrigins(env) {
 }
 
 export function isOriginAllowed(origin, env) {
-  if (!origin) return false;
-  // No ambiente de desenvolvimento, aceita conexões locais de qualquer porta (ex: Live Server 5500, 5501, 3000, etc.)
-  if (env?.ENVIRONMENT === 'development' || !env?.ENVIRONMENT) {
-    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-      return true;
-    }
+  if (!origin) return true;
+  if (origin === 'null' || origin === 'file://') return true;
+
+  // Aceita conexões locais de qualquer porta (localhost / 127.0.0.1)
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+    return true;
   }
+
+  // Aceita origens hospedadas no Cloudflare Workers / Pages (*.workers.dev, *.pages.dev)
+  if (/^https?:\/\/[a-zA-Z0-9-]+\.(workers|pages)\.dev$/.test(origin)) {
+    return true;
+  }
+
   const allowed = getAllowedOrigins(env);
   return allowed.includes(origin);
 }
