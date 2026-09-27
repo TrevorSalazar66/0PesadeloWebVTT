@@ -755,6 +755,54 @@ describe('RetroForge VTT - Motor de Regras RPG D6', () => {
         rpgEngineService.validateCharacterCreationAlphaD6(input);
       }, /Inventário sobrecarregado/);
     });
+
+    it('deve abater o custo dos itens comprados do dinheiro inicial da classe de riqueza', () => {
+      const input = {
+        name: 'Comprador Prudente',
+        atributos: { corpo: 2, mente: 2, social: 2, espirito: 4 }, // mente 2 + social 2 = 4 (Pobre: 2.500P)
+        especializacoes: ['Furtividade', 'Investigação'],
+        contatos: [
+          { nome: 'C1', vinculo: 'amizade', ocupacao: 'O1' },
+          { nome: 'C2', vinculo: 'divida', ocupacao: 'O2' },
+          { nome: 'C3', vinculo: 'favor', ocupacao: 'O3' }
+        ],
+        customInventoryRoll: [3, 3], // 6 + 2 = 8 slots
+        itensMochila: [
+          { id: 'adaga', nome: 'Adaga', custo: 30, slotsCarga: 1 },
+          { id: 'armadura_couro', nome: 'Armadura de Couro', custo: 120, slotsCarga: 2 },
+          { id: 'pocao', nome: 'Poção de Cura', custo: 50, slotsCarga: 1 }
+        ] // Total gasto: 200P
+      };
+
+      const res = rpgEngineService.validateCharacterCreationAlphaD6(input);
+      assert.equal(res.sheet.riqueza.id, 'pobre');
+      assert.equal(res.sheet.riqueza.dinheiroPrataInicial, 2500);
+      assert.equal(res.sheet.riqueza.totalGasto, 200);
+      assert.equal(res.sheet.riqueza.dinheiroPrataAtual, 2300);
+      assert.equal(res.sheet.inventario.dinheiro_prata, 2300);
+      assert.equal(res.sheet.inventario.total_gasto, 200);
+    });
+
+    it('deve rejeitar criação se o custo total dos itens exceder o dinheiro inicial da classe de riqueza', () => {
+      const input = {
+        name: 'Comprador Falido',
+        atributos: { corpo: 2, mente: 1, social: 1, espirito: 6 }, // mente 1 + social 1 = 2 (Miserável: 1.200P)
+        especializacoes: ['Sobrevivência'],
+        contatos: [
+          { nome: 'C1', vinculo: 'amizade', ocupacao: 'O1' },
+          { nome: 'C2', vinculo: 'divida', ocupacao: 'O2' },
+          { nome: 'C3', vinculo: 'favor', ocupacao: 'O3' }
+        ],
+        customInventoryRoll: [6, 6], // 12 + 2 = 14 slots
+        itensMochila: [
+          { id: 'item_caro', nome: 'Item Super Luxuoso', custo: 1500, slotsCarga: 2 } // 1500 > 1200
+        ]
+      };
+
+      assert.throws(() => {
+        rpgEngineService.validateCharacterCreationAlphaD6(input);
+      }, /Recursos insuficientes: o custo total dos itens/);
+    });
   });
 
   describe('21. Silhueta de Equipamentos e Gestão de Slots (Paperdoll)', () => {

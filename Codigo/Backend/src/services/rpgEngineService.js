@@ -1641,8 +1641,19 @@ export function validateCharacterCreationAlphaD6({
     throw new Error(`Inventário sobrecarregado: os itens selecionados ocupam ${totalSlotsOcupados} slots, excedendo a capacidade máxima de ${slotsResult.maxSlots} slots.`);
   }
 
-  // 5. Riqueza Abstrata
+  // 5. Riqueza Abstrata & Gestão de Pratas Iniciais
   const wealth = getWealthTier({ mente, social });
+  const totalGastoItens = Array.isArray(itensMochila) 
+    ? itensMochila.reduce((acc, i) => acc + Math.max(0, Math.floor(Number(i.custo) || 0)), 0) 
+    : 0;
+
+  if (totalGastoItens > wealth.dinheiroPrataInicial) {
+    throw new Error(`Recursos insuficientes: o custo total dos itens (${totalGastoItens}P) excede o dinheiro inicial da sua classe de riqueza ${wealth.label} (${wealth.dinheiroPrataInicial}P).`);
+  }
+
+  wealth.totalGasto = totalGastoItens;
+  wealth.dinheiroPrata = Math.max(0, wealth.dinheiroPrataInicial - totalGastoItens);
+  wealth.dinheiroPrataAtual = wealth.dinheiroPrata;
 
   // 6. Silhueta de Equipamentos e Defesa
   const silhuetaCompleta = {
@@ -1713,7 +1724,9 @@ export function validateCharacterCreationAlphaD6({
     inventario: {
       max_slots: slotsResult.maxSlots,
       slots_ocupados: Array.isArray(itensMochila) ? itensMochila.reduce((acc, i) => acc + (i.slotsCarga !== undefined ? i.slotsCarga : 1), 0) : 0,
-      itens_mochila: Array.isArray(itensMochila) ? itensMochila : []
+      itens_mochila: Array.isArray(itensMochila) ? itensMochila : [],
+      dinheiro_prata: wealth.dinheiroPrata,
+      total_gasto: totalGastoItens
     },
     equipamento_silhueta: silhuetaCompleta,
     contatos: contatosValidados.contatos,

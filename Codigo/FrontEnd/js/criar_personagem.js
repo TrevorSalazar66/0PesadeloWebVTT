@@ -786,11 +786,20 @@ function renderizarCatalogoCompendio() {
     return;
   }
 
+  const tierInfo = calcularNivelRiqueza({
+    mente: criacaoState.atributos.mente,
+    social: criacaoState.atributos.social
+  });
+  const totalGasto = criacaoState.mochila.reduce((acc, i) => acc + (Number(i.custo) || 0), 0);
+  const saldoDisponivel = tierInfo.dinheiroPrata - totalGasto;
+
   listContainer.innerHTML = itens.map(item => {
     const slotNome = formatarSlotNome(item.slot);
     const slotsCarga = item.slotsCarga !== undefined ? item.slotsCarga : 1;
-    const custoInfo = item.custo ? `<span style="color: var(--gold-light); font-weight: 600;">💰 ${item.custo}P</span>` : '';
+    const custoVal = Number(item.custo) || 0;
+    const custoInfo = `<span style="color: var(--gold-light); font-weight: 600;">💰 ${custoVal > 0 ? custoVal.toLocaleString('pt-BR') + 'P' : 'Grátis'}</span>`;
     const statsInfo = item.dano ? `⚔️ ${item.dano}` : (item.bonusDefesa ? `🛡️ +${item.bonusDefesa} Defesa` : '');
+    const semSaldo = custoVal > saldoDisponivel;
 
     return `
       <div class="compendium-item-card">
@@ -807,8 +816,8 @@ function renderizarCatalogoCompendio() {
           </p>
         </div>
         
-        <button type="button" class="btn-add-item" onclick="adicionarItemMochila('${item.id}')">
-          + Guardar na Mochila
+        <button type="button" class="btn-add-item ${semSaldo ? 'btn-add-item-disabled' : ''}" onclick="adicionarItemMochila('${item.id}')" title="${semSaldo ? `Saldo insuficiente (${saldoDisponivel.toLocaleString('pt-BR')}P restantes)` : 'Adicionar à Mochila'}">
+          ${semSaldo ? `⚠️ Sem Saldo (${custoVal}P)` : '+ Guardar na Mochila'}
         </button>
       </div>
     `;
@@ -834,6 +843,16 @@ function adicionarItemMochila(itemId) {
   const item = criacaoState.compendioCompleto.find(i => i.id === itemId) || COMPENDIO_FALLBACK.find(i => i.id === itemId);
   if (!item) return;
 
+  const tierInfo = calcularNivelRiqueza(criacaoState.atributos);
+  const totalGasto = criacaoState.mochila.reduce((acc, i) => acc + (Number(i.custo) || 0), 0);
+  const custoItem = Number(item.custo) || 0;
+  const saldoDisponivel = tierInfo.dinheiroPrata - totalGasto;
+
+  if (custoItem > saldoDisponivel) {
+    alert(`⚠️ Pratas Insuficientes!\n\nVocê possui ${saldoDisponivel.toLocaleString('pt-BR')}P disponíveis.\nO item "${item.nome}" custa ${custoItem.toLocaleString('pt-BR')}P (faltam ${(custoItem - saldoDisponivel).toLocaleString('pt-BR')}P).\n\nPara liberar recursos, remova itens da sua mochila ou aumente Mente e Social para subir de classe social.`);
+    return;
+  }
+
   const capSlots = 7 + (criacaoState.atributos.corpo || 1);
   const slotsOcupados = criacaoState.mochila.reduce((acc, i) => acc + (i.slotsCarga !== undefined ? i.slotsCarga : 1), 0);
   const slotsItem = item.slotsCarga !== undefined ? item.slotsCarga : 1;
@@ -843,8 +862,15 @@ function adicionarItemMochila(itemId) {
     return;
   }
 
-  criacaoState.mochila.push({ ...item, uid: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } });
+  criacaoState.mochila.push({
+    ...item,
+    custo: custoItem,
+    uid: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } }
+  });
+
   atualizarPainelMochila();
+  renderizarCatalogoCompendio();
   renderizarOpcoesSilhueta();
 }
 
@@ -862,6 +888,7 @@ function removerItemMochila(index) {
 
   criacaoState.mochila.splice(index, 1);
   atualizarPainelMochila();
+  renderizarCatalogoCompendio();
   renderizarOpcoesSilhueta();
   atualizarPreviewDefesa();
 }
@@ -923,8 +950,11 @@ function atualizarPainelMochila() {
   const counterEl = document.getElementById('backpack-load-counter');
   const barEl = document.getElementById('backpack-load-bar');
   const wealthTierEl = document.getElementById('backpack-wealth-tier');
+  const initMoneyEl = document.getElementById('backpack-initial-money');
+  const spentMoneyEl = document.getElementById('backpack-spent-money');
+  const remainingMoneyEl = document.getElementById('backpack-remaining-money');
 
-  const capSlots = 7 + criacaoState.atributos.corpo;
+  const capSlots = 7 + (criacaoState.atributos.corpo || 1);
   const slotsOcupados = criacaoState.mochila.reduce((acc, i) => acc + (i.slotsCarga !== undefined ? i.slotsCarga : 1), 0);
 
   if (counterEl) {
@@ -942,8 +972,25 @@ function atualizarPainelMochila() {
     social: criacaoState.atributos.social
   });
 
+  const totalGasto = criacaoState.mochila.reduce((acc, i) => acc + (Number(i.custo) || 0), 0);
+  const saldoRestante = tierInfo.dinheiroPrata - totalGasto;
+
   if (wealthTierEl) {
     wealthTierEl.textContent = `Poder de Compra: ${tierInfo.label} (${tierInfo.dinheiroPrata.toLocaleString('pt-BR')} Pratas)`;
+  }
+
+  if (initMoneyEl) {
+    initMoneyEl.textContent = `${tierInfo.dinheiroPrata.toLocaleString('pt-BR')}P`;
+  }
+
+  if (spentMoneyEl) {
+    spentMoneyEl.textContent = `${totalGasto.toLocaleString('pt-BR')}P`;
+    spentMoneyEl.className = `finance-value ${totalGasto > tierInfo.dinheiroPrata ? 'danger' : ''}`;
+  }
+
+  if (remainingMoneyEl) {
+    remainingMoneyEl.textContent = `${saldoRestante.toLocaleString('pt-BR')}P`;
+    remainingMoneyEl.className = `finance-value ${saldoRestante < 0 ? 'danger' : 'emerald'}`;
   }
 
   if (listEl) {
@@ -954,15 +1001,21 @@ function atualizarPainelMochila() {
         </div>
       `;
     } else {
-      listEl.innerHTML = criacaoState.mochila.map((it, idx) => `
-        <div class="backpack-entry">
-          <div>
-            <span style="font-weight: 600; color: var(--text-main);">${it.nome}</span>
-            <span style="font-size: 0.75rem; color: var(--text-dim); margin-left: 4px;">(${it.slotsCarga || 1}s)</span>
+      listEl.innerHTML = criacaoState.mochila.map((it, idx) => {
+        const custoVal = Number(it.custo) || 0;
+        return `
+          <div class="backpack-entry">
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div>
+                <span style="font-weight: 600; color: var(--text-main);">${it.nome}</span>
+                <span style="font-size: 0.75rem; color: var(--text-dim); margin-left: 4px;">(${it.slotsCarga || 1}s)</span>
+              </div>
+              <span style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">💰 ${custoVal > 0 ? custoVal.toLocaleString('pt-BR') + 'P' : 'Grátis'}</span>
+            </div>
+            <button type="button" class="btn-remove-item" onclick="removerItemMochila(${idx})" title="Remover da Mochila e reembolsar ${custoVal}P">✕</button>
           </div>
-          <button type="button" class="btn-remove-item" onclick="removerItemMochila(${idx})" title="Remover da Mochila">✕</button>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
   }
 }
@@ -1090,10 +1143,12 @@ function atualizarResumo() {
     mente: criacaoState.atributos.mente,
     social: criacaoState.atributos.social
   });
+  const totalGasto = criacaoState.mochila.reduce((acc, i) => acc + (Number(i.custo) || 0), 0);
+  const saldoRestante = Math.max(0, tierInfo.dinheiroPrata - totalGasto);
 
   const revRiqueza = document.getElementById('rev-riqueza');
   if (revRiqueza) {
-    revRiqueza.textContent = `💰 ${tierInfo.label} (${tierInfo.dinheiroPrata.toLocaleString('pt-BR')}P)`;
+    revRiqueza.textContent = `💰 ${tierInfo.label} — Saldo: ${saldoRestante.toLocaleString('pt-BR')}P (Inicial: ${tierInfo.dinheiroPrata.toLocaleString('pt-BR')}P | Gasto: ${totalGasto.toLocaleString('pt-BR')}P)`;
     revRiqueza.title = `Patrimônio Básico: ${tierInfo.patrimonio}`;
   }
 
@@ -1110,13 +1165,17 @@ function atualizarResumo() {
     if (eq.pes) equipados.push(`👢 Pés: ${eq.pes.nome}`);
     if (eq.acessorios) equipados.push(`💍 Acessório: ${eq.acessorios.nome}`);
 
-    const mochItens = criacaoState.mochila.map(i => i.nome).join(', ') || 'Nenhum item avulso.';
+    const mochItens = criacaoState.mochila.map(i => `${i.nome} (${Number(i.custo) || 0}P)`).join(', ') || 'Nenhum item avulso.';
     const specsList = Object.values(criacaoState.especializacoesAlocadas).map(s => `${s.nome} (Nível ${s.nivel} — +${s.nivel}d6)`).join(' | ') || 'Nenhuma perícia.';
 
     listaEquipEl.innerHTML = `
       <div style="margin-bottom: 4px;"><strong>🎯 Perícias:</strong> ${specsList}</div>
       ${equipados.length > 0 ? `<div><strong>🛡️ Vestidos:</strong> ${equipados.join(' | ')}</div>` : '<div><em>Nenhum equipamento vestido na silhueta.</em></div>'}
       <div style="margin-top: 4px;"><strong>🎒 Mochila (${criacaoState.mochila.length} itens):</strong> ${mochItens}</div>
+      <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.85rem;">
+        <strong>🪙 Saldo de Pratas para a Campanha:</strong> <span style="color: #10b981; font-weight: 700;">${saldoRestante.toLocaleString('pt-BR')}P</span>
+        <span style="color: var(--text-dim); margin-left: 6px;">(Inicial: ${tierInfo.dinheiroPrata.toLocaleString('pt-BR')}P • Total gasto: ${totalGasto.toLocaleString('pt-BR')}P)</span>
+      </div>
     `;
   }
 }
@@ -1180,6 +1239,13 @@ async function avancarPasso(direcao) {
         alert(`⚠️ Sua mochila está sobrecarregada!\nVocê está carregando ${slotsOcupados} slots, mas sua capacidade máxima é de ${capSlots} slots.\nRemova itens antes de avançar.`);
         return;
       }
+
+      const tierInfo = calcularNivelRiqueza(criacaoState.atributos);
+      const totalGasto = criacaoState.mochila.reduce((acc, i) => acc + (Number(i.custo) || 0), 0);
+      if (totalGasto > tierInfo.dinheiroPrata) {
+        alert(`⚠️ Recursos insuficientes!\nO custo total dos itens (${totalGasto.toLocaleString('pt-BR')}P) excede o saldo da sua classe de riqueza (${tierInfo.dinheiroPrata.toLocaleString('pt-BR')}P).\nRemova itens para equilibrar seu orçamento.`);
+        return;
+      }
       renderizarOpcoesSilhueta();
     } else if (passoAtual === 6) {
       atualizarResumo();
@@ -1241,6 +1307,16 @@ async function submeterCriacaoPersonagem() {
     return;
   }
 
+  const tierInfo = calcularNivelRiqueza(criacaoState.atributos);
+  const totalGasto = criacaoState.mochila.reduce((acc, i) => acc + (Number(i.custo) || 0), 0);
+  if (totalGasto > tierInfo.dinheiroPrata) {
+    alert(`⚠️ Não é possível concluir a criação: o total gasto em itens (${totalGasto.toLocaleString('pt-BR')}P) excede o seu dinheiro inicial (${tierInfo.dinheiroPrata.toLocaleString('pt-BR')}P).\nRemova itens para equilibrar seu orçamento.`);
+    btnProx.disabled = false;
+    btnProx.textContent = 'Concluir & Criar Personagem ⚔️';
+    return;
+  }
+  const saldoRestante = Math.max(0, tierInfo.dinheiroPrata - totalGasto);
+
   const nome = document.getElementById('input-nome').value.trim();
   const arquetipo = document.getElementById('input-arquetipo').value.trim();
   const raca = document.getElementById('input-raca').value.trim() || 'Humano';
@@ -1296,13 +1372,14 @@ async function submeterCriacaoPersonagem() {
   // Silhueta Equipamentos
   const equipamentoSilhueta = { ...criacaoState.equipamentoSilhueta };
 
-  // Mochila Itens
+  // Mochila Itens com custo para dedução oficial
   const itensMochila = criacaoState.mochila.map(i => ({
     id: i.id,
     nome: i.nome,
     slot: i.slot,
     categoria: i.categoria,
     slotsCarga: i.slotsCarga || 1,
+    custo: Number(i.custo) || 0,
     bonusDefesa: i.bonusDefesa || 0,
     dano: i.dano || null,
     tracos: i.tracos || []
@@ -1329,6 +1406,7 @@ async function submeterCriacaoPersonagem() {
       contatos,
       equipamentoSilhueta,
       itensMochila,
+      dinheiroPrata: saldoRestante,
       lore,
       campaignId
     });
