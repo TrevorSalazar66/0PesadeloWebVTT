@@ -7403,6 +7403,9 @@
       { id: 'fogo_especial_forte', nome: 'Canhão Portátil Rúnico', dano: '2d12+8', custo: 1200, riquezaMinima: 'milionario', atributo: 'mente', slotsCarga: 3, slot: 'mao_primaria', categoria: 'Armas & Focos', tracos: ['Arma de Fogo', 'Devastador'], desc: 'Dispositivo arcanotécnico destruidor de fortificações e aberrações (Usa Mente).', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'damage', valorFormula: '2d12+8', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
     ];
 
+    window.ALPHAD6_SPECIALIZATIONS_CANON = ALPHAD6_SPECIALIZATIONS_CANON;
+    window.ALPHAD6_COMPENDIO_CANON = ALPHAD6_COMPENDIO_CANON;
+
     let cachedSystemData = null;
     let currentCommunityFilter = 'todos';
     let currentCompCategory = 'todos';

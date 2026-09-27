@@ -433,7 +433,69 @@ export class CompendiumUI {
     this.customItems = this.loadCustomItemsFromStorage();
   }
 
+  ensureCanonDataLoaded() {
+    const rawItems = (window.ALPHAD6_COMPENDIO_CANON && Array.isArray(window.ALPHAD6_COMPENDIO_CANON)) ? window.ALPHAD6_COMPENDIO_CANON : [];
+    const rawSpecs = (window.ALPHAD6_SPECIALIZATIONS_CANON && Array.isArray(window.ALPHAD6_SPECIALIZATIONS_CANON)) ? window.ALPHAD6_SPECIALIZATIONS_CANON : (window.SPECIALIZATIONS_FALLBACK || []);
+
+    rawItems.forEach(raw => {
+      if (!SYSTEM_COMPENDIUM_DATABASE.some(s => s.id === raw.id)) {
+        const isEquip = raw.categoria === 'Escudos & Armaduras' || 
+                        raw.categoria === 'Armas & Focos' || 
+                        raw.categoria === 'Equipamentos & Armas' || 
+                        raw.categoria === 'Focos Arcanos & Magia' ||
+                        ['tronco', 'mao_primaria', 'mao_secundaria', 'cabeca', 'costas', 'duas_maos'].includes(raw.slot);
+        let icon = '📦';
+        if (isEquip) {
+          if (raw.slot === 'tronco' || raw.categoria === 'Escudos & Armaduras') icon = '🛡️';
+          else if (raw.categoria === 'Focos Arcanos & Magia') icon = '🔮';
+          else icon = '⚔️';
+        } else {
+          if (raw.categoria === 'Saúde & Cura') icon = '🧪';
+          else if (raw.categoria === 'Foco Mental & Vontade') icon = '🧠';
+          else if (raw.categoria === 'Descanso & Abrigo') icon = '🏕️';
+          else if (raw.categoria === 'Arte & Social') icon = '🎨';
+          else if (raw.categoria === 'Ferramentas & Utilidades') icon = '🛠️';
+          else if (raw.categoria === 'Comunicação & Sensores') icon = '📡';
+        }
+
+        SYSTEM_COMPENDIUM_DATABASE.push({
+          id: raw.id,
+          category: isEquip ? 'equipment' : 'item',
+          icon: icon,
+          name: raw.nome || raw.name,
+          is_custom: false,
+          origin_type: 'system',
+          short_desc: raw.desc || raw.short_desc || `${raw.categoria || ''} (${raw.custo || 0} pratas)`,
+          blocks: raw.blocks || {
+            bloco_nome: { label: 'Nome do Item', value: raw.nome || raw.name, is_visible: true },
+            bloco_descricao_narrativa: { label: 'Descrição', value: raw.desc || '', is_visible: true }
+          }
+        });
+      }
+    });
+
+    rawSpecs.forEach(spec => {
+      if (!SYSTEM_COMPENDIUM_DATABASE.some(s => s.id === spec.id)) {
+        SYSTEM_COMPENDIUM_DATABASE.push({
+          id: spec.id,
+          category: 'specialization',
+          icon: '🎯',
+          name: spec.nome || spec.name,
+          is_custom: false,
+          origin_type: 'system',
+          short_desc: `[Atributo: ${(spec.atributo || '').toUpperCase()}] — ${spec.categoria || ''}. ${spec.desc || ''}`,
+          blocks: spec.blocks || {
+            bloco_nome: { label: 'Nome da Perícia', value: spec.nome || spec.name, is_visible: true },
+            bloco_atributo_base: { label: 'Atributo Base', value: spec.atributo, is_visible: true },
+            bloco_descricao_narrativa: { label: 'Descrição', value: spec.desc || '', is_visible: true }
+          }
+        });
+      }
+    });
+  }
+
   async loadItems(campaignId = null) {
+    this.ensureCanonDataLoaded();
     try {
       if (this.apiClient && typeof this.apiClient.sync === 'function') {
         const res = await this.apiClient.sync('compendium.list', { category: this.activeCategory, campaignId });
@@ -471,6 +533,7 @@ export class CompendiumUI {
   }
 
   getFilteredItems() {
+    this.ensureCanonDataLoaded();
     const sourceList = this.activeTab === 'system' ? SYSTEM_COMPENDIUM_DATABASE : this.customItems;
     return sourceList.filter(item => {
       const matchCategory = this.activeCategory === 'all' || item.category === this.activeCategory;
@@ -487,6 +550,7 @@ export class CompendiumUI {
   }
 
   injectModalsMarkup() {
+    this.ensureCanonDataLoaded();
     if (this.container) {
       this.container.innerHTML = `
         <div class="modal-content hub-modal compendium-modal-fullscreen" style="width: 90vw; max-width: 1400px; height: 90vh; display: flex; flex-direction: column; background: #0b0b14; border: 1px solid var(--border-gold); border-radius: 16px; padding: 24px; box-sizing: border-box; overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.8);">
@@ -530,6 +594,7 @@ export class CompendiumUI {
             <button class="cat-filter-btn ${this.activeCategory === 'all' ? 'active' : ''}" data-cat="all">🌟 Todos</button>
             <button class="cat-filter-btn ${this.activeCategory === 'item' ? 'active' : ''}" data-cat="item">🧪 Consumíveis / Itens</button>
             <button class="cat-filter-btn ${this.activeCategory === 'equipment' ? 'active' : ''}" data-cat="equipment">⚔️ Equipamentos & Armas</button>
+            <button class="cat-filter-btn ${this.activeCategory === 'specialization' ? 'active' : ''}" data-cat="specialization">🎯 Especializações & Perícias</button>
             <button class="cat-filter-btn ${this.activeCategory === 'creature' ? 'active' : ''}" data-cat="creature">👹 Criaturas & NPCs</button>
             <button class="cat-filter-btn ${this.activeCategory === 'power' ? 'active' : ''}" data-cat="power">✨ Poderes & Magias</button>
             <button class="cat-filter-btn ${this.activeCategory === 'clue' ? 'active' : ''}" data-cat="clue">📜 Pistas & Segredos</button>
@@ -640,6 +705,12 @@ export class CompendiumUI {
   }
 
   render() {
+    this.ensureCanonDataLoaded();
+    const systemTabBtn = this.container ? this.container.querySelector('.tab-origin-btn[data-tab="system"]') : null;
+    if (systemTabBtn) {
+      systemTabBtn.textContent = `📜 Compêndio Oficial do Sistema (${SYSTEM_COMPENDIUM_DATABASE.length})`;
+    }
+
     const gridEl = document.getElementById('compendium-items-rect-grid');
     if (!gridEl) return;
 
