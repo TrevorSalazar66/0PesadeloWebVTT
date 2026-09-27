@@ -5353,12 +5353,14 @@
                 </h4>
                 <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--gold-primary);">
                   <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold-light);">
+                    <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold-light); cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${mestre.nickname || mestre.owner_id || ''}')" title="Ver perfil do Mestre">
                       ${(mestre.display_name || 'A')[0].toUpperCase()}
                     </div>
                     <div>
-                      <div style="font-size: 13px; font-weight: 600; color: var(--text-main);">${mestre.display_name}</div>
-                      <div style="font-size: 11px; color: var(--text-dim);">${mestre.nickname ? '@' + mestre.nickname : ''}</div>
+                      <div style="font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${mestre.nickname || mestre.owner_id || ''}')" title="Ver perfil do Mestre">${mestre.display_name}</div>
+                      <div style="font-size: 11px;">
+                        ${mestre.nickname ? `<span class="clickable-nickname" onclick="window.abrirModalPerfilUsuario('${mestre.nickname}')" title="Ver perfil de @${mestre.nickname}">@${mestre.nickname}</span>` : ''}
+                      </div>
                     </div>
                   </div>
                   <span class="role-badge" style="font-size: 10px; padding: 2px 6px;">Mestre</span>
@@ -5378,12 +5380,14 @@
                   ${jogadores.length === 0 ? '<div style="font-size: 13px; color: var(--text-dim);">Nenhum aventureiro se juntou ainda.</div>' : jogadores.map(p => `
                     <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
                       <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold-light);">
+                        <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold-light); cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${p.nickname || p.user_id || ''}')" title="Ver perfil do aventureiro">
                           ${(p.display_name || 'A')[0].toUpperCase()}
                         </div>
                         <div>
-                          <div style="font-size: 13px; font-weight: 600; color: var(--text-main);">${p.display_name}</div>
-                          <div style="font-size: 11px; color: var(--text-dim);">${p.nickname ? '@' + p.nickname : ''}</div>
+                          <div style="font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${p.nickname || p.user_id || ''}')" title="Ver perfil do aventureiro">${p.display_name}</div>
+                          <div style="font-size: 11px;">
+                            ${p.nickname ? `<span class="clickable-nickname" onclick="window.abrirModalPerfilUsuario('${p.nickname}')" title="Ver perfil de @${p.nickname}">@${p.nickname}</span>` : ''}
+                          </div>
                         </div>
                       </div>
                       <div style="display: flex; align-items: center; gap: 8px;">
@@ -8952,6 +8956,7 @@
       }
     });
   </script>
+  <script src="js/perfil_modal.js"></script>
 </body>
 
 </html>

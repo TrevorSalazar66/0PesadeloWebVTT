@@ -292,27 +292,34 @@ export const dbQueries = {
   async getCampaignsByUser(db, userId) {
     const stmt = db.prepare(`
       SELECT c.*, 
-        CASE WHEN c.owner_id = ? THEN 'Mestre' ELSE 'Jogador' END AS user_role,
+        'Mestre' AS user_role,
         (SELECT COUNT(*) FROM campaign_players cp2 WHERE cp2.campaign_id = c.id) AS current_players
       FROM campaigns c
-      LEFT JOIN campaign_players cp ON c.id = cp.campaign_id AND cp.user_id = ?
-      WHERE c.owner_id = ? OR cp.user_id = ?
-      GROUP BY c.id
-      ORDER BY c.created_at DESC
+      WHERE c.owner_id = ?
+      UNION
+      SELECT c.*, 
+        COALESCE(cp.role, 'Jogador') AS user_role,
+        (SELECT COUNT(*) FROM campaign_players cp2 WHERE cp2.campaign_id = c.id) AS current_players
+      FROM campaigns c
+      JOIN campaign_players cp ON c.id = cp.campaign_id
+      WHERE cp.user_id = ? AND c.owner_id != ?
+      ORDER BY created_at DESC
     `);
-    const res = await stmt.bind(userId, userId, userId, userId).all();
+    const res = await stmt.bind(userId, userId, userId).all();
     return res.results || res;
   },
 
   async getPublicCampaigns(db, userId) {
     const stmt = db.prepare(`
       SELECT c.*, 
-        u.display_name AS owner_name,
-        u.avatar_url AS owner_avatar,
+        COALESCE(NULLIF(p.name, ''), u.display_name) AS owner_name,
+        COALESCE(NULLIF(p.avatar_url, ''), u.avatar_url, '') AS owner_avatar,
+        p.nickname AS owner_nickname,
         (SELECT COUNT(*) FROM campaign_players cp2 WHERE cp2.campaign_id = c.id) AS current_players,
         (SELECT status FROM campaign_requests cr WHERE cr.campaign_id = c.id AND cr.user_id = ?) AS request_status
       FROM campaigns c
       JOIN users u ON c.owner_id = u.id
+      LEFT JOIN user_profiles p ON c.owner_id = p.user_id
       WHERE c.owner_id != ? 
         AND NOT EXISTS (
           SELECT 1 FROM campaign_players cp WHERE cp.campaign_id = c.id AND cp.user_id = ?
@@ -326,11 +333,13 @@ export const dbQueries = {
   async getCampaignById(db, campaignId) {
     const stmt = db.prepare(`
       SELECT c.*, 
-        u.display_name AS owner_name,
-        u.avatar_url AS owner_avatar,
+        COALESCE(NULLIF(p.name, ''), u.display_name) AS owner_name,
+        COALESCE(NULLIF(p.avatar_url, ''), u.avatar_url, '') AS owner_avatar,
+        p.nickname AS owner_nickname,
         (SELECT COUNT(*) FROM campaign_players cp WHERE cp.campaign_id = c.id) AS current_players
       FROM campaigns c
       JOIN users u ON c.owner_id = u.id
+      LEFT JOIN user_profiles p ON c.owner_id = p.user_id
       WHERE c.id = ?
     `);
     return await stmt.bind(campaignId).first();
@@ -339,10 +348,13 @@ export const dbQueries = {
   async getCampaignBySimpleId(db, simpleId) {
     const stmt = db.prepare(`
       SELECT c.*, 
-        u.display_name AS owner_name,
+        COALESCE(NULLIF(p.name, ''), u.display_name) AS owner_name,
+        COALESCE(NULLIF(p.avatar_url, ''), u.avatar_url, '') AS owner_avatar,
+        p.nickname AS owner_nickname,
         (SELECT COUNT(*) FROM campaign_players cp WHERE cp.campaign_id = c.id) AS current_players
       FROM campaigns c
       JOIN users u ON c.owner_id = u.id
+      LEFT JOIN user_profiles p ON c.owner_id = p.user_id
       WHERE c.simple_id = ? COLLATE NOCASE
     `);
     return await stmt.bind(simpleId.trim()).first();
@@ -351,8 +363,11 @@ export const dbQueries = {
   async getCampaignPlayers(db, campaignId) {
     const stmt = db.prepare(`
       SELECT cp.campaign_id, cp.user_id, cp.role, cp.joined_at,
-             u.display_name, u.avatar_url,
-             p.nickname
+             COALESCE(NULLIF(p.name, ''), u.display_name) AS display_name,
+             COALESCE(NULLIF(p.avatar_url, ''), u.avatar_url, '') AS avatar_url,
+             p.nickname,
+             p.banner_url,
+             p.bio
       FROM campaign_players cp
       JOIN users u ON cp.user_id = u.id
       LEFT JOIN user_profiles p ON cp.user_id = p.user_id
@@ -630,8 +645,8 @@ export const dbQueries = {
   async getCampaignPartyCharacters(db, campaignId) {
     const stmt = db.prepare(`
       SELECT c.*, 
-             u.display_name as player_name, 
-             u.avatar_url as player_avatar,
+             COALESCE(NULLIF(p.name, ''), u.display_name) as player_name, 
+             COALESCE(NULLIF(p.avatar_url, ''), u.avatar_url, '') as player_avatar,
              p.nickname as player_nickname
       FROM characters c
       JOIN users u ON c.user_id = u.id

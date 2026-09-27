@@ -9,6 +9,11 @@ import { CompendiumUI } from './compendio.js';
 window.CompendiumUI = CompendiumUI;
 
 let currentCampaignId = new URLSearchParams(window.location.search).get('id');
+if (currentCampaignId) {
+  try {
+    sessionStorage.setItem('arcana_active_campaign_id', currentCampaignId);
+  } catch (_) {}
+}
 let currentCampaignData = null;
 let currentPartyCharacters = [];
 
@@ -517,22 +522,30 @@ function renderChatMessageHTML(msg, currentUser, isGM) {
 
   // Corpo principal por tipo
   let bodyHTML = '';
+  function formatarMencoesChat(texto) {
+    if (!texto) return '';
+    const escaped = escapeHtml(texto);
+    return escaped.replace(/@([a-zA-Z0-9_]{3,25})/g, (match, nick) => {
+      return `<span class="clickable-nickname" onclick="event.stopPropagation(); window.abrirModalPerfilUsuario('${nick}')" title="Ver perfil de @${nick}">@${nick}</span>`;
+    });
+  }
+
   if (msg.msg_type === 'roll') {
     bodyHTML = renderRollCardBody(msg, meta);
   } else if (msg.msg_type === 'action_card') {
     bodyHTML = renderActionCardBody(msg, meta, isGM);
   } else if (msg.msg_type === 'whisper') {
-    const target = msg.whisper_target_name ? ` (para @${escapeHtml(msg.whisper_target_name)})` : '';
-    bodyHTML = `<div class="msg-card-content" style="color: #c4b5fd;">🔒 <em>${escapeHtml(msg.content)}${target}</em></div>`;
+    const target = msg.whisper_target_name ? ` (para <span class="clickable-nickname" onclick="event.stopPropagation(); window.abrirModalPerfilUsuario('${escapeHtml(msg.whisper_target_name)}')">@${escapeHtml(msg.whisper_target_name)}</span>)` : '';
+    bodyHTML = `<div class="msg-card-content" style="color: #c4b5fd;">🔒 <em>${formatarMencoesChat(msg.content)}${target}</em></div>`;
   } else if (msg.msg_type === 'acao') {
-    bodyHTML = `<div class="msg-card-content" style="color: #c084fc; font-style: italic;">* ${escapeHtml(msg.content)} *</div>`;
+    bodyHTML = `<div class="msg-card-content" style="color: #c084fc; font-style: italic;">* ${formatarMencoesChat(msg.content)} *</div>`;
   } else if (msg.msg_type === 'narracao') {
-    bodyHTML = `<div class="msg-card-content" style="color: #fef08a; font-family: Georgia, serif; font-size: 14.5px; line-height: 1.6;">${escapeHtml(msg.content)}</div>`;
+    bodyHTML = `<div class="msg-card-content" style="color: #fef08a; font-family: Georgia, serif; font-size: 14.5px; line-height: 1.6;">${formatarMencoesChat(msg.content)}</div>`;
   } else if (msg.msg_type === 'ooc') {
-    bodyHTML = `<div class="msg-card-content" style="color: #94a3b8; font-style: italic;">(( ${escapeHtml(msg.content)} ))</div>`;
+    bodyHTML = `<div class="msg-card-content" style="color: #94a3b8; font-style: italic;">(( ${formatarMencoesChat(msg.content)} ))</div>`;
   } else {
     // 'ic' padrão
-    bodyHTML = `<div class="msg-card-content">${escapeHtml(msg.content)}</div>`;
+    bodyHTML = `<div class="msg-card-content">${formatarMencoesChat(msg.content)}</div>`;
   }
 
   const safeAuthor = (msg.author_name || 'Personagem').replace(/'/g, "\\'");
@@ -541,7 +554,7 @@ function renderChatMessageHTML(msg, currentUser, isGM) {
   return `
     <div class="msg-card ${typeClass} ${isMine ? 'msg-mine' : ''}" id="chat-msg-${msg.id}">
       <div class="msg-card-header">
-        <div class="msg-author-box">
+        <div class="msg-author-box" style="cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${msg.user_id || ''}')" title="Ver perfil de ${escapeHtml(msg.author_name || '')}">
           <div class="msg-avatar">${avatarContent}</div>
           <span class="msg-author-name">${escapeHtml(msg.author_name || 'Desconhecido')}</span>
           ${roleBadge}
@@ -1229,23 +1242,23 @@ function renderizarJogadoresGeral(players) {
   container.innerHTML = `
     ${gm ? `
       <div class="player-card gm-card">
-        <div class="avatar gm-avatar" style="background: var(--gold-dark); border: 2px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-light);">
-          ${(gm.display_name || 'M')[0].toUpperCase()}
+        <div class="avatar gm-avatar" style="background: var(--gold-dark); border: 2px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-light); cursor: pointer; overflow: hidden;" onclick="window.abrirModalPerfilUsuario('${gm.nickname || gm.user_id || ''}')" title="Ver perfil do Mestre">
+          ${gm.avatar_url ? `<img src="${escapeHtml(gm.avatar_url)}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">` : (gm.display_name || 'M')[0].toUpperCase()}
         </div>
         <div class="player-info">
-          <span class="player-name">${gm.display_name}</span>
-          <span class="gm-tag">Mestre da Campanha</span>
+          <span class="player-name" style="cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${gm.nickname || gm.user_id || ''}')" title="Ver perfil do Mestre">${gm.display_name}</span>
+          <span class="gm-tag">Mestre da Campanha ${gm.nickname ? `<span class="clickable-nickname" onclick="event.stopPropagation(); window.abrirModalPerfilUsuario('${gm.nickname}')" title="Ver perfil de @${gm.nickname}">@${gm.nickname}</span>` : ''}</span>
         </div>
       </div>
     ` : ''}
     ${others.map(p => `
       <div class="player-card">
-        <div class="avatar" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-light);">
-          ${(p.display_name || 'J')[0].toUpperCase()}
+        <div class="avatar" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-light); cursor: pointer; overflow: hidden;" onclick="window.abrirModalPerfilUsuario('${p.nickname || p.user_id || ''}')" title="Ver perfil do aventureiro">
+          ${p.avatar_url ? `<img src="${escapeHtml(p.avatar_url)}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">` : (p.display_name || 'J')[0].toUpperCase()}
         </div>
         <div class="player-info">
-          <span class="player-name">${p.display_name}</span>
-          <span style="font-size: 11px; color: var(--text-dim);">${p.role || 'Jogador'} ${p.nickname ? '@' + p.nickname : ''}</span>
+          <span class="player-name" style="cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${p.nickname || p.user_id || ''}')" title="Ver perfil do aventureiro">${p.display_name}</span>
+          <span style="font-size: 11px; color: var(--text-dim);">${p.role || 'Jogador'} ${p.nickname ? `<span class="clickable-nickname" onclick="event.stopPropagation(); window.abrirModalPerfilUsuario('${p.nickname}')" title="Ver perfil de @${p.nickname}">@${p.nickname}</span>` : ''}</span>
         </div>
       </div>
     `).join('')}
@@ -1322,11 +1335,13 @@ async function loadDiarioData() {
             ${isMine ? '<span class="badge-my-char">Seu Personagem</span>' : ''}
             
             <div class="character-card-header">
-              <div class="character-avatar">${initial}</div>
+              <div class="character-avatar" style="cursor: pointer; overflow: hidden;" onclick="window.abrirModalPerfilUsuario('${char.playerNickname || char.userId || ''}')" title="Ver perfil do jogador">
+                ${char.playerAvatar ? `<img src="${escapeHtml(char.playerAvatar)}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">` : initial}
+              </div>
               <div class="character-info-main">
                 <h4 class="character-card-title" title="${char.name}">${char.name}</h4>
                 <div class="character-player-sub">
-                  Nv. ${nivel} • ${arquetipo} • Jogador: <strong>${char.playerName || 'Anônimo'}</strong>
+                  Nv. ${nivel} • ${arquetipo} • Jogador: <strong style="cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${char.playerNickname || char.userId || ''}')" title="Ver perfil">${char.playerName || 'Anônimo'}</strong> ${char.playerNickname ? `<span class="clickable-nickname" onclick="event.stopPropagation(); window.abrirModalPerfilUsuario('${char.playerNickname}')" title="Ver perfil de @${char.playerNickname}">@${char.playerNickname}</span>` : ''}
                 </div>
               </div>
             </div>
@@ -1725,9 +1740,9 @@ async function carregarSolicitacoesConfig() {
         const nick = req.nickname || req.username || '';
         return `
           <div class="manage-list-item">
-            <div class="manage-player-avatar">${initial}</div>
+            <div class="manage-player-avatar" style="cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${nick || req.user_id || ''}')" title="Ver perfil">${initial}</div>
             <div class="manage-player-info">
-              <div class="manage-player-name">${name} ${nick ? `<span style="font-size: 11px; color: var(--text-dim);">@${nick}</span>` : ''}</div>
+              <div class="manage-player-name">${name} ${nick ? `<span class="clickable-nickname" onclick="window.abrirModalPerfilUsuario('${nick}')" title="Ver perfil de @${nick}">@${nick}</span>` : ''}</div>
               <div class="manage-player-role">Solicitou entrada ${dateStr ? `em ${dateStr}` : ''}</div>
             </div>
             <div class="manage-player-actions">
@@ -1805,9 +1820,9 @@ async function carregarJogadoresConfig() {
 
     return `
       <div class="manage-list-item">
-        <div class="manage-player-avatar" style="${isPlayerGM ? 'border-color: var(--gold-primary); color: var(--gold-light);' : ''}">${initial}</div>
+        <div class="manage-player-avatar" style="cursor: pointer; ${isPlayerGM ? 'border-color: var(--gold-primary); color: var(--gold-light);' : ''}" onclick="window.abrirModalPerfilUsuario('${p.nickname || p.user_id || ''}')" title="Ver perfil">${initial}</div>
         <div class="manage-player-info">
-          <div class="manage-player-name">${p.display_name} ${p.nickname ? '<span style="font-size: 11px; color: var(--text-dim);">@' + p.nickname + '</span>' : ''}</div>
+          <div class="manage-player-name">${p.display_name} ${p.nickname ? '<span class="clickable-nickname" onclick="window.abrirModalPerfilUsuario(\'' + p.nickname + '\')" title="Ver perfil de @' + p.nickname + '">@' + p.nickname + '</span>' : ''}</div>
           <div class="manage-player-role">
             ${isPlayerGM ? '<strong style="color: var(--gold-light);">👑 Mestre da Campanha</strong>' : (isAssistant ? '<span style="color: #60a5fa;">🛡️ Assistente de Mestre</span>' : 'Jogador')}
           </div>

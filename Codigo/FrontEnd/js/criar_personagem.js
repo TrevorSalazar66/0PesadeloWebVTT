@@ -36,6 +36,10 @@ const criacaoState = {
   }
 };
 
+// Rastreamento das campanhas e verificação do limite de 1 personagem por campanha
+let campanhasComPersonagemState = new Map(); // campaignId -> charName
+let listaCampanhasUsuarioState = [];
+
 // ===================================================
 // CATÁLOGO CANÔNICO DE 40 ESPECIALIZAÇÕES & PERÍCIAS (ALPHAD6)
 // ===================================================
@@ -228,22 +232,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ==========================================
 
 async function carregarCampanhasDisponiveis() {
+  const selectCampaign = document.getElementById('input-campanha');
+  const containerAviso = document.getElementById('aviso-campanha-preselecionada');
+  if (!selectCampaign) return;
+
   try {
     const urlParams = new URLSearchParams(window.location.search);
-    const preselectedCampaignId = urlParams.get('campaignId') || urlParams.get('campaign') || urlParams.get('id');
-    const selectCampaign = document.getElementById('input-campanha');
-    if (!selectCampaign) return;
+    let preselectedCampaignId = urlParams.get('campaignId') || urlParams.get('campaign') || urlParams.get('id');
+
+    // Fallback para última campanha ativa da sessão caso não venha na URL
+    if (!preselectedCampaignId) {
+      try {
+        preselectedCampaignId = sessionStorage.getItem('arcana_active_campaign_id');
+      } catch (_) {}
+    }
 
     selectCampaign.innerHTML = '<option value="" disabled selected>⏳ Carregando suas campanhas...</option>';
 
-    // 1. Tentar buscar campanhas vinculadas ao usuário
-    let listaCampanhas = [];
-    const resList = await apiClient.sync('campaigns.list', {});
-    if (resList && resList.sucesso && Array.isArray(resList.dados)) {
-      listaCampanhas = resList.dados;
+    // 1. Buscar simultaneamente campanhas do usuário e personagens já criados
+    const [resCampanhas, resPersonagens] = await Promise.all([
+      apiClient.sync('campaigns.list', {}).catch(err => {
+        console.warn('Erro ao listar campanhas:', err);
+        return { sucesso: false, dados: [] };
+      }),
+      apiClient.sync('characters.list', {}).catch(err => {
+        console.warn('Erro ao listar personagens:', err);
+        return { sucesso: false, dados: [] };
+      })
+    ]);
+
+    let listaCampanhas = (resCampanhas && resCampanhas.sucesso && Array.isArray(resCampanhas.dados))
+      ? resCampanhas.dados
+      : [];
+
+    // Mapear personagens existentes do usuário por ID de campanha
+    campanhasComPersonagemState.clear();
+    if (resPersonagens && resPersonagens.sucesso && Array.isArray(resPersonagens.dados)) {
+      resPersonagens.dados.forEach(c => {
+        const cId = c.campaign_id || c.campaignId;
+        if (cId) {
+          campanhasComPersonagemState.set(String(cId), c.name || 'Herói Existente');
+        }
+      });
     }
 
-    // 2. Se houver preselectedCampaignId na URL e ela não estiver na lista (ex: jogador recém-entrado), buscar diretamente
+    // 2. Se houver preselectedCampaignId na URL e ela não constar na lista (ex: recém ingressado ou via link direto), buscar direto
     if (preselectedCampaignId && !listaCampanhas.some(c => String(c.id) === String(preselectedCampaignId))) {
       try {
         const resSingle = await apiClient.sync('campaigns.get', { campaignId: preselectedCampaignId });
@@ -255,52 +288,101 @@ async function carregarCampanhasDisponiveis() {
       }
     }
 
+    listaCampanhasUsuarioState = listaCampanhas;
+
     // 3. Renderizar opções no select
     if (listaCampanhas.length > 0) {
       selectCampaign.innerHTML = '<option value="" disabled selected>Selecione a campanha para o seu personagem...</option>';
       let selecionado = false;
+      let totalElegiveis = 0;
+      let primeiraElegivelId = null;
 
       listaCampanhas.forEach(c => {
+        const cIdStr = String(c.id);
         const opt = document.createElement('option');
         opt.value = c.id;
         const papel = c.user_role ? ` (${c.user_role})` : '';
-        const sistema = c.system_id || c.system || 'AlphaD6';
-        opt.textContent = `⚔️ ${c.name || 'Campanha #' + c.id} — ${sistema}${papel}`;
+        const sistema = c.system_id || c.system || 'AlphaD6 RPG';
+        const jaPossuiChar = campanhasComPersonagemState.has(cIdStr);
+        const charExistenteNome = campanhasComPersonagemState.get(cIdStr);
 
-        if (preselectedCampaignId && String(c.id) === String(preselectedCampaignId)) {
+        if (jaPossuiChar) {
+          opt.disabled = true;
+          opt.textContent = `🚫 ${c.name || 'Campanha #' + c.id} — (Já possui: "${charExistenteNome}" • Limite 1/1)`;
+        } else {
+          opt.textContent = `⚔️ ${c.name || 'Campanha #' + c.id} — ${sistema}${papel}`;
+          totalElegiveis++;
+          if (!primeiraElegivelId) primeiraElegivelId = c.id;
+        }
+
+        if (preselectedCampaignId && cIdStr === String(preselectedCampaignId)) {
           opt.selected = true;
           selecionado = true;
         }
+
         selectCampaign.appendChild(opt);
       });
 
-      // Se não havia pré-selecionado mas só há 1 campanha, auto-seleciona
-      if (!selecionado && listaCampanhas.length === 1) {
-        selectCampaign.selectedIndex = 1;
+      // Se não havia pré-seleção pela URL, mas há apenas 1 campanha elegível sem herói, auto-seleciona
+      if (!selecionado && totalElegiveis === 1 && primeiraElegivelId) {
+        selectCampaign.value = primeiraElegivelId;
+        selecionado = true;
       }
 
-      // Se houver uma campanha pré-selecionada, adicionar um aviso visual amigável
-      const containerAviso = document.getElementById('aviso-campanha-preselecionada');
-      if (preselectedCampaignId && containerAviso) {
-        const cAtiva = listaCampanhas.find(c => String(c.id) === String(preselectedCampaignId));
-        if (cAtiva) {
-          containerAviso.style.display = 'block';
-          containerAviso.innerHTML = `🛡️ <strong>Campanha selecionada:</strong> ${cAtiva.name} <em>(${cAtiva.system_id || 'AlphaD6'})</em>`;
+      // Função para atualizar o banner explicativo de acordo com a seleção atual
+      function atualizarAvisoCampanha() {
+        const val = selectCampaign.value;
+        if (!containerAviso) return;
+
+        if (!val) {
+          containerAviso.style.display = 'none';
+          return;
+        }
+
+        const campEscolhida = listaCampanhas.find(c => String(c.id) === String(val));
+        const jaPossui = campanhasComPersonagemState.has(String(val));
+        const nomeChar = campanhasComPersonagemState.get(String(val));
+
+        containerAviso.style.display = 'block';
+
+        if (jaPossui) {
+          containerAviso.style.borderColor = 'rgba(239, 68, 68, 0.45)';
+          containerAviso.style.background = 'rgba(239, 68, 68, 0.12)';
+          containerAviso.style.color = '#fca5a5';
+          containerAviso.innerHTML = `⚠️ <strong>Limite de 1 Personagem por Campanha:</strong> Você já possui o personagem "<strong>${nomeChar}</strong>" vinculado a esta mesa. Selecione outra campanha ou gerencie sua ficha existente no Diário da mesa.`;
+        } else if (campEscolhida) {
+          containerAviso.style.borderColor = 'rgba(16, 185, 129, 0.45)';
+          containerAviso.style.background = 'rgba(16, 185, 129, 0.12)';
+          containerAviso.style.color = '#6ee7b7';
+          containerAviso.innerHTML = `✨ <strong>Campanha Vinculada:</strong> ${campEscolhida.name} <em>(${campEscolhida.system_id || 'AlphaD6 RPG'})</em>. Seu novo herói fará parte desta crônica!`;
         }
       }
+
+      // Listener para alteração da seleção do usuário
+      selectCampaign.onchange = atualizarAvisoCampanha;
+      atualizarAvisoCampanha();
+
+      // Se o jogador já possuir herói em todas as campanhas
+      if (totalElegiveis === 0 && containerAviso) {
+        containerAviso.style.display = 'block';
+        containerAviso.style.borderColor = 'rgba(245, 158, 11, 0.45)';
+        containerAviso.style.background = 'rgba(245, 158, 11, 0.12)';
+        containerAviso.style.color = '#fde68a';
+        containerAviso.innerHTML = `⚠️ <strong>Limite atingido em todas as suas mesas:</strong> Você já possui 1 personagem em cada uma das campanhas em que participa. <a href="index.html" style="color: var(--gold-light); font-weight: 700; text-decoration: underline;">Volte ao Hub da Taverna</a> para forjar uma nova campanha como Mestre ou entrar em uma nova mesa!`;
+      }
+
     } else {
       selectCampaign.innerHTML = '<option value="" disabled selected>⚠️ Nenhuma campanha ativa encontrada.</option>';
-      const containerAviso = document.getElementById('aviso-campanha-preselecionada');
       if (containerAviso) {
         containerAviso.style.display = 'block';
-        containerAviso.style.borderColor = 'rgba(239, 68, 68, 0.4)';
-        containerAviso.style.background = 'rgba(239, 68, 68, 0.1)';
-        containerAviso.innerHTML = `⚠️ <strong>Você ainda não participa de nenhuma campanha!</strong><br><span style="font-size: 0.8rem;">Crie uma campanha na Taverna ou solicite entrada em uma campanha existente antes de criar seu personagem.</span>`;
+        containerAviso.style.borderColor = 'rgba(239, 68, 68, 0.45)';
+        containerAviso.style.background = 'rgba(239, 68, 68, 0.12)';
+        containerAviso.style.color = '#fca5a5';
+        containerAviso.innerHTML = `⚠️ <strong>Você ainda não participa de nenhuma campanha!</strong><br><span style="font-size: 0.85rem; color: #cbd5e1;">Todo personagem deve obrigatoriamente pertencer a uma campanha. <a href="index.html" style="color: var(--gold-light); font-weight: 700; text-decoration: underline;">Volte à Taverna</a> para criar uma mesa como Mestre ou pedir entrada em uma mesa aberta.</span>`;
       }
     }
   } catch (err) {
     console.warn('Erro ao carregar campanhas:', err);
-    const selectCampaign = document.getElementById('input-campanha');
     if (selectCampaign) {
       selectCampaign.innerHTML = '<option value="" disabled selected>⚠️ Erro ao carregar campanhas do servidor.</option>';
     }
@@ -983,6 +1065,10 @@ async function avancarPasso(direcao) {
         alert('É obrigatório selecionar uma campanha ativa para vincular o personagem. Não é permitido criar personagens desvinculados.');
         return;
       }
+      if (campanhasComPersonagemState && campanhasComPersonagemState.has(String(campaignId))) {
+        alert(`⚠️ Limite atingido: Você já possui o personagem "${campanhasComPersonagemState.get(String(campaignId))}" nesta campanha. Cada jogador pode ter apenas 1 personagem por campanha.`);
+        return;
+      }
     } else if (passoAtual === 2) {
       if (criacaoState.pontosLivresRestantes > 0) {
         alert(`Você ainda possui ${criacaoState.pontosLivresRestantes} ponto(s) para distribuir nos seus atributos. Todos os 6 pontos devem ser alocados.`);
@@ -1085,6 +1171,13 @@ async function submeterCriacaoPersonagem() {
 
   if (!campaignId) {
     alert('É obrigatório selecionar uma campanha ativa para vincular seu personagem.');
+    btnProx.disabled = false;
+    btnProx.textContent = 'Concluir & Criar Personagem ⚔️';
+    return;
+  }
+
+  if (campanhasComPersonagemState && campanhasComPersonagemState.has(String(campaignId))) {
+    alert(`⚠️ Limite atingido: Você já possui o personagem "${campanhasComPersonagemState.get(String(campaignId))}" vinculado a esta campanha. O limite é de 1 personagem por campanha.`);
     btnProx.disabled = false;
     btnProx.textContent = 'Concluir & Criar Personagem ⚔️';
     return;

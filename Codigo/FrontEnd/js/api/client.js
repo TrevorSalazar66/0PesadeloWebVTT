@@ -315,8 +315,19 @@ export const apiClient = {
 
   // === MÉTODOS DE PERFIL & SEGURANÇA PESSOAL ===
 
-  getUserProfile() {
-    return this.sync('profile.get');
+  getUserProfile(target = {}) {
+    let payload = {};
+    if (typeof target === 'string') {
+      const clean = target.trim();
+      if (clean.startsWith('usr_')) {
+        payload = { userId: clean };
+      } else {
+        payload = { nickname: clean.replace(/^@+/, '') };
+      }
+    } else if (target && typeof target === 'object') {
+      payload = target;
+    }
+    return this.sync('profile.get', payload);
   },
 
   updateUserProfile(data = {}) {

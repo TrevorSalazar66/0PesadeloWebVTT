@@ -133,39 +133,75 @@ export async function handleSyncRequest(request, env, clientIp) {
         return new Response(JSON.stringify({ sucesso: true, signals }), { status: 200, headers });
       }
 
-      // PERFIL & ONBOARDING
-      case 'profile.get': {
-        const userBasic = await dbQueries.getUserById(db, user.userId);
-        const profile = await dbQueries.getUserProfile(db, user.userId);
-        const stats = await dbQueries.getUserStats(db, user.userId);
+      // PERFIL & ONBOARDING (Consulta de Perfil Próprio ou Público de Outro Aventureiro)
+      case 'profile.get':
+      case 'user.profile.get': {
+        let targetUserId = (data?.userId || '').trim();
+        const targetNickname = (data?.nickname || '').trim().replace(/^@+/, '');
+
+        // Se foi fornecido um nickname, descobre o user_id correspondente
+        if (!targetUserId && targetNickname) {
+          const foundProfile = await dbQueries.getProfileByNickname(db, targetNickname);
+          if (foundProfile) {
+            targetUserId = foundProfile.user_id;
+          } else {
+            return new Response(JSON.stringify({
+              sucesso: false,
+              erro: `Aventureiro com nickname @${targetNickname} não foi encontrado na Taverna.`
+            }), { status: 404, headers });
+          }
+        }
+
+        // Se não forneceu nenhum parâmetro, busca o usuário logado da sessão
+        if (!targetUserId) {
+          targetUserId = user.userId;
+        }
+
+        const userBasic = await dbQueries.getUserById(db, targetUserId);
+        if (!userBasic) {
+          return new Response(JSON.stringify({
+            sucesso: false,
+            erro: 'Aventureiro não encontrado no reino.'
+          }), { status: 404, headers });
+        }
+
+        const profile = await dbQueries.getUserProfile(db, targetUserId);
+        const stats = await dbQueries.getUserStats(db, targetUserId);
+        const isSelf = targetUserId === user.userId;
+
+        const effectiveAvatar = profile?.avatar_url || userBasic?.avatar_url || '';
+        const effectiveBanner = profile?.banner_url || '';
 
         const structuredUser = {
           id: userBasic?.id,
           name: userBasic?.display_name || userBasic?.name || '',
           displayName: userBasic?.display_name || userBasic?.name || '',
-          email: userBasic?.email || '',
+          email: isSelf ? (userBasic?.email || '') : undefined, // Privacidade: não expor e-mail de terceiros
           role: userBasic?.role || 'jogador',
-          avatar_url: userBasic?.avatar_url || '',
-          avatarUrl: userBasic?.avatar_url || '',
-          email_verified: userBasic?.email_verified || 0,
-          auth_provider: userBasic?.auth_provider || 'email',
+          avatar_url: effectiveAvatar,
+          avatarUrl: effectiveAvatar,
+          email_verified: isSelf ? (userBasic?.email_verified || 0) : undefined,
+          auth_provider: isSelf ? (userBasic?.auth_provider || 'email') : undefined,
           created_at: userBasic?.created_at || ''
         };
 
-        const structuredProfile = profile ? {
-          name: profile.name || userBasic?.display_name || '',
-          displayName: profile.name || userBasic?.display_name || '',
-          nickname: profile.nickname || '',
-          ageGroup: profile.age_group || '18-24',
-          ageRange: profile.age_group || '18-24',
-          bio: profile.bio || '',
-          avatarUrl: profile.avatar_url || userBasic?.avatar_url || '',
-          bannerUrl: profile.banner_url || '',
-          contactWhatsapp: profile.contacts?.whatsapp || '',
-          contactDiscord: profile.contacts?.discord || '',
-          contactInstagram: profile.contacts?.instagram || '',
-          contacts: profile.contacts || {}
-        } : null;
+        const structuredProfile = {
+          userId: targetUserId,
+          name: profile?.name || userBasic?.display_name || '',
+          displayName: profile?.name || userBasic?.display_name || '',
+          nickname: profile?.nickname || '',
+          ageGroup: profile?.age_group || '18-24',
+          ageRange: profile?.age_group || '18-24',
+          bio: profile?.bio || '',
+          avatarUrl: effectiveAvatar,
+          avatar_url: effectiveAvatar,
+          bannerUrl: effectiveBanner,
+          banner_url: effectiveBanner,
+          contactWhatsapp: profile?.contacts?.whatsapp || '',
+          contactDiscord: profile?.contacts?.discord || '',
+          contactInstagram: profile?.contacts?.instagram || '',
+          contacts: profile?.contacts || {}
+        };
 
         const structuredStats = {
           ...(stats || {}),
@@ -181,10 +217,15 @@ export async function handleSyncRequest(request, env, clientIp) {
           sucesso: true,
           dados: {
             ...userBasic,
+            avatar_url: effectiveAvatar,
+            avatarUrl: effectiveAvatar,
+            banner_url: effectiveBanner,
+            bannerUrl: effectiveBanner,
             user: structuredUser,
-            perfil: profile || null,
+            perfil: structuredProfile,
             profile: structuredProfile,
-            stats: structuredStats
+            stats: structuredStats,
+            isSelf
           }
         }), { status: 200, headers });
       }
