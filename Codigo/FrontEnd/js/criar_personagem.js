@@ -232,6 +232,12 @@ async function inicializarCriadorPersonagem() {
   renderizarOpcoesSilhueta();
   atualizarPreviewDefesa();
 
+  // Previne recarregamento acidental caso o jogador tecle Enter em algum input
+  const form = document.getElementById('form-criar-personagem');
+  if (form) {
+    form.addEventListener('submit', (e) => e.preventDefault());
+  }
+
   // 3. Carrega especializações e compêndio em segundo plano
   Promise.allSettled([
     carregarEspecializacoes(),
@@ -257,22 +263,56 @@ async function carregarCampanhasDisponiveis() {
 
   try {
     const urlParams = new URLSearchParams(window.location.search);
-    // Puxa automaticamente a campanha atual APENAS se especificada pela URL (vindo do Diário da mesa)
-    const preselectedCampaignId = urlParams.get('campaignId') || urlParams.get('campaign') || urlParams.get('id');
+    // Puxa automaticamente a campanha atual se especificada pela URL (vindo do Diário da mesa)
+    let preselectedCampaignId = urlParams.get('campaignId') || urlParams.get('campaign') || urlParams.get('id');
 
-    selectCampaign.innerHTML = '<option value="" disabled selected>⏳ Carregando suas campanhas...</option>';
+    // Se não veio por parâmetro explícito na URL, verificar se o referrer veio de uma página de campanha
+    if (!preselectedCampaignId && document.referrer && document.referrer.includes('campanha.html')) {
+      try {
+        const refUrl = new URL(document.referrer);
+        preselectedCampaignId = refUrl.searchParams.get('id') || refUrl.searchParams.get('campaignId');
+      } catch (_) { }
+    }
+
+    selectCampaign.innerHTML = '<option value="" disabled selected>⏳ Consultando suas campanhas no servidor...</option>';
+
+    let authError = false;
+    let authErrorMsg = '';
 
     // 1. Buscar simultaneamente campanhas do usuário e personagens já criados
     const [resCampanhas, resPersonagens] = await Promise.all([
       apiClient.sync('campaigns.list', {}).catch(err => {
         console.warn('Erro ao listar campanhas:', err);
-        return { sucesso: false, dados: [] };
+        if (err.status === 401 || err.codigo === 'UNAUTHORIZED' || (err.message && err.message.includes('401'))) {
+          authError = true;
+          authErrorMsg = err.message || 'Sessão expirada ou não autenticado.';
+        }
+        return { sucesso: false, dados: [], erro: err.message };
       }),
       apiClient.sync('characters.list', {}).catch(err => {
         console.warn('Erro ao listar personagens:', err);
         return { sucesso: false, dados: [] };
       })
     ]);
+
+    // Trata falha de autenticação
+    if (authError) {
+      selectCampaign.innerHTML = '<option value="" disabled selected>⚠️ Autenticação necessária na Taverna</option>';
+      if (containerAviso) {
+        containerAviso.style.display = 'block';
+        containerAviso.style.borderColor = 'rgba(239, 68, 68, 0.45)';
+        containerAviso.style.background = 'rgba(239, 68, 68, 0.12)';
+        containerAviso.style.color = '#fca5a5';
+        containerAviso.innerHTML = `
+          ⚠️ <strong>Você não está conectado à Taverna!</strong><br>
+          <span style="font-size: 0.85rem; color: #cbd5e1;">Para carregar suas campanhas e forjar um herói válido, conecte-se à sua conta.</span><br>
+          <a href="index.html" style="display: inline-block; margin-top: 8px; padding: 6px 14px; background: var(--gold-primary, #d4a34b); color: #10101d; font-weight: 700; border-radius: 6px; text-decoration: none;">
+            🔑 Entrar na Taverna (Fazer Login)
+          </a>
+        `;
+      }
+      return;
+    }
 
     let listaCampanhas = (resCampanhas && resCampanhas.sucesso && Array.isArray(resCampanhas.dados))
       ? resCampanhas.dados
@@ -305,10 +345,20 @@ async function carregarCampanhasDisponiveis() {
 
     // 3. Renderizar opções no select
     if (listaCampanhas.length > 0) {
-      selectCampaign.innerHTML = '<option value="" disabled selected>Selecione a campanha para o seu personagem...</option>';
-      let selecionado = false;
+      selectCampaign.innerHTML = '';
+
+      const optDefault = document.createElement('option');
+      optDefault.value = '';
+      optDefault.disabled = true;
+      optDefault.textContent = preselectedCampaignId
+        ? 'Selecione a campanha para o seu personagem...'
+        : 'Escolha uma das suas mesas para o personagem...';
+      selectCampaign.appendChild(optDefault);
+
       let totalElegiveis = 0;
       let primeiraElegivelId = null;
+      let campPreselecionada = null;
+      let campPreselecionadaComChar = false;
 
       listaCampanhas.forEach(c => {
         const cIdStr = String(c.id);
@@ -329,17 +379,24 @@ async function carregarCampanhasDisponiveis() {
         }
 
         if (preselectedCampaignId && cIdStr === String(preselectedCampaignId)) {
-          opt.selected = true;
-          selecionado = true;
+          campPreselecionada = c;
+          campPreselecionadaComChar = jaPossuiChar;
         }
 
         selectCampaign.appendChild(opt);
       });
 
-      // Se não havia pré-seleção pela URL, mas há apenas 1 campanha elegível sem herói, auto-seleciona
-      if (!selecionado && totalElegiveis === 1 && primeiraElegivelId) {
-        selectCampaign.value = primeiraElegivelId;
-        selecionado = true;
+      // DEFINIÇÃO DO VALOR DO SELECT DE FORMA DETERMINÍSTICA E EXPLÍCITA:
+      if (preselectedCampaignId && campPreselecionada && !campPreselecionadaComChar) {
+        selectCampaign.value = String(preselectedCampaignId);
+      } else if (preselectedCampaignId && campPreselecionada && campPreselecionadaComChar) {
+        selectCampaign.value = '';
+        optDefault.selected = true;
+      } else if (!preselectedCampaignId && totalElegiveis === 1 && primeiraElegivelId) {
+        selectCampaign.value = String(primeiraElegivelId);
+      } else {
+        selectCampaign.value = '';
+        optDefault.selected = true;
       }
 
       // Função para atualizar o banner explicativo de acordo com a seleção atual
@@ -348,7 +405,16 @@ async function carregarCampanhasDisponiveis() {
         if (!containerAviso) return;
 
         if (!val) {
-          containerAviso.style.display = 'none';
+          if (preselectedCampaignId && campPreselecionada && campPreselecionadaComChar) {
+            const nomeChar = campanhasComPersonagemState.get(String(preselectedCampaignId));
+            containerAviso.style.display = 'block';
+            containerAviso.style.borderColor = 'rgba(239, 68, 68, 0.45)';
+            containerAviso.style.background = 'rgba(239, 68, 68, 0.12)';
+            containerAviso.style.color = '#fca5a5';
+            containerAviso.innerHTML = `⚠️ <strong>Limite de 1 Personagem por Campanha:</strong> Você já possui o personagem "<strong>${nomeChar}</strong>" vinculado à campanha <em>"${campPreselecionada.name}"</em>.<br><span style="font-size: 0.82rem; color: #cbd5e1;">Para criar um novo herói, selecione outra das suas mesas elegíveis no seletor acima ou gerencie sua ficha existente pelo Diário da mesa.</span>`;
+          } else {
+            containerAviso.style.display = 'none';
+          }
           return;
         }
 
@@ -367,7 +433,7 @@ async function carregarCampanhasDisponiveis() {
           containerAviso.style.borderColor = 'rgba(16, 185, 129, 0.45)';
           containerAviso.style.background = 'rgba(16, 185, 129, 0.12)';
           containerAviso.style.color = '#6ee7b7';
-          containerAviso.innerHTML = `✨ <strong>Campanha Vinculada:</strong> ${campEscolhida.name} <em>(${campEscolhida.system_id || 'AlphaD6 RPG'})</em>. Seu novo herói fará parte desta crônica!`;
+          containerAviso.innerHTML = `✨ <strong>Campanha Vinculada:</strong> ${campEscolhida.name} <em>(${campEscolhida.system_id || 'AlphaD6 RPG'}${campEscolhida.user_role ? ' • ' + campEscolhida.user_role : ''})</em>. Seu novo herói fará parte desta crônica!`;
         }
       }
 
@@ -381,7 +447,7 @@ async function carregarCampanhasDisponiveis() {
         containerAviso.style.borderColor = 'rgba(245, 158, 11, 0.45)';
         containerAviso.style.background = 'rgba(245, 158, 11, 0.12)';
         containerAviso.style.color = '#fde68a';
-        containerAviso.innerHTML = `⚠️ <strong>Limite atingido em todas as suas mesas:</strong> Você já possui 1 personagem em cada uma das campanhas em que participa. <a href="index.html" style="color: var(--gold-light); font-weight: 700; text-decoration: underline;">Volte ao Hub da Taverna</a> para forjar uma nova campanha como Mestre ou entrar em uma nova mesa!`;
+        containerAviso.innerHTML = `⚠️ <strong>Limite atingido em todas as suas mesas:</strong> Você já possui 1 personagem em cada uma das campanhas em que participa.<br><a href="index.html" style="color: var(--gold-light); font-weight: 700; text-decoration: underline; display: inline-block; margin-top: 6px;">Volte ao Hub da Taverna</a> para forjar uma nova campanha como Mestre ou entrar em uma nova mesa!`;
       }
 
     } else {
@@ -391,7 +457,7 @@ async function carregarCampanhasDisponiveis() {
         containerAviso.style.borderColor = 'rgba(239, 68, 68, 0.45)';
         containerAviso.style.background = 'rgba(239, 68, 68, 0.12)';
         containerAviso.style.color = '#fca5a5';
-        containerAviso.innerHTML = `⚠️ <strong>Você ainda não participa de nenhuma campanha!</strong><br><span style="font-size: 0.85rem; color: #cbd5e1;">Todo personagem deve obrigatoriamente pertencer a uma campanha. <a href="index.html" style="color: var(--gold-light); font-weight: 700; text-decoration: underline;">Volte à Taverna</a> para criar uma mesa como Mestre ou pedir entrada em uma mesa aberta.</span>`;
+        containerAviso.innerHTML = `⚠️ <strong>Você ainda não participa de nenhuma campanha!</strong><br><span style="font-size: 0.85rem; color: #cbd5e1;">Todo personagem deve obrigatoriamente pertencer a uma campanha.<br><a href="index.html" style="color: var(--gold-light); font-weight: 700; text-decoration: underline; display: inline-block; margin-top: 6px;">Volte à Taverna</a> para criar uma mesa como Mestre ou pedir entrada em uma mesa aberta.</span>`;
       }
     }
   } catch (err) {
@@ -1295,4 +1361,5 @@ if (typeof window !== 'undefined') {
   window.atualizarPreviewDefesa = atualizarPreviewDefesa;
   window.avancarPasso = avancarPasso;
   window.submeterCriacaoPersonagem = submeterCriacaoPersonagem;
+  window.carregarCampanhasDisponiveis = carregarCampanhasDisponiveis;
 }
