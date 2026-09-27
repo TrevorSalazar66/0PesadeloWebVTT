@@ -843,7 +843,7 @@ function adicionarItemMochila(itemId) {
     return;
   }
 
-  criacaoState.mochila.push({ ...item, uid: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+  criacaoState.mochila.push({ ...item, uid: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } });
   atualizarPainelMochila();
   renderizarOpcoesSilhueta();
 }
@@ -870,7 +870,7 @@ function calcularNivelRiqueza({ mente = 1, social = 1 }) {
   const soma = (Number(mente) || 1) + (Number(social) || 1);
   if (soma >= 10) {
     return {
-      id: 'milionario', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+      id: 'milionario',
       label: 'Milionário',
       nivel: 5,
       dinheiroPrata: 12500,
@@ -880,7 +880,7 @@ function calcularNivelRiqueza({ mente = 1, social = 1 }) {
   }
   if (soma >= 8) {
     return {
-      id: 'rico', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+      id: 'rico',
       label: 'Rico',
       nivel: 4,
       dinheiroPrata: 8500,
@@ -890,7 +890,7 @@ function calcularNivelRiqueza({ mente = 1, social = 1 }) {
   }
   if (soma >= 6) {
     return {
-      id: 'abastado', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+      id: 'abastado',
       label: 'Abastado',
       nivel: 3,
       dinheiroPrata: 5500,
@@ -900,7 +900,7 @@ function calcularNivelRiqueza({ mente = 1, social = 1 }) {
   }
   if (soma >= 4) {
     return {
-      id: 'pobre', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+      id: 'pobre',
       label: 'Pobre',
       nivel: 2,
       dinheiroPrata: 2500,
@@ -909,7 +909,7 @@ function calcularNivelRiqueza({ mente = 1, social = 1 }) {
     };
   }
   return {
-    id: 'miseravel', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'instant', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
+    id: 'miseravel',
     label: 'Miserável',
     nivel: 1,
     dinheiroPrata: 1200,
