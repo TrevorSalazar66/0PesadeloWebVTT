@@ -319,13 +319,17 @@ export const apiClient = {
     let payload = {};
     if (typeof target === 'string') {
       const clean = target.trim();
-      if (clean.startsWith('usr_')) {
-        payload = { userId: clean };
-      } else {
-        payload = { nickname: clean.replace(/^@+/, '') };
-      }
+      const semArroba = clean.replace(/^@+/, '');
+      payload = {
+        target: clean,
+        userId: clean,
+        nickname: semArroba
+      };
     } else if (target && typeof target === 'object') {
-      payload = target;
+      payload = { ...target };
+      if (payload.nickname) {
+        payload.nickname = String(payload.nickname).replace(/^@+/, '');
+      }
     }
     return this.sync('profile.get', payload);
   },

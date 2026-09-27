@@ -5353,13 +5353,13 @@
                 </h4>
                 <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--gold-primary);">
                   <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold-light); cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${mestre.nickname || mestre.owner_id || ''}')" title="Ver perfil do Mestre">
-                      ${(mestre.display_name || 'A')[0].toUpperCase()}
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--gold-light); cursor: pointer; overflow: hidden; flex-shrink: 0;" onclick="window.abrirModalPerfilUsuario('${mestre.nickname || mestre.user_id || camp.owner_id || ''}')" title="Ver perfil de ${mestre.display_name}">
+                      ${mestre.avatar_url ? `<img src="${mestre.avatar_url}" alt="${mestre.display_name}" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.parentElement.textContent='${(mestre.display_name || 'M')[0].toUpperCase()}';">` : (mestre.display_name || 'M')[0].toUpperCase()}
                     </div>
                     <div>
-                      <div style="font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${mestre.nickname || mestre.owner_id || ''}')" title="Ver perfil do Mestre">${mestre.display_name}</div>
+                      <div style="font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${mestre.nickname || mestre.user_id || camp.owner_id || ''}')" title="Ver perfil de ${mestre.display_name}">${mestre.display_name}</div>
                       <div style="font-size: 11px;">
-                        ${mestre.nickname ? `<span class="clickable-nickname" onclick="window.abrirModalPerfilUsuario('${mestre.nickname}')" title="Ver perfil de @${mestre.nickname}">@${mestre.nickname}</span>` : ''}
+                        <span class="clickable-nickname" onclick="window.abrirModalPerfilUsuario('${mestre.nickname || mestre.user_id || camp.owner_id || ''}')" title="Ver perfil de @${mestre.nickname || mestre.display_name}">@${mestre.nickname || (mestre.display_name ? mestre.display_name.toLowerCase().replace(/[\s@]+/g, '_') : 'mestre')}</span>
                       </div>
                     </div>
                   </div>
@@ -5380,13 +5380,13 @@
                   ${jogadores.length === 0 ? '<div style="font-size: 13px; color: var(--text-dim);">Nenhum aventureiro se juntou ainda.</div>' : jogadores.map(p => `
                     <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
                       <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold-light); cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${p.nickname || p.user_id || ''}')" title="Ver perfil do aventureiro">
-                          ${(p.display_name || 'A')[0].toUpperCase()}
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--gold-dark); border: 1px solid var(--gold-primary); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--gold-light); cursor: pointer; overflow: hidden; flex-shrink: 0;" onclick="window.abrirModalPerfilUsuario('${p.nickname || p.user_id || ''}')" title="Ver perfil de ${p.display_name}">
+                          ${p.avatar_url ? `<img src="${p.avatar_url}" alt="${p.display_name}" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.parentElement.textContent='${(p.display_name || 'A')[0].toUpperCase()}';">` : (p.display_name || 'A')[0].toUpperCase()}
                         </div>
                         <div>
-                          <div style="font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${p.nickname || p.user_id || ''}')" title="Ver perfil do aventureiro">${p.display_name}</div>
+                          <div style="font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer;" onclick="window.abrirModalPerfilUsuario('${p.nickname || p.user_id || ''}')" title="Ver perfil de ${p.display_name}">${p.display_name}</div>
                           <div style="font-size: 11px;">
-                            ${p.nickname ? `<span class="clickable-nickname" onclick="window.abrirModalPerfilUsuario('${p.nickname}')" title="Ver perfil de @${p.nickname}">@${p.nickname}</span>` : ''}
+                            <span class="clickable-nickname" onclick="window.abrirModalPerfilUsuario('${p.nickname || p.user_id || ''}')" title="Ver perfil de @${p.nickname || p.display_name}">@${p.nickname || (p.display_name ? p.display_name.toLowerCase().replace(/[\s@]+/g, '_') : 'jogador')}</span>
                           </div>
                         </div>
                       </div>

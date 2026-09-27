@@ -1336,7 +1336,7 @@ async function loadDiarioData() {
             
             <div class="character-card-header">
               <div class="character-avatar" style="cursor: pointer; overflow: hidden;" onclick="window.abrirModalPerfilUsuario('${char.playerNickname || char.userId || ''}')" title="Ver perfil do jogador">
-                ${char.playerAvatar ? `<img src="${escapeHtml(char.playerAvatar)}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">` : initial}
+                ${char.playerAvatar ? `<img src="${escapeHtml(char.playerAvatar)}" alt="Avatar" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover;">` : initial}
               </div>
               <div class="character-info-main">
                 <h4 class="character-card-title" title="${char.name}">${char.name}</h4>

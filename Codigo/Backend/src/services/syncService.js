@@ -136,25 +136,60 @@ export async function handleSyncRequest(request, env, clientIp) {
       // PERFIL & ONBOARDING (Consulta de Perfil Próprio ou Público de Outro Aventureiro)
       case 'profile.get':
       case 'user.profile.get': {
+        const rawTarget = String(data?.userId || data?.nickname || data?.target || '').trim();
         let targetUserId = (data?.userId || '').trim();
-        const targetNickname = (data?.nickname || '').trim().replace(/^@+/, '');
+        const targetNickname = String(data?.nickname || rawTarget).trim().replace(/^@+/, '');
 
-        // Se foi fornecido um nickname, descobre o user_id correspondente
-        if (!targetUserId && targetNickname) {
-          const foundProfile = await dbQueries.getProfileByNickname(db, targetNickname);
-          if (foundProfile) {
-            targetUserId = foundProfile.user_id;
-          } else {
-            return new Response(JSON.stringify({
-              sucesso: false,
-              erro: `Aventureiro com nickname @${targetNickname} não foi encontrado na Taverna.`
-            }), { status: 404, headers });
+        // 1. Se nenhum parâmetro foi passado, é a consulta do próprio usuário logado
+        if (!targetUserId && !targetNickname) {
+          targetUserId = user.userId;
+        }
+
+        // 2. Se temos targetUserId, valida se é ID direto ou se precisa resolver
+        if (targetUserId) {
+          const directUser = await dbQueries.getUserById(db, targetUserId);
+          if (!directUser) {
+            // Pode ser um nickname ou display_name enviado no campo userId
+            const clean = targetUserId.replace(/^@+/, '');
+            const byNick = await dbQueries.getProfileByNickname(db, clean);
+            if (byNick) {
+              targetUserId = byNick.user_id;
+            } else {
+              const stmtName = db.prepare('SELECT id FROM users WHERE display_name = ? COLLATE NOCASE LIMIT 1');
+              const byName = await stmtName.bind(clean).first();
+              if (byName) {
+                targetUserId = byName.id;
+              } else {
+                targetUserId = null;
+              }
+            }
           }
         }
 
-        // Se não forneceu nenhum parâmetro, busca o usuário logado da sessão
+        // 3. Se ainda não resolveu targetUserId, busca por targetNickname
+        if (!targetUserId && targetNickname) {
+          const directUser = await dbQueries.getUserById(db, targetNickname);
+          if (directUser) {
+            targetUserId = directUser.id;
+          } else {
+            const byNick = await dbQueries.getProfileByNickname(db, targetNickname);
+            if (byNick) {
+              targetUserId = byNick.user_id;
+            } else {
+              const stmtName = db.prepare('SELECT id FROM users WHERE display_name = ? COLLATE NOCASE LIMIT 1');
+              const byName = await stmtName.bind(targetNickname).first();
+              if (byName) {
+                targetUserId = byName.id;
+              }
+            }
+          }
+        }
+
         if (!targetUserId) {
-          targetUserId = user.userId;
+          return new Response(JSON.stringify({
+            sucesso: false,
+            erro: `Aventureiro "${targetNickname || rawTarget}" não foi encontrado na Taverna.`
+          }), { status: 404, headers });
         }
 
         const userBasic = await dbQueries.getUserById(db, targetUserId);

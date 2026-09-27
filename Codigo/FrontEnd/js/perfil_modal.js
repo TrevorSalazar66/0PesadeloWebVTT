@@ -78,13 +78,16 @@
       position: relative;
       border-radius: 15px 15px 0 0;
       border-bottom: 1px solid rgba(212, 163, 75, 0.25);
+      overflow: hidden;
     }
 
     .perfil-modal-banner::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(16, 16, 29, 0.95) 0%, rgba(16, 16, 29, 0.3) 60%, rgba(0, 0, 0, 0.5) 100%);
+      z-index: 2;
+      background: linear-gradient(to top, rgba(16, 16, 29, 0.92) 0%, rgba(16, 16, 29, 0.25) 50%, rgba(0, 0, 0, 0.45) 100%);
+      pointer-events: none;
     }
 
     .perfil-modal-btn-close {
@@ -495,14 +498,17 @@
         roleClass = 'mestre';
       }
 
-      // Estilo do Banner
+      // Estilo e Imagem do Banner
+      const bannerHTML = bannerUrl
+        ? `<img src="${escapeHtml(bannerUrl)}" alt="Banner de ${escapeHtml(displayName)}" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 1;" onerror="this.style.display='none';">`
+        : '';
       const bannerStyle = bannerUrl
         ? `background-image: url('${escapeHtml(bannerUrl)}');`
         : `background: linear-gradient(135deg, #18182c 0%, #281a38 100%);`;
 
       // Avatar HTML
       const avatarHTML = avatarUrl
-        ? `<img src="${escapeHtml(avatarUrl)}" alt="Avatar" onerror="this.onerror=null; this.parentElement.textContent='${initial}';">`
+        ? `<img src="${escapeHtml(avatarUrl)}" alt="Avatar" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.onerror=null; this.parentElement.textContent='${initial}';">`
         : initial;
 
       // Contatos Sociais
@@ -534,7 +540,9 @@
       }
 
       container.innerHTML = `
-        <div class="perfil-modal-banner" style="${bannerStyle}"></div>
+        <div class="perfil-modal-banner" style="${bannerStyle}">
+          ${bannerHTML}
+        </div>
         
         <div class="perfil-modal-body">
           <div class="perfil-modal-avatar-wrapper">
@@ -622,11 +630,25 @@
     // 1. Elemento com classe ou atributo explícito
     const el = e.target.closest('.clickable-nickname, [data-user-nickname], [data-user-id]');
     if (el) {
-      const nick = el.getAttribute('data-user-nickname') || el.textContent.trim().replace(/^@+/, '');
       const uid = el.getAttribute('data-user-id');
-      if (nick || uid) {
+      const nick = el.getAttribute('data-user-nickname') || el.textContent.trim().replace(/^@+/, '');
+      if (uid || nick) {
         e.preventDefault();
+        e.stopPropagation();
         window.abrirModalPerfilUsuario(uid || nick);
+        return;
+      }
+    }
+
+    // 2. Se clicou em qualquer elemento cujo texto seja um @nickname (ex: @trevorrot)
+    const target = e.target;
+    if (target && target.textContent) {
+      const txt = target.textContent.trim();
+      const match = txt.match(/^@([a-zA-Z0-9_]{3,25})$/);
+      if (match && match[1]) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.abrirModalPerfilUsuario(match[1]);
       }
     }
   });

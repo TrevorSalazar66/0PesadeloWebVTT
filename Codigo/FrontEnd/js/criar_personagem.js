@@ -217,15 +217,34 @@ const COMPENDIO_FALLBACK = [
   { id: 'cantil_prata', nome: 'Cantil de Prata Maciça', slot: 'acessorios', categoria: 'utilitarios_ferramentas', slotsCarga: 0, custo: 100, riquezaMinima: 'abastado', desc: 'Preserva bebidas puras e ressalta a elegância do aventureiro.', blocks: { tipo_modelo: { label: 'Tipo de Modelo', value: 'item', is_visible: true }, duracao: { label: 'Duracao do Efeito', value: 'permanent', is_visible: true }, custo: { label: 'Modo de Custo', value: 'none', is_visible: true, dosesMax: 0, acoesCusto: 'action_1' }, acionamento: { label: 'Modo de Acionamento', value: 'manual', is_visible: true, gatilho: 'on_use' }, alcance: { label: 'Alcance do Efeito', value: 'self', is_visible: true, metros: 0 }, efeitos: { label: 'Efeitos Logicos Configurados', is_visible: true, actions: [{ id: 'efeito_principal', nome: 'Efeito Principal', acao: 'apply_buff', valorFormula: '0', atributoBase: 'corpo', gatilhoEvento: 'on_use' }] } } },
 ];
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await carregarEspecializacoes();
-  await carregarCompendio();
+// Inicialização tolerante a carregamento deferido (script type="module")
+async function inicializarCriadorPersonagem() {
+  try {
+    // 1. Carrega as campanhas PRIMEIRO para garantir que o Passo 1 esteja pronto imediatamente
+    await carregarCampanhasDisponiveis();
+  } catch (errCamp) {
+    console.warn('Erro ao carregar campanhas prioritárias:', errCamp);
+  }
+
+  // 2. Inicializa os atributos derivados e preview de defesa
   atualizarHUDAtributos();
   atualizarPainelMochila();
   renderizarOpcoesSilhueta();
   atualizarPreviewDefesa();
-  await carregarCampanhasDisponiveis();
-});
+
+  // 3. Carrega especializações e compêndio em segundo plano
+  Promise.allSettled([
+    carregarEspecializacoes(),
+    carregarCompendio()
+  ]).catch(err => console.warn('Erro ao carregar catálogos em background:', err));
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', inicializarCriadorPersonagem);
+} else {
+  // O documento já está interativo ou completo
+  inicializarCriadorPersonagem();
+}
 
 // ==========================================
 // CARREGAMENTO DE CAMPANHAS
@@ -238,14 +257,8 @@ async function carregarCampanhasDisponiveis() {
 
   try {
     const urlParams = new URLSearchParams(window.location.search);
-    let preselectedCampaignId = urlParams.get('campaignId') || urlParams.get('campaign') || urlParams.get('id');
-
-    // Fallback para última campanha ativa da sessão caso não venha na URL
-    if (!preselectedCampaignId) {
-      try {
-        preselectedCampaignId = sessionStorage.getItem('arcana_active_campaign_id');
-      } catch (_) {}
-    }
+    // Puxa automaticamente a campanha atual APENAS se especificada pela URL (vindo do Diário da mesa)
+    const preselectedCampaignId = urlParams.get('campaignId') || urlParams.get('campaign') || urlParams.get('id');
 
     selectCampaign.innerHTML = '<option value="" disabled selected>⏳ Carregando suas campanhas...</option>';
 
